@@ -1,0 +1,588 @@
+{
+  "shard_ordinal": 23,
+  "original_queue_id": "WORK-3edad65b7759442730e0",
+  "original_source_ids": [
+    "HV001556"
+  ],
+  "original_source_identity": {
+    "commit": "14da116dbc920b7827f1c9507e89f26d4a86046e",
+    "path": "tools/run_stage13_ood_v5_vs_v6a.py",
+    "blob": "d183eca082ce8a44eaae7fef0a6f103a9b3e0390",
+    "object_type": "commit",
+    "bytes": 44460,
+    "sha256": "2a6a240284f10446874113a28ca465ce22bec192e38ae06a862726017cfe614b"
+  },
+  "before": {
+    "commit": "02c1dc7c38785d643de1531213048db41f8a674e",
+    "path": "tools/run_stage13_ood_v5_vs_v6a.py",
+    "blob": "33e8b6954411e0af06f60277d3708f6055e00517",
+    "object_type": "commit",
+    "bytes": 40488,
+    "sha256": "0eab90506d1bcf7e69c50d2d27c9dddeb428b111fbf67d34ce9d458e11727401"
+  },
+  "after": {
+    "commit": "14da116dbc920b7827f1c9507e89f26d4a86046e",
+    "path": "tools/run_stage13_ood_v5_vs_v6a.py",
+    "blob": "d183eca082ce8a44eaae7fef0a6f103a9b3e0390",
+    "object_type": "commit",
+    "bytes": 44460,
+    "sha256": "2a6a240284f10446874113a28ca465ce22bec192e38ae06a862726017cfe614b"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0293"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "build_stage13_model",
+      "controlled_losses_with_v6a_diagnostics",
+      "main",
+      "output_gate_summary",
+      "parse_args",
+      "train_and_eval_system",
+      "v6a_logit_diagnostics"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 6 removed/replaced lines and 100 added/replaced lines in 16 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "02c1dc7c38785d643de1531213048db41f8a674e",
+      "blob": "33e8b6954411e0af06f60277d3708f6055e00517"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "replace",
+      "before_start": 251,
+      "before_end_exclusive": 256,
+      "after_start": 251,
+      "after_end_exclusive": 265,
+      "before": [
+        "    scale_value = (",
+        "        float(correction_scale.detach().float().cpu().item())",
+        "        if isinstance(correction_scale, torch.Tensor)",
+        "        else None",
+        "    )"
+      ],
+      "after": [
+        "    selected_scale = None",
+        "    scale_value = None",
+        "    if isinstance(correction_scale, torch.Tensor):",
+        "        scale_tensor = correction_scale.detach().float()",
+        "        selected_scale = (",
+        "            scale_tensor.index_select(0, index_tensor)",
+        "            if scale_tensor.ndim > 0",
+        "            else scale_tensor",
+        "        )",
+        "        scale_value = (",
+        "            float(selected_scale.mean().cpu().item())",
+        "            if selected_scale.ndim > 0",
+        "            else float(selected_scale.cpu().item())",
+        "        )"
+      ],
+      "before_context": [
+        "    per_class_mean = correction.detach().float().cpu().mean(dim=0).tolist()",
+        "    raw_per_class_mean = raw_correction.detach().float().cpu().mean(dim=0).tolist()",
+        "    correction_scale = output.get(\"composer_correction_scale\")",
+        "    alpha_raw = output.get(\"composer_correction_alpha_raw\")",
+        "    alpha_raw_value = (",
+        "        float(alpha_raw.detach().float().cpu().item())"
+      ],
+      "after_context": [
+        "    per_class_mean = correction.detach().float().cpu().mean(dim=0).tolist()",
+        "    raw_per_class_mean = raw_correction.detach().float().cpu().mean(dim=0).tolist()",
+        "    correction_scale = output.get(\"composer_correction_scale\")",
+        "    alpha_raw = output.get(\"composer_correction_alpha_raw\")",
+        "    alpha_raw_value = (",
+        "        float(alpha_raw.detach().float().cpu().item())"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 261,
+      "before_end_exclusive": 261,
+      "after_start": 270,
+      "after_end_exclusive": 286,
+      "before": [],
+      "after": [
+        "    )",
+        "    correction_gate = output.get(\"composer_correction_gate\")",
+        "    selected_gate = (",
+        "        correction_gate.detach().float().index_select(0, index_tensor).cpu()",
+        "        if isinstance(correction_gate, torch.Tensor)",
+        "        else None",
+        "    )",
+        "    gate_stats = (",
+        "        {",
+        "            \"correction_gate_mean\": float(selected_gate.mean().item()),",
+        "            \"correction_gate_std\": float(selected_gate.std(unbiased=False).item()),",
+        "            \"correction_gate_min\": float(selected_gate.min().item()),",
+        "            \"correction_gate_max\": float(selected_gate.max().item()),",
+        "        }",
+        "        if selected_gate is not None",
+        "        else {}"
+      ],
+      "before_context": [
+        "        float(alpha_raw.detach().float().cpu().item())",
+        "        if isinstance(alpha_raw, torch.Tensor)",
+        "        else None",
+        "    )",
+        "    return {",
+        "        \"subset\": subset_name,"
+      ],
+      "after_context": [
+        "        float(alpha_raw.detach().float().cpu().item())",
+        "        if isinstance(alpha_raw, torch.Tensor)",
+        "        else None",
+        "    )",
+        "    return {",
+        "        \"subset\": subset_name,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 282,
+      "before_end_exclusive": 282,
+      "after_start": 307,
+      "after_end_exclusive": 308,
+      "before": [],
+      "after": [
+        "        **gate_stats,"
+      ],
+      "before_context": [
+        "        },",
+        "        \"raw_correction_product_norm_ratio\": float(raw_ratio),",
+        "        \"correction_product_norm_ratio\": float(ratio),",
+        "    }",
+        "",
+        ""
+      ],
+      "after_context": [
+        "        },",
+        "        \"raw_correction_product_norm_ratio\": float(raw_ratio),",
+        "        \"correction_product_norm_ratio\": float(ratio),",
+        "    }",
+        "",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 310,
+      "before_end_exclusive": 310,
+      "after_start": 336,
+      "after_end_exclusive": 347,
+      "before": [],
+      "after": [
+        "",
+        "",
+        "def output_gate_summary(output: dict[str, Any]) -> str | None:",
+        "    gate = output.get(\"composer_correction_gate\")",
+        "    if not isinstance(gate, torch.Tensor):",
+        "        return None",
+        "    values = gate.detach().float()",
+        "    return (",
+        "        f\"v6a_gate_mean={values.mean().item():.6f} \"",
+        "        f\"v6a_gate_std={values.std(unbiased=False).item():.6f}\"",
+        "    )"
+      ],
+      "before_context": [
+        "    if isinstance(value, torch.Tensor):",
+        "        return float(value.detach().float().cpu().item())",
+        "    return float(value)",
+        "",
+        "",
+        "def choose_group_field(records: list[dict[str, Any]]) -> str | None:"
+      ],
+      "after_context": [
+        "    if isinstance(value, torch.Tensor):",
+        "        return float(value.detach().float().cpu().item())",
+        "    return float(value)",
+        "",
+        "",
+        "def choose_group_field(records: list[dict[str, Any]]) -> str | None:"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 425,
+      "before_end_exclusive": 425,
+      "after_start": 462,
+      "after_end_exclusive": 465,
+      "before": [],
+      "after": [
+        "    v6a_product_gated_correction: bool,",
+        "    v6a_gate_hidden_dim: int,",
+        "    v6a_gate_detach_features: bool,"
+      ],
+      "before_context": [
+        "    v6a_correction_scale: float,",
+        "    v6a_learnable_correction_scale: bool,",
+        "    v6a_learnable_correction_init: float,",
+        ") -> torch.nn.Module:",
+        "    if system == \"v5\":",
+        "        if backbone == \"mamba\":"
+      ],
+      "after_context": [
+        "    v6a_correction_scale: float,",
+        "    v6a_learnable_correction_scale: bool,",
+        "    v6a_learnable_correction_init: float,",
+        ") -> torch.nn.Module:",
+        "    if system == \"v5\":",
+        "        if backbone == \"mamba\":"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 441,
+      "before_end_exclusive": 441,
+      "after_start": 481,
+      "after_end_exclusive": 486,
+      "before": [],
+      "after": [
+        "        if v6a_product_gated_correction:",
+        "            model.enable_product_gated_correction(",
+        "                hidden_dim=v6a_gate_hidden_dim,",
+        "                detach_features=v6a_gate_detach_features,",
+        "            )"
+      ],
+      "before_context": [
+        "        model.correction_scale = v6a_correction_scale",
+        "        if v6a_learnable_correction_scale:",
+        "            model.enable_learnable_correction_scale(v6a_learnable_correction_init)",
+        "    else:",
+        "        raise ValueError(f\"unknown system: {system}\")",
+        "    return model"
+      ],
+      "after_context": [
+        "        model.correction_scale = v6a_correction_scale",
+        "        if v6a_learnable_correction_scale:",
+        "            model.enable_learnable_correction_scale(v6a_learnable_correction_init)",
+        "    else:",
+        "        raise ValueError(f\"unknown system: {system}\")",
+        "    return model"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 478,
+      "before_end_exclusive": 478,
+      "after_start": 523,
+      "after_end_exclusive": 526,
+      "before": [],
+      "after": [
+        "    v6a_product_gated_correction: bool,",
+        "    v6a_gate_hidden_dim: int,",
+        "    v6a_gate_detach_features: bool,"
+      ],
+      "before_context": [
+        "    v6a_correction_l2: float,",
+        "    v6a_learnable_correction_scale: bool,",
+        "    v6a_learnable_correction_init: float,",
+        ") -> tuple[dict[str, Any], list[dict[str, Any]]]:",
+        "    random.seed(seed)",
+        "    torch.manual_seed(seed)"
+      ],
+      "after_context": [
+        "    v6a_correction_l2: float,",
+        "    v6a_learnable_correction_scale: bool,",
+        "    v6a_learnable_correction_init: float,",
+        ") -> tuple[dict[str, Any], list[dict[str, Any]]]:",
+        "    random.seed(seed)",
+        "    torch.manual_seed(seed)"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 511,
+      "before_end_exclusive": 511,
+      "after_start": 559,
+      "after_end_exclusive": 562,
+      "before": [],
+      "after": [
+        "        v6a_product_gated_correction=v6a_product_gated_correction,",
+        "        v6a_gate_hidden_dim=v6a_gate_hidden_dim,",
+        "        v6a_gate_detach_features=v6a_gate_detach_features,"
+      ],
+      "before_context": [
+        "        v6a_correction_scale=v6a_correction_scale,",
+        "        v6a_learnable_correction_scale=v6a_learnable_correction_scale,",
+        "        v6a_learnable_correction_init=v6a_learnable_correction_init,",
+        "    ).to(device)",
+        "    cache_if_needed(model, inputs, backbone)",
+        ""
+      ],
+      "after_context": [
+        "        v6a_correction_scale=v6a_correction_scale,",
+        "        v6a_learnable_correction_scale=v6a_learnable_correction_scale,",
+        "        v6a_learnable_correction_init=v6a_learnable_correction_init,",
+        "    ).to(device)",
+        "    cache_if_needed(model, inputs, backbone)",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 515,
+      "before_end_exclusive": 516,
+      "after_start": 566,
+      "after_end_exclusive": 571,
+      "before": [
+        "    if system == \"v6a\" and (v6a_correction_l2 > 0 or v6a_learnable_correction_scale):"
+      ],
+      "after": [
+        "    if system == \"v6a\" and (",
+        "        v6a_correction_l2 > 0",
+        "        or v6a_learnable_correction_scale",
+        "        or v6a_product_gated_correction",
+        "    ):"
+      ],
+      "before_context": [
+        "    cache_if_needed(model, inputs, backbone)",
+        "",
+        "    original_controlled_losses = v5.controlled_losses",
+        "        if v6a_correction_l2 > 0:",
+        "            print(f\"Using v6A correction L2 regularization: lambda={v6a_correction_l2}\")",
+        "        if v6a_learnable_correction_scale:"
+      ],
+      "after_context": [
+        "    cache_if_needed(model, inputs, backbone)",
+        "",
+        "    original_controlled_losses = v5.controlled_losses",
+        "        if v6a_correction_l2 > 0:",
+        "            print(f\"Using v6A correction L2 regularization: lambda={v6a_correction_l2}\")",
+        "        if v6a_learnable_correction_scale:"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 523,
+      "before_end_exclusive": 523,
+      "after_start": 578,
+      "after_end_exclusive": 584,
+      "before": [],
+      "after": [
+        "            )",
+        "        if v6a_product_gated_correction:",
+        "            print(",
+        "                \"Using v6A product-gated correction diagnostic: \"",
+        "                f\"hidden_dim={v6a_gate_hidden_dim} \"",
+        "                f\"detach_features={v6a_gate_detach_features}\""
+      ],
+      "before_context": [
+        "                \"Using learnable v6A correction scale: \"",
+        "                f\"init={v6a_learnable_correction_init} \"",
+        "                f\"current_alpha={current_v6a_alpha(model):.6f}\"",
+        "            )",
+        "",
+        "        def controlled_losses_with_v6a_diagnostics("
+      ],
+      "after_context": [
+        "                \"Using learnable v6A correction scale: \"",
+        "                f\"init={v6a_learnable_correction_init} \"",
+        "                f\"current_alpha={current_v6a_alpha(model):.6f}\"",
+        "            )",
+        "",
+        "        def controlled_losses_with_v6a_diagnostics("
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 550,
+      "before_end_exclusive": 550,
+      "after_start": 611,
+      "after_end_exclusive": 614,
+      "before": [],
+      "after": [
+        "            gate_summary = output_gate_summary(output)",
+        "            if gate_summary is not None:",
+        "                components.append(gate_summary)"
+      ],
+      "before_context": [
+        "                )",
+        "            if v6a_learnable_correction_scale:",
+        "                components.append(f\"v6a_alpha={current_v6a_alpha(model):.6f}\")",
+        "            if components:",
+        "                print(\" \".join(components))",
+        "            return losses"
+      ],
+      "after_context": [
+        "                )",
+        "            if v6a_learnable_correction_scale:",
+        "                components.append(f\"v6a_alpha={current_v6a_alpha(model):.6f}\")",
+        "            if components:",
+        "                print(\" \".join(components))",
+        "            return losses"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 654,
+      "before_end_exclusive": 654,
+      "after_start": 718,
+      "after_end_exclusive": 725,
+      "before": [],
+      "after": [
+        "        ),",
+        "        \"v6a_product_gated_correction\": (",
+        "            v6a_product_gated_correction if system == \"v6a\" else None",
+        "        ),",
+        "        \"v6a_gate_hidden_dim\": v6a_gate_hidden_dim if system == \"v6a\" else None,",
+        "        \"v6a_gate_detach_features\": (",
+        "            v6a_gate_detach_features if system == \"v6a\" else None"
+      ],
+      "before_context": [
+        "        ),",
+        "        \"v6a_final_correction_alpha\": (",
+        "            current_v6a_alpha(model) if system == \"v6a\" else None",
+        "        ),",
+        "        \"best_epoch\": report[\"best_epoch\"],",
+        "        \"train_data\": \"data/controlled_v5_v3.jsonl with time_swap excluded before split\","
+      ],
+      "after_context": [
+        "        ),",
+        "        \"v6a_final_correction_alpha\": (",
+        "            current_v6a_alpha(model) if system == \"v6a\" else None",
+        "        ),",
+        "        \"best_epoch\": report[\"best_epoch\"],",
+        "        \"train_data\": \"data/controlled_v5_v3.jsonl with time_swap excluded before split\","
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 922,
+      "before_end_exclusive": 922,
+      "after_start": 993,
+      "after_end_exclusive": 1000,
+      "before": [],
+      "after": [
+        "    parser.add_argument(\"--v6a-product-gated-correction\", action=\"store_true\")",
+        "    parser.add_argument(\"--v6a-gate-hidden-dim\", type=int, default=16)",
+        "    parser.add_argument(",
+        "        \"--v6a-gate-detach-features\",",
+        "        action=argparse.BooleanOptionalAction,",
+        "        default=True,",
+        "    )"
+      ],
+      "before_context": [
+        "    parser.add_argument(\"--v6a-correction-l2\", type=float, default=0.0)",
+        "    parser.add_argument(\"--v6a-learnable-correction-scale\", action=\"store_true\")",
+        "    parser.add_argument(\"--v6a-learnable-correction-init\", type=float, default=0.1)",
+        "    parser.add_argument(\"--log-v6a-logit-diagnostics\", action=\"store_true\")",
+        "    parser.add_argument(\"--output-prefix\", type=Path, default=REPO_ROOT / \"results\" / \"stage13_ood\")",
+        "    return parser.parse_args()"
+      ],
+      "after_context": [
+        "    parser.add_argument(\"--v6a-correction-l2\", type=float, default=0.0)",
+        "    parser.add_argument(\"--v6a-learnable-correction-scale\", action=\"store_true\")",
+        "    parser.add_argument(\"--v6a-learnable-correction-init\", type=float, default=0.1)",
+        "    parser.add_argument(\"--log-v6a-logit-diagnostics\", action=\"store_true\")",
+        "    parser.add_argument(\"--output-prefix\", type=Path, default=REPO_ROOT / \"results\" / \"stage13_ood\")",
+        "    return parser.parse_args()"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 937,
+      "before_end_exclusive": 937,
+      "after_start": 1015,
+      "after_end_exclusive": 1025,
+      "before": [],
+      "after": [
+        "    if args.v6a_product_gated_correction and args.v6a_learnable_correction_scale:",
+        "        raise ValueError(",
+        "            \"--v6a-product-gated-correction and --v6a-learnable-correction-scale are mutually exclusive\"",
+        "        )",
+        "    if args.v6a_product_gated_correction and args.v6a_correction_scale != 1.0:",
+        "        raise ValueError(",
+        "            \"--v6a-product-gated-correction and non-default --v6a-correction-scale are mutually exclusive\"",
+        "        )",
+        "    if args.v6a_gate_hidden_dim < 1:",
+        "        raise ValueError(\"--v6a-gate-hidden-dim must be positive\")"
+      ],
+      "before_context": [
+        "        raise ValueError(",
+        "            \"--v6a-correction-scale and --v6a-learnable-correction-scale are mutually exclusive\"",
+        "        )",
+        "    torch.set_num_threads(1)",
+        "    device = resolve_device(args.device)",
+        "    output_prefix = args.output_prefix"
+      ],
+      "after_context": [
+        "        raise ValueError(",
+        "            \"--v6a-correction-scale and --v6a-learnable-correction-scale are mutually exclusive\"",
+        "        )",
+        "    torch.set_num_threads(1)",
+        "    device = resolve_device(args.device)",
+        "    output_prefix = args.output_prefix"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 965,
+      "before_end_exclusive": 965,
+      "after_start": 1053,
+      "after_end_exclusive": 1056,
+      "before": [],
+      "after": [
+        "        f\"v6a_product_gated_correction={args.v6a_product_gated_correction} \"",
+        "        f\"v6a_gate_hidden_dim={args.v6a_gate_hidden_dim} \"",
+        "        f\"v6a_gate_detach_features={args.v6a_gate_detach_features} \""
+      ],
+      "before_context": [
+        "        f\"v6a_correction_l2={args.v6a_correction_l2} \"",
+        "        f\"v6a_learnable_correction_scale={args.v6a_learnable_correction_scale} \"",
+        "        f\"v6a_learnable_correction_init={args.v6a_learnable_correction_init} \"",
+        "        \"weighted_label_loss=True balanced_sampler=True use_intervention_loss=True\"",
+        "    )",
+        ""
+      ],
+      "after_context": [
+        "        f\"v6a_correction_l2={args.v6a_correction_l2} \"",
+        "        f\"v6a_learnable_correction_scale={args.v6a_learnable_correction_scale} \"",
+        "        f\"v6a_learnable_correction_init={args.v6a_learnable_correction_init} \"",
+        "        \"weighted_label_loss=True balanced_sampler=True use_intervention_loss=True\"",
+        "    )",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 1002,
+      "before_end_exclusive": 1002,
+      "after_start": 1093,
+      "after_end_exclusive": 1096,
+      "before": [],
+      "after": [
+        "                v6a_product_gated_correction=args.v6a_product_gated_correction,",
+        "                v6a_gate_hidden_dim=args.v6a_gate_hidden_dim,",
+        "                v6a_gate_detach_features=args.v6a_gate_detach_features,"
+      ],
+      "before_context": [
+        "                v6a_correction_l2=args.v6a_correction_l2,",
+        "                v6a_learnable_correction_scale=args.v6a_learnable_correction_scale,",
+        "                v6a_learnable_correction_init=args.v6a_learnable_correction_init,",
+        "            )",
+        "            all_metrics.append(payload)",
+        "            seed_predictions[system] = predictions"
+      ],
+      "after_context": [
+        "                v6a_correction_l2=args.v6a_correction_l2,",
+        "                v6a_learnable_correction_scale=args.v6a_learnable_correction_scale,",
+        "                v6a_learnable_correction_init=args.v6a_learnable_correction_init,",
+        "            )",
+        "            all_metrics.append(payload)",
+        "            seed_predictions[system] = predictions"
+      ]
+    }
+  ]
+}

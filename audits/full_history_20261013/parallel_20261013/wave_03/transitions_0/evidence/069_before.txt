@@ -1,0 +1,1065 @@
+header=f30d0d0a00000000fb4b396a9a230000
+/<module> vars=() names=('__doc__', '__future__', 'annotations', 'collections', 'defaultdict', 'collections.abc', 'Sequence', 'typing', 'Any', 'torch', 'torch.nn', 'functional', 'F', '_pair_index', '_mean_or_zero', 'intervention_pairwise_losses')
+constants=['Intervention-aware losses for controlled ContraMamba-v5 training.', 0, ('annotations',), ('defaultdict',), ('Sequence',), ('Any',), None, ('functional',), 1.0, 0.5, ('lambda_frame_preserve', 'lambda_frame_anchor', 'lambda_predicate_contrast', 'lambda_predicate_anchor', 'lambda_sufficiency_contrast', 'lambda_polarity_flip', 'lambda_polarity_margin_anchor', 'lambda_paraphrase_preserve', 'lambda_entitlement_preserve', 'lambda_logit_preserve', 'ranking_margin', 'polarity_margin_min'), ('pair_ids', 'Sequence[str]', 'intervention_types', 'Sequence[str]', 'return', 'dict[str, dict[str, int]]'), ('terms', 'list[torch.Tensor]', 'reference', 'torch.Tensor', 'return', 'torch.Tensor'), ('output', 'dict[str, Any]', 'pair_ids', 'Sequence[str]', 'intervention_types', 'Sequence[str]', 'lambda_frame_preserve', 'float', 'lambda_frame_anchor', 'float', 'lambda_predicate_contrast', 'float', 'lambda_predicate_anchor', 'float', 'lambda_sufficiency_contrast', 'float', 'lambda_polarity_flip', 'float', 'lambda_polarity_margin_anchor', 'float', 'lambda_paraphrase_preserve', 'float', 'lambda_entitlement_preserve', 'float', 'lambda_logit_preserve', 'float', 'ranking_margin', 'float', 'polarity_margin_min', 'float', 'return', 'dict[str, torch.Tensor]')]
+  0           RESUME                   0
+
+  1           LOAD_CONST               0 ('Intervention-aware losses for controlled ContraMamba-v5 training.')
+              STORE_NAME               0 (__doc__)
+
+  3           LOAD_CONST               1 (0)
+              LOAD_CONST               2 (('annotations',))
+              IMPORT_NAME              1 (__future__)
+              IMPORT_FROM              2 (annotations)
+              STORE_NAME               2 (annotations)
+              POP_TOP
+
+  5           LOAD_CONST               1 (0)
+              LOAD_CONST               3 (('defaultdict',))
+              IMPORT_NAME              3 (collections)
+              IMPORT_FROM              4 (defaultdict)
+              STORE_NAME               4 (defaultdict)
+              POP_TOP
+
+  6           LOAD_CONST               1 (0)
+              LOAD_CONST               4 (('Sequence',))
+              IMPORT_NAME              5 (collections.abc)
+              IMPORT_FROM              6 (Sequence)
+              STORE_NAME               6 (Sequence)
+              POP_TOP
+
+  7           LOAD_CONST               1 (0)
+              LOAD_CONST               5 (('Any',))
+              IMPORT_NAME              7 (typing)
+              IMPORT_FROM              8 (Any)
+              STORE_NAME               8 (Any)
+              POP_TOP
+
+  9           LOAD_CONST               1 (0)
+              LOAD_CONST               6 (None)
+              IMPORT_NAME              9 (torch)
+              STORE_NAME               9 (torch)
+
+ 10           LOAD_CONST               1 (0)
+              LOAD_CONST               7 (('functional',))
+              IMPORT_NAME             10 (torch.nn)
+              IMPORT_FROM             11 (functional)
+              STORE_NAME              12 (F)
+              POP_TOP
+
+ 13           NOP
+
+ 14           NOP
+
+ 13           NOP
+
+ 14           NOP
+
+ 13           NOP
+
+ 15           NOP
+
+ 13           LOAD_CONST              14 (('pair_ids', 'Sequence[str]', 'intervention_types', 'Sequence[str]', 'return', 'dict[str, dict[str, int]]'))
+              LOAD_CONST               8 (<code object _pair_index at 0x00000219326F6470, file "C:\Users\Home1\Desktop\ContraMamba\src\contramamba\losses.py", line 13>)
+              MAKE_FUNCTION
+              SET_FUNCTION_ATTRIBUTE   4 (annotations)
+              STORE_NAME              13 (_pair_index)
+
+ 30           LOAD_CONST              15 (('terms', 'list[torch.Tensor]', 'reference', 'torch.Tensor', 'return', 'torch.Tensor'))
+              LOAD_CONST               9 (<code object _mean_or_zero at 0x0000021930BF8570, file "C:\Users\Home1\Desktop\ContraMamba\src\contramamba\losses.py", line 30>)
+              MAKE_FUNCTION
+              SET_FUNCTION_ATTRIBUTE   4 (annotations)
+              STORE_NAME              14 (_mean_or_zero)
+
+ 39           LOAD_CONST              10 (1.0)
+
+ 40           LOAD_CONST              10 (1.0)
+
+ 41           LOAD_CONST              10 (1.0)
+
+ 42           LOAD_CONST              10 (1.0)
+
+ 43           LOAD_CONST              10 (1.0)
+
+ 44           LOAD_CONST              10 (1.0)
+
+ 45           LOAD_CONST              10 (1.0)
+
+ 46           LOAD_CONST              10 (1.0)
+
+ 47           LOAD_CONST              10 (1.0)
+
+ 48           LOAD_CONST              10 (1.0)
+
+ 49           LOAD_CONST              11 (0.5)
+
+ 50           LOAD_CONST              10 (1.0)
+
+ 34           LOAD_CONST              12 (('lambda_frame_preserve', 'lambda_frame_anchor', 'lambda_predicate_contrast', 'lambda_predicate_anchor', 'lambda_sufficiency_contrast', 'lambda_polarity_flip', 'lambda_polarity_margin_anchor', 'lambda_paraphrase_preserve', 'lambda_entitlement_preserve', 'lambda_logit_preserve', 'ranking_margin', 'polarity_margin_min'))
+              BUILD_CONST_KEY_MAP     12
+
+ 35           NOP
+
+ 34           NOP
+
+ 36           NOP
+
+ 34           NOP
+
+ 37           NOP
+
+ 34           NOP
+
+ 39           NOP
+
+ 34           NOP
+
+ 40           NOP
+
+ 34           NOP
+
+ 41           NOP
+
+ 34           NOP
+
+ 42           NOP
+
+ 34           NOP
+
+ 43           NOP
+
+ 34           NOP
+
+ 44           NOP
+
+ 34           NOP
+
+ 45           NOP
+
+ 34           NOP
+
+ 46           NOP
+
+ 34           NOP
+
+ 47           NOP
+
+ 34           NOP
+
+ 48           NOP
+
+ 34           NOP
+
+ 49           NOP
+
+ 34           NOP
+
+ 50           NOP
+
+ 34           NOP
+
+ 51           NOP
+
+ 34           LOAD_CONST              16 (('output', 'dict[str, Any]', 'pair_ids', 'Sequence[str]', 'intervention_types', 'Sequence[str]', 'lambda_frame_preserve', 'float', 'lambda_frame_anchor', 'float', 'lambda_predicate_contrast', 'float', 'lambda_predicate_anchor', 'float', 'lambda_sufficiency_contrast', 'float', 'lambda_polarity_flip', 'float', 'lambda_polarity_margin_anchor', 'float', 'lambda_paraphrase_preserve', 'float', 'lambda_entitlement_preserve', 'float', 'lambda_logit_preserve', 'float', 'ranking_margin', 'float', 'polarity_margin_min', 'float', 'return', 'dict[str, torch.Tensor]'))
+              LOAD_CONST              13 (<code object intervention_pairwise_losses at 0x000002192E524FC0, file "C:\Users\Home1\Desktop\ContraMamba\src\contramamba\losses.py", line 34>)
+              MAKE_FUNCTION
+              SET_FUNCTION_ATTRIBUTE   4 (annotations)
+              SET_FUNCTION_ATTRIBUTE   2 (kwdefaults)
+              STORE_NAME              15 (intervention_pairwise_losses)
+              RETURN_CONST             6 (None)
+
+/<module>/_pair_index vars=('pair_ids', 'intervention_types', 'result', 'index', 'pair_id', 'intervention') names=('len', 'ValueError', 'defaultdict', 'dict', 'enumerate', 'zip')
+constants=[None, 'pair_ids and intervention_types must have equal length', True, ('strict',), 'duplicate intervention ', ' for pair_id ']
+ 13           RESUME                   0
+
+ 16           LOAD_GLOBAL              1 (len + NULL)
+              LOAD_FAST                0 (pair_ids)
+              CALL                     1
+              LOAD_GLOBAL              1 (len + NULL)
+              LOAD_FAST                1 (intervention_types)
+              CALL                     1
+              COMPARE_OP             119 (bool(!=))
+              POP_JUMP_IF_FALSE       11 (to L1)
+
+ 17           LOAD_GLOBAL              3 (ValueError + NULL)
+              LOAD_CONST               1 ('pair_ids and intervention_types must have equal length')
+              CALL                     1
+              RAISE_VARARGS            1
+
+ 18   L1:     LOAD_GLOBAL              5 (defaultdict + NULL)
+              LOAD_GLOBAL              6 (dict)
+              CALL                     1
+              STORE_FAST               2 (result)
+
+ 19           LOAD_GLOBAL              9 (enumerate + NULL)
+
+ 20           LOAD_GLOBAL             11 (zip + NULL)
+              LOAD_FAST_LOAD_FAST      1 (pair_ids, intervention_types)
+              LOAD_CONST               2 (True)
+              LOAD_CONST               3 (('strict',))
+              CALL_KW                  3
+
+ 19           CALL                     1
+              GET_ITER
+      L2:     FOR_ITER                42 (to L4)
+              UNPACK_SEQUENCE          2
+              STORE_FAST               3 (index)
+              UNPACK_SEQUENCE          2
+              STORE_FAST_STORE_FAST   69 (pair_id, intervention)
+
+ 22           LOAD_FAST_LOAD_FAST     82 (intervention, result)
+              LOAD_FAST                4 (pair_id)
+              BINARY_SUBSCR
+              CONTAINS_OP              0
+              POP_JUMP_IF_FALSE       19 (to L3)
+
+ 23           LOAD_GLOBAL              3 (ValueError + NULL)
+
+ 24           LOAD_CONST               4 ('duplicate intervention ')
+              LOAD_FAST                5 (intervention)
+              CONVERT_VALUE            2 (repr)
+              FORMAT_SIMPLE
+              LOAD_CONST               5 (' for pair_id ')
+              LOAD_FAST                4 (pair_id)
+              CONVERT_VALUE            2 (repr)
+              FORMAT_SIMPLE
+              BUILD_STRING             4
+
+ 23           CALL                     1
+              RAISE_VARARGS            1
+
+ 26   L3:     LOAD_FAST_LOAD_FAST     50 (index, result)
+              LOAD_FAST                4 (pair_id)
+              BINARY_SUBSCR
+              LOAD_FAST                5 (intervention)
+              STORE_SUBSCR
+              JUMP_BACKWARD           44 (to L2)
+
+ 19   L4:     END_FOR
+              POP_TOP
+
+ 27           LOAD_GLOBAL              7 (dict + NULL)
+              LOAD_FAST                2 (result)
+              CALL                     1
+              RETURN_VALUE
+
+/<module>/_mean_or_zero vars=('terms', 'reference') names=('torch', 'stack', 'mean', 'sum')
+constants=[None, 0.0]
+ 30           RESUME                   0
+
+ 31           LOAD_FAST                0 (terms)
+              TO_BOOL
+              POP_JUMP_IF_FALSE       36 (to L1)
+              LOAD_GLOBAL              0 (torch)
+              LOAD_ATTR                2 (stack)
+              PUSH_NULL
+              LOAD_FAST                0 (terms)
+              CALL                     1
+              LOAD_ATTR                5 (mean + NULL|self)
+              CALL                     0
+              RETURN_VALUE
+      L1:     LOAD_FAST                1 (reference)
+              LOAD_ATTR                7 (sum + NULL|self)
+              CALL                     0
+              LOAD_CONST               1 (0.0)
+              BINARY_OP                5 (*)
+              RETURN_VALUE
+
+/<module>/intervention_pairwise_losses vars=('output', 'pair_ids', 'intervention_types', 'lambda_frame_preserve', 'lambda_frame_anchor', 'lambda_predicate_contrast', 'lambda_predicate_anchor', 'lambda_sufficiency_contrast', 'lambda_polarity_flip', 'lambda_polarity_margin_anchor', 'lambda_paraphrase_preserve', 'lambda_entitlement_preserve', 'lambda_logit_preserve', 'ranking_margin', 'polarity_margin_min', 'pairs', 'frame_terms', 'frame_anchor_terms', 'predicate_terms', 'predicate_anchor_terms', 'sufficiency_terms', 'polarity_terms', 'polarity_anchor_terms', 'paraphrase_terms', 'entitlement_terms', 'logit_terms', 'pair_id', 'variants', 'original', 'intervention', 'changed', 'index', 'difference', 'sign_reversal', 'original_magnitude_penalty', 'flipped_magnitude_penalty', 'predicate_preservation', 'sufficiency_preservation', 'scalar_keys', 'key', 'scalar_preservation', 'reference', 'frame_preserve', 'frame_anchor', 'predicate_contrast', 'predicate_anchor', 'sufficiency_contrast', 'polarity_flip', 'polarity_margin_anchor', 'paraphrase_preserve', 'entitlement_preserve', 'logit_preserve', 'total') names=('ValueError', '_pair_index', 'items', 'append', 'F', 'mse_loss', 'binary_cross_entropy_with_logits', 'torch', 'ones_like', 'relu', 'square', 'abs', 'stack', 'mean', '_mean_or_zero')
+constants=['Compute pairwise losses without exposing intervention metadata to the model.', 0, 'ranking_margin must be non-negative', 'polarity_margin_min must be non-negative', 'none', 'pair_id ', " has no original ('none') record", ('paraphrase', 'predicate_swap', 'polarity_flip'), 'frame_logit', 'predicate_swap', 'predicate_coverage_logit', ('evidence_deletion', 'evidence_truncation'), 'sufficiency_logit', 'polarity_flip', 'entitlement_prob', 'polarity_margin', 0.5, 'paraphrase', ('predicate_coverage_logit', 'sufficiency_logit'), 'logits', ('total', 'frame_preserve', 'frame_anchor', 'predicate_contrast', 'predicate_anchor', 'sufficiency_contrast', 'polarity_flip', 'polarity_margin_anchor', 'paraphrase_preserve', 'entitlement_preserve', 'logit_preserve')]
+  34            RESUME                   0
+
+  54            LOAD_FAST               13 (ranking_margin)
+                LOAD_CONST               1 (0)
+                COMPARE_OP              18 (bool(<))
+                POP_JUMP_IF_FALSE       11 (to L1)
+
+  55            LOAD_GLOBAL              1 (ValueError + NULL)
+                LOAD_CONST               2 ('ranking_margin must be non-negative')
+                CALL                     1
+                RAISE_VARARGS            1
+
+  56    L1:     LOAD_FAST               14 (polarity_margin_min)
+                LOAD_CONST               1 (0)
+                COMPARE_OP              18 (bool(<))
+                POP_JUMP_IF_FALSE       11 (to L2)
+
+  57            LOAD_GLOBAL              1 (ValueError + NULL)
+                LOAD_CONST               3 ('polarity_margin_min must be non-negative')
+                CALL                     1
+                RAISE_VARARGS            1
+
+  58    L2:     LOAD_GLOBAL              3 (_pair_index + NULL)
+                LOAD_FAST_LOAD_FAST     18 (pair_ids, intervention_types)
+                CALL                     2
+                STORE_FAST              15 (pairs)
+
+  59            BUILD_LIST               0
+                STORE_FAST              16 (frame_terms)
+
+  60            BUILD_LIST               0
+                STORE_FAST              17 (frame_anchor_terms)
+
+  61            BUILD_LIST               0
+                STORE_FAST              18 (predicate_terms)
+
+  62            BUILD_LIST               0
+                STORE_FAST              19 (predicate_anchor_terms)
+
+  63            BUILD_LIST               0
+                STORE_FAST              20 (sufficiency_terms)
+
+  64            BUILD_LIST               0
+                STORE_FAST              21 (polarity_terms)
+
+  65            BUILD_LIST               0
+                STORE_FAST              22 (polarity_anchor_terms)
+
+  66            BUILD_LIST               0
+                STORE_FAST              23 (paraphrase_terms)
+
+  67            BUILD_LIST               0
+                STORE_FAST              24 (entitlement_terms)
+
+  68            BUILD_LIST               0
+                STORE_FAST              25 (logit_terms)
+
+  70            LOAD_FAST               15 (pairs)
+                LOAD_ATTR                5 (items + NULL|self)
+                CALL                     0
+                GET_ITER
+        L3:     EXTENDED_ARG             4
+                FOR_ITER              1112 (to L24)
+                UNPACK_SEQUENCE          2
+                STORE_FAST              26 (pair_id)
+                STORE_FAST              27 (variants)
+
+  71            LOAD_CONST               4 ('none')
+                LOAD_FAST               27 (variants)
+                CONTAINS_OP              1
+                POP_JUMP_IF_FALSE       16 (to L4)
+
+  72            LOAD_GLOBAL              1 (ValueError + NULL)
+                LOAD_CONST               5 ('pair_id ')
+                LOAD_FAST               26 (pair_id)
+                CONVERT_VALUE            2 (repr)
+                FORMAT_SIMPLE
+                LOAD_CONST               6 (" has no original ('none') record")
+                BUILD_STRING             3
+                CALL                     1
+                RAISE_VARARGS            1
+
+  73    L4:     LOAD_FAST               27 (variants)
+                LOAD_CONST               4 ('none')
+                BINARY_SUBSCR
+                STORE_FAST              28 (original)
+
+  75            LOAD_CONST               7 (('paraphrase', 'predicate_swap', 'polarity_flip'))
+                GET_ITER
+        L5:     FOR_ITER               147 (to L9)
+                STORE_FAST              29 (intervention)
+
+  76            LOAD_FAST               29 (intervention)
+                LOAD_FAST               27 (variants)
+                CONTAINS_OP              0
+                POP_JUMP_IF_TRUE         2 (to L6)
+                JUMP_BACKWARD           11 (to L5)
+
+  77    L6:     LOAD_FAST               27 (variants)
+                LOAD_FAST               29 (intervention)
+                BINARY_SUBSCR
+                STORE_FAST              30 (changed)
+
+  78            LOAD_FAST               16 (frame_terms)
+                LOAD_ATTR                7 (append + NULL|self)
+
+  79            LOAD_GLOBAL              8 (F)
+                LOAD_ATTR               10 (mse_loss)
+                PUSH_NULL
+
+  80            LOAD_FAST                0 (output)
+                LOAD_CONST               8 ('frame_logit')
+                BINARY_SUBSCR
+                LOAD_FAST               30 (changed)
+                BINARY_SUBSCR
+
+  81            LOAD_FAST                0 (output)
+                LOAD_CONST               8 ('frame_logit')
+                BINARY_SUBSCR
+                LOAD_FAST               28 (original)
+                BINARY_SUBSCR
+
+  79            CALL                     2
+
+  78            CALL                     1
+                POP_TOP
+
+  84            LOAD_FAST               28 (original)
+                LOAD_FAST               30 (changed)
+                BUILD_TUPLE              2
+                GET_ITER
+        L7:     FOR_ITER                73 (to L8)
+                STORE_FAST              31 (index)
+
+  85            LOAD_FAST               17 (frame_anchor_terms)
+                LOAD_ATTR                7 (append + NULL|self)
+
+  86            LOAD_GLOBAL              8 (F)
+                LOAD_ATTR               12 (binary_cross_entropy_with_logits)
+                PUSH_NULL
+
+  87            LOAD_FAST                0 (output)
+                LOAD_CONST               8 ('frame_logit')
+                BINARY_SUBSCR
+                LOAD_FAST               31 (index)
+                BINARY_SUBSCR
+
+  88            LOAD_GLOBAL             14 (torch)
+                LOAD_ATTR               16 (ones_like)
+                PUSH_NULL
+                LOAD_FAST                0 (output)
+                LOAD_CONST               8 ('frame_logit')
+                BINARY_SUBSCR
+                LOAD_FAST               31 (index)
+                BINARY_SUBSCR
+                CALL                     1
+
+  86            CALL                     2
+
+  85            CALL                     1
+                POP_TOP
+                JUMP_BACKWARD           75 (to L7)
+
+  84    L8:     END_FOR
+                POP_TOP
+                JUMP_BACKWARD          149 (to L5)
+
+  75    L9:     END_FOR
+                POP_TOP
+
+  92            LOAD_CONST               9 ('predicate_swap')
+                LOAD_FAST               27 (variants)
+                CONTAINS_OP              0
+                POP_JUMP_IF_FALSE      132 (to L10)
+
+  93            LOAD_FAST               27 (variants)
+                LOAD_CONST               9 ('predicate_swap')
+                BINARY_SUBSCR
+                STORE_FAST              30 (changed)
+
+  95            LOAD_FAST                0 (output)
+                LOAD_CONST              10 ('predicate_coverage_logit')
+                BINARY_SUBSCR
+                LOAD_FAST               28 (original)
+                BINARY_SUBSCR
+
+  96            LOAD_FAST                0 (output)
+                LOAD_CONST              10 ('predicate_coverage_logit')
+                BINARY_SUBSCR
+                LOAD_FAST               30 (changed)
+                BINARY_SUBSCR
+
+  95            BINARY_OP               10 (-)
+
+  94            STORE_FAST              32 (difference)
+
+  98            LOAD_FAST               18 (predicate_terms)
+                LOAD_ATTR                7 (append + NULL|self)
+                LOAD_GLOBAL              8 (F)
+                LOAD_ATTR               18 (relu)
+                PUSH_NULL
+                LOAD_FAST               13 (ranking_margin)
+                LOAD_FAST               32 (difference)
+                BINARY_OP               10 (-)
+                CALL                     1
+                CALL                     1
+                POP_TOP
+
+  99            LOAD_FAST               19 (predicate_anchor_terms)
+                LOAD_ATTR                7 (append + NULL|self)
+
+ 100            LOAD_GLOBAL              8 (F)
+                LOAD_ATTR               12 (binary_cross_entropy_with_logits)
+                PUSH_NULL
+
+ 101            LOAD_FAST                0 (output)
+                LOAD_CONST              10 ('predicate_coverage_logit')
+                BINARY_SUBSCR
+                LOAD_FAST               28 (original)
+                BINARY_SUBSCR
+
+ 102            LOAD_GLOBAL             14 (torch)
+                LOAD_ATTR               16 (ones_like)
+                PUSH_NULL
+                LOAD_FAST                0 (output)
+                LOAD_CONST              10 ('predicate_coverage_logit')
+                BINARY_SUBSCR
+                LOAD_FAST               28 (original)
+                BINARY_SUBSCR
+                CALL                     1
+
+ 100            CALL                     2
+
+  99            CALL                     1
+                POP_TOP
+
+ 106   L10:     LOAD_CONST              11 (('evidence_deletion', 'evidence_truncation'))
+                GET_ITER
+       L11:     FOR_ITER                73 (to L13)
+                STORE_FAST              29 (intervention)
+
+ 107            LOAD_FAST               29 (intervention)
+                LOAD_FAST               27 (variants)
+                CONTAINS_OP              0
+                POP_JUMP_IF_TRUE         2 (to L12)
+                JUMP_BACKWARD           11 (to L11)
+
+ 108   L12:     LOAD_FAST               27 (variants)
+                LOAD_FAST               29 (intervention)
+                BINARY_SUBSCR
+                STORE_FAST              30 (changed)
+
+ 110            LOAD_FAST                0 (output)
+                LOAD_CONST              12 ('sufficiency_logit')
+                BINARY_SUBSCR
+                LOAD_FAST               28 (original)
+                BINARY_SUBSCR
+
+ 111            LOAD_FAST                0 (output)
+                LOAD_CONST              12 ('sufficiency_logit')
+                BINARY_SUBSCR
+                LOAD_FAST               30 (changed)
+                BINARY_SUBSCR
+
+ 110            BINARY_OP               10 (-)
+
+ 109            STORE_FAST              32 (difference)
+
+ 113            LOAD_FAST               20 (sufficiency_terms)
+                LOAD_ATTR                7 (append + NULL|self)
+                LOAD_GLOBAL              8 (F)
+                LOAD_ATTR               18 (relu)
+                PUSH_NULL
+                LOAD_FAST               13 (ranking_margin)
+                LOAD_FAST               32 (difference)
+                BINARY_OP               10 (-)
+                CALL                     1
+                CALL                     1
+                POP_TOP
+                JUMP_BACKWARD           75 (to L11)
+
+ 106   L13:     END_FOR
+                POP_TOP
+
+ 115            LOAD_CONST              13 ('polarity_flip')
+                LOAD_FAST               27 (variants)
+                CONTAINS_OP              0
+                EXTENDED_ARG             1
+                POP_JUMP_IF_FALSE      401 (to L16)
+
+ 116            LOAD_FAST               27 (variants)
+                LOAD_CONST              13 ('polarity_flip')
+                BINARY_SUBSCR
+                STORE_FAST              30 (changed)
+
+ 117            LOAD_FAST               24 (entitlement_terms)
+                LOAD_ATTR                7 (append + NULL|self)
+                LOAD_GLOBAL              8 (F)
+                LOAD_ATTR               10 (mse_loss)
+                PUSH_NULL
+
+ 118            LOAD_FAST                0 (output)
+                LOAD_CONST              14 ('entitlement_prob')
+                BINARY_SUBSCR
+                LOAD_FAST               30 (changed)
+                BINARY_SUBSCR
+
+ 119            LOAD_FAST                0 (output)
+                LOAD_CONST              14 ('entitlement_prob')
+                BINARY_SUBSCR
+                LOAD_FAST               28 (original)
+                BINARY_SUBSCR
+
+ 117            CALL                     2
+                CALL                     1
+                POP_TOP
+
+ 122            LOAD_FAST                0 (output)
+                LOAD_CONST              15 ('polarity_margin')
+                BINARY_SUBSCR
+                LOAD_FAST               28 (original)
+                BINARY_SUBSCR
+
+ 123            LOAD_FAST                0 (output)
+                LOAD_CONST              15 ('polarity_margin')
+                BINARY_SUBSCR
+                LOAD_FAST               30 (changed)
+                BINARY_SUBSCR
+
+ 122            BINARY_OP                0 (+)
+
+ 124            LOAD_ATTR               21 (square + NULL|self)
+                CALL                     0
+
+ 121            STORE_FAST              33 (sign_reversal)
+
+ 125            LOAD_GLOBAL              8 (F)
+                LOAD_ATTR               18 (relu)
+                PUSH_NULL
+
+ 126            LOAD_FAST               14 (polarity_margin_min)
+
+ 127            LOAD_FAST                0 (output)
+                LOAD_CONST              15 ('polarity_margin')
+                BINARY_SUBSCR
+                LOAD_FAST               28 (original)
+                BINARY_SUBSCR
+                LOAD_ATTR               23 (abs + NULL|self)
+                CALL                     0
+
+ 126            BINARY_OP               10 (-)
+
+ 125            CALL                     1
+
+ 128            LOAD_ATTR               21 (square + NULL|self)
+                CALL                     0
+
+ 125            STORE_FAST              34 (original_magnitude_penalty)
+
+ 129            LOAD_GLOBAL              8 (F)
+                LOAD_ATTR               18 (relu)
+                PUSH_NULL
+
+ 130            LOAD_FAST               14 (polarity_margin_min)
+
+ 131            LOAD_FAST                0 (output)
+                LOAD_CONST              15 ('polarity_margin')
+                BINARY_SUBSCR
+                LOAD_FAST               30 (changed)
+                BINARY_SUBSCR
+                LOAD_ATTR               23 (abs + NULL|self)
+                CALL                     0
+
+ 130            BINARY_OP               10 (-)
+
+ 129            CALL                     1
+
+ 132            LOAD_ATTR               21 (square + NULL|self)
+                CALL                     0
+
+ 129            STORE_FAST              35 (flipped_magnitude_penalty)
+
+ 133            LOAD_FAST               22 (polarity_anchor_terms)
+                LOAD_ATTR                7 (append + NULL|self)
+
+ 134            LOAD_CONST              16 (0.5)
+                LOAD_FAST               34 (original_magnitude_penalty)
+                LOAD_FAST               35 (flipped_magnitude_penalty)
+                BINARY_OP                0 (+)
+                BINARY_OP                5 (*)
+
+ 133            CALL                     1
+                POP_TOP
+
+ 136            LOAD_GLOBAL              8 (F)
+                LOAD_ATTR               10 (mse_loss)
+                PUSH_NULL
+
+ 137            LOAD_FAST                0 (output)
+                LOAD_CONST              10 ('predicate_coverage_logit')
+                BINARY_SUBSCR
+                LOAD_FAST               30 (changed)
+                BINARY_SUBSCR
+
+ 138            LOAD_FAST                0 (output)
+                LOAD_CONST              10 ('predicate_coverage_logit')
+                BINARY_SUBSCR
+                LOAD_FAST               28 (original)
+                BINARY_SUBSCR
+
+ 136            CALL                     2
+                STORE_FAST              36 (predicate_preservation)
+
+ 140            LOAD_GLOBAL              8 (F)
+                LOAD_ATTR               10 (mse_loss)
+                PUSH_NULL
+
+ 141            LOAD_FAST                0 (output)
+                LOAD_CONST              12 ('sufficiency_logit')
+                BINARY_SUBSCR
+                LOAD_FAST               30 (changed)
+                BINARY_SUBSCR
+
+ 142            LOAD_FAST                0 (output)
+                LOAD_CONST              12 ('sufficiency_logit')
+                BINARY_SUBSCR
+                LOAD_FAST               28 (original)
+                BINARY_SUBSCR
+
+ 140            CALL                     2
+                STORE_FAST              37 (sufficiency_preservation)
+
+ 144            LOAD_FAST               21 (polarity_terms)
+                LOAD_ATTR                7 (append + NULL|self)
+
+ 145            LOAD_FAST               33 (sign_reversal)
+                LOAD_FAST               36 (predicate_preservation)
+                BINARY_OP                0 (+)
+                LOAD_FAST               37 (sufficiency_preservation)
+                BINARY_OP                0 (+)
+
+ 144            CALL                     1
+                POP_TOP
+
+ 147            LOAD_FAST               28 (original)
+                LOAD_FAST               30 (changed)
+                BUILD_TUPLE              2
+                GET_ITER
+       L14:     FOR_ITER                73 (to L15)
+                STORE_FAST              31 (index)
+
+ 148            LOAD_FAST               19 (predicate_anchor_terms)
+                LOAD_ATTR                7 (append + NULL|self)
+
+ 149            LOAD_GLOBAL              8 (F)
+                LOAD_ATTR               12 (binary_cross_entropy_with_logits)
+                PUSH_NULL
+
+ 150            LOAD_FAST                0 (output)
+                LOAD_CONST              10 ('predicate_coverage_logit')
+                BINARY_SUBSCR
+                LOAD_FAST               31 (index)
+                BINARY_SUBSCR
+
+ 151            LOAD_GLOBAL             14 (torch)
+                LOAD_ATTR               16 (ones_like)
+                PUSH_NULL
+                LOAD_FAST                0 (output)
+                LOAD_CONST              10 ('predicate_coverage_logit')
+                BINARY_SUBSCR
+                LOAD_FAST               31 (index)
+                BINARY_SUBSCR
+                CALL                     1
+
+ 149            CALL                     2
+
+ 148            CALL                     1
+                POP_TOP
+                JUMP_BACKWARD           75 (to L14)
+
+ 147   L15:     END_FOR
+                POP_TOP
+
+ 155   L16:     LOAD_CONST              17 ('paraphrase')
+                LOAD_FAST               27 (variants)
+                CONTAINS_OP              0
+                POP_JUMP_IF_TRUE         3 (to L17)
+                EXTENDED_ARG             3
+                JUMP_BACKWARD          821 (to L3)
+
+ 156   L17:     LOAD_FAST               27 (variants)
+                LOAD_CONST              17 ('paraphrase')
+                BINARY_SUBSCR
+                STORE_FAST              30 (changed)
+
+ 157            LOAD_CONST              18 (('predicate_coverage_logit', 'sufficiency_logit'))
+                STORE_FAST              38 (scalar_keys)
+
+ 161            LOAD_GLOBAL             14 (torch)
+                LOAD_ATTR               24 (stack)
+                PUSH_NULL
+
+ 164            LOAD_FAST               38 (scalar_keys)
+                GET_ITER
+
+ 162            LOAD_FAST_AND_CLEAR     39 (key)
+                SWAP                     2
+       L18:     BUILD_LIST               0
+                SWAP                     2
+
+ 164            GET_ITER
+       L19:     FOR_ITER                38 (to L20)
+                STORE_FAST              39 (key)
+
+ 163            LOAD_GLOBAL              8 (F)
+                LOAD_ATTR               10 (mse_loss)
+                PUSH_NULL
+                LOAD_FAST                0 (output)
+                LOAD_FAST               39 (key)
+                BINARY_SUBSCR
+                LOAD_FAST               30 (changed)
+                BINARY_SUBSCR
+                LOAD_FAST                0 (output)
+                LOAD_FAST               39 (key)
+                BINARY_SUBSCR
+                LOAD_FAST               28 (original)
+                BINARY_SUBSCR
+                CALL                     2
+                LIST_APPEND              2
+                JUMP_BACKWARD           40 (to L19)
+
+ 164   L20:     END_FOR
+                POP_TOP
+
+ 162   L21:     SWAP                     2
+                STORE_FAST              39 (key)
+
+ 161            CALL                     1
+
+ 166            LOAD_ATTR               27 (mean + NULL|self)
+                CALL                     0
+
+ 161            STORE_FAST              40 (scalar_preservation)
+
+ 167            LOAD_FAST               23 (paraphrase_terms)
+                LOAD_ATTR                7 (append + NULL|self)
+                LOAD_FAST               40 (scalar_preservation)
+                CALL                     1
+                POP_TOP
+
+ 168            LOAD_FAST               24 (entitlement_terms)
+                LOAD_ATTR                7 (append + NULL|self)
+                LOAD_GLOBAL              8 (F)
+                LOAD_ATTR               10 (mse_loss)
+                PUSH_NULL
+
+ 169            LOAD_FAST                0 (output)
+                LOAD_CONST              14 ('entitlement_prob')
+                BINARY_SUBSCR
+                LOAD_FAST               30 (changed)
+                BINARY_SUBSCR
+
+ 170            LOAD_FAST                0 (output)
+                LOAD_CONST              14 ('entitlement_prob')
+                BINARY_SUBSCR
+                LOAD_FAST               28 (original)
+                BINARY_SUBSCR
+
+ 168            CALL                     2
+                CALL                     1
+                POP_TOP
+
+ 172            LOAD_FAST               25 (logit_terms)
+                LOAD_ATTR                7 (append + NULL|self)
+                LOAD_GLOBAL              8 (F)
+                LOAD_ATTR               10 (mse_loss)
+                PUSH_NULL
+
+ 173            LOAD_FAST                0 (output)
+                LOAD_CONST              19 ('logits')
+                BINARY_SUBSCR
+                LOAD_FAST               30 (changed)
+                BINARY_SUBSCR
+                LOAD_FAST                0 (output)
+                LOAD_CONST              19 ('logits')
+                BINARY_SUBSCR
+                LOAD_FAST               28 (original)
+                BINARY_SUBSCR
+
+ 172            CALL                     2
+                CALL                     1
+                POP_TOP
+
+ 175            LOAD_FAST               28 (original)
+                LOAD_FAST               30 (changed)
+                BUILD_TUPLE              2
+                GET_ITER
+       L22:     FOR_ITER                73 (to L23)
+                STORE_FAST              31 (index)
+
+ 176            LOAD_FAST               19 (predicate_anchor_terms)
+                LOAD_ATTR                7 (append + NULL|self)
+
+ 177            LOAD_GLOBAL              8 (F)
+                LOAD_ATTR               12 (binary_cross_entropy_with_logits)
+                PUSH_NULL
+
+ 178            LOAD_FAST                0 (output)
+                LOAD_CONST              10 ('predicate_coverage_logit')
+                BINARY_SUBSCR
+                LOAD_FAST               31 (index)
+                BINARY_SUBSCR
+
+ 179            LOAD_GLOBAL             14 (torch)
+                LOAD_ATTR               16 (ones_like)
+                PUSH_NULL
+                LOAD_FAST                0 (output)
+                LOAD_CONST              10 ('predicate_coverage_logit')
+                BINARY_SUBSCR
+                LOAD_FAST               31 (index)
+                BINARY_SUBSCR
+                CALL                     1
+
+ 177            CALL                     2
+
+ 176            CALL                     1
+                POP_TOP
+                JUMP_BACKWARD           75 (to L22)
+
+ 175   L23:     END_FOR
+                POP_TOP
+                EXTENDED_ARG             4
+                JUMP_BACKWARD         1115 (to L3)
+
+  70   L24:     END_FOR
+                POP_TOP
+
+ 183            LOAD_FAST                0 (output)
+                LOAD_CONST              19 ('logits')
+                BINARY_SUBSCR
+                STORE_FAST              41 (reference)
+
+ 184            LOAD_GLOBAL             29 (_mean_or_zero + NULL)
+                LOAD_FAST               16 (frame_terms)
+                LOAD_FAST               41 (reference)
+                CALL                     2
+                STORE_FAST              42 (frame_preserve)
+
+ 185            LOAD_GLOBAL             29 (_mean_or_zero + NULL)
+                LOAD_FAST               17 (frame_anchor_terms)
+                LOAD_FAST               41 (reference)
+                CALL                     2
+                STORE_FAST              43 (frame_anchor)
+
+ 186            LOAD_GLOBAL             29 (_mean_or_zero + NULL)
+                LOAD_FAST               18 (predicate_terms)
+                LOAD_FAST               41 (reference)
+                CALL                     2
+                STORE_FAST              44 (predicate_contrast)
+
+ 187            LOAD_GLOBAL             29 (_mean_or_zero + NULL)
+                LOAD_FAST               19 (predicate_anchor_terms)
+                LOAD_FAST               41 (reference)
+                CALL                     2
+                STORE_FAST              45 (predicate_anchor)
+
+ 188            LOAD_GLOBAL             29 (_mean_or_zero + NULL)
+                LOAD_FAST               20 (sufficiency_terms)
+                LOAD_FAST               41 (reference)
+                CALL                     2
+                STORE_FAST              46 (sufficiency_contrast)
+
+ 189            LOAD_GLOBAL             29 (_mean_or_zero + NULL)
+                LOAD_FAST               21 (polarity_terms)
+                LOAD_FAST               41 (reference)
+                CALL                     2
+                STORE_FAST              47 (polarity_flip)
+
+ 190            LOAD_GLOBAL             29 (_mean_or_zero + NULL)
+                LOAD_FAST               22 (polarity_anchor_terms)
+                LOAD_FAST               41 (reference)
+                CALL                     2
+                STORE_FAST              48 (polarity_margin_anchor)
+
+ 191            LOAD_GLOBAL             29 (_mean_or_zero + NULL)
+                LOAD_FAST               23 (paraphrase_terms)
+                LOAD_FAST               41 (reference)
+                CALL                     2
+                STORE_FAST              49 (paraphrase_preserve)
+
+ 192            LOAD_GLOBAL             29 (_mean_or_zero + NULL)
+                LOAD_FAST               24 (entitlement_terms)
+                LOAD_FAST               41 (reference)
+                CALL                     2
+                STORE_FAST              50 (entitlement_preserve)
+
+ 193            LOAD_GLOBAL             29 (_mean_or_zero + NULL)
+                LOAD_FAST               25 (logit_terms)
+                LOAD_FAST               41 (reference)
+                CALL                     2
+                STORE_FAST              51 (logit_preserve)
+
+ 195            LOAD_FAST                3 (lambda_frame_preserve)
+                LOAD_FAST               42 (frame_preserve)
+                BINARY_OP                5 (*)
+
+ 196            LOAD_FAST                4 (lambda_frame_anchor)
+                LOAD_FAST               43 (frame_anchor)
+                BINARY_OP                5 (*)
+
+ 195            BINARY_OP                0 (+)
+
+ 197            LOAD_FAST                5 (lambda_predicate_contrast)
+                LOAD_FAST               44 (predicate_contrast)
+                BINARY_OP                5 (*)
+
+ 195            BINARY_OP                0 (+)
+
+ 198            LOAD_FAST                6 (lambda_predicate_anchor)
+                LOAD_FAST               45 (predicate_anchor)
+                BINARY_OP                5 (*)
+
+ 195            BINARY_OP                0 (+)
+
+ 199            LOAD_FAST                7 (lambda_sufficiency_contrast)
+                LOAD_FAST               46 (sufficiency_contrast)
+                BINARY_OP                5 (*)
+
+ 195            BINARY_OP                0 (+)
+
+ 200            LOAD_FAST                8 (lambda_polarity_flip)
+                LOAD_FAST               47 (polarity_flip)
+                BINARY_OP                5 (*)
+
+ 195            BINARY_OP                0 (+)
+
+ 201            LOAD_FAST                9 (lambda_polarity_margin_anchor)
+                LOAD_FAST               48 (polarity_margin_anchor)
+                BINARY_OP                5 (*)
+
+ 195            BINARY_OP                0 (+)
+
+ 202            LOAD_FAST               10 (lambda_paraphrase_preserve)
+                LOAD_FAST               49 (paraphrase_preserve)
+                BINARY_OP                5 (*)
+
+ 195            BINARY_OP                0 (+)
+
+ 203            LOAD_FAST               11 (lambda_entitlement_preserve)
+                LOAD_FAST               50 (entitlement_preserve)
+                BINARY_OP                5 (*)
+
+ 195            BINARY_OP                0 (+)
+
+ 204            LOAD_FAST               12 (lambda_logit_preserve)
+                LOAD_FAST               51 (logit_preserve)
+                BINARY_OP                5 (*)
+
+ 195            BINARY_OP                0 (+)
+
+ 194            STORE_FAST              52 (total)
+
+ 207            LOAD_FAST               52 (total)
+
+ 208            LOAD_FAST               42 (frame_preserve)
+
+ 209            LOAD_FAST               43 (frame_anchor)
+
+ 210            LOAD_FAST               44 (predicate_contrast)
+
+ 211            LOAD_FAST               45 (predicate_anchor)
+
+ 212            LOAD_FAST               46 (sufficiency_contrast)
+
+ 213            LOAD_FAST               47 (polarity_flip)
+
+ 214            LOAD_FAST               48 (polarity_margin_anchor)
+
+ 215            LOAD_FAST               49 (paraphrase_preserve)
+
+ 216            LOAD_FAST               50 (entitlement_preserve)
+
+ 217            LOAD_FAST               51 (logit_preserve)
+
+ 206            LOAD_CONST              20 (('total', 'frame_preserve', 'frame_anchor', 'predicate_contrast', 'predicate_anchor', 'sufficiency_contrast', 'polarity_flip', 'polarity_margin_anchor', 'paraphrase_preserve', 'entitlement_preserve', 'logit_preserve'))
+                BUILD_CONST_KEY_MAP     11
+                RETURN_VALUE
+
+  --   L25:     SWAP                     2
+                POP_TOP
+
+ 162            SWAP                     2
+                STORE_FAST              39 (key)
+                RERAISE                  0
+ExceptionTable:
+  L18 to L21 -> L25 [5]
+

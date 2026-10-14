@@ -1,0 +1,1728 @@
+{
+  "schema": "hv000103_obligation_verdict_v1",
+  "phase": "CENSUS_RECOVERY_ONLY",
+  "role": "Independent Publication Documentary Closure Verifier",
+  "target": {
+    "source_id": "HV000103",
+    "debt_id": "DEBT-749ea4d7ff425c9846b4",
+    "publication": "Figure 1"
+  },
+  "verdict": "VERIFIED_FULL_DOCUMENTARY_SATISFACTION",
+  "literal_original_requirement": "Complete interpretation/reconciliation of saved before/after publication evidence and authenticated companion sources; identify all substantive claim/endpoint/provenance changes versus render-only differences. Existing recovery is not completed semantic review.",
+  "original_requirement_locator": {
+    "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+    "line": 213,
+    "file_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+    "line_sha256": "9d6580b016135d5f0d0bea17b093820fee26b803d3c14853454d9d6361fb61e0"
+  },
+  "root_requirement_locator": {
+    "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+    "line": 100,
+    "file_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+    "line_sha256": "d9decb473b8125f513df84d224d30f2249a7771ca5e359519250f21564faa87d"
+  },
+  "transition_locator": {
+    "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/transition_interpretations.jsonl",
+    "line": 107,
+    "file_sha256": "d7e2ed74fac4143e5349c261849e579232c4a5f38537a801cc521371ebd2e518",
+    "line_sha256": "b09b1cb248f891bd917ce173c3807fd4113f6f5aa7802a8aa6af66335deb0b41"
+  },
+  "clauses": [
+    {
+      "id": "original-1.1",
+      "literal_clause": "Complete interpretation/reconciliation of saved before/after publication evidence",
+      "assessment": "SATISFIED",
+      "basis": "Both entire authenticated PNGs and both alternate PDF pages were inspected. Every panel, footer, visible label and measured difference is reconciled; only Panel B title text changes.",
+      "finding_ids": [
+        "IV103-CLAIM",
+        "IV103-RENDER"
+      ],
+      "evidence": [
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before.png",
+          "file_sha256": "a6db5d8e4d76539835490604a92da4406a128f940548a3c7f5ce0ab7800e392d",
+          "side": "before",
+          "region": "complete canvas including Panels A, B, C and footer",
+          "dimensions": [
+            2800,
+            1812
+          ]
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after.png",
+          "file_sha256": "a8871bf5664b3ac5c9cbb4f9b2760351e3bb6b4a04f98c6a5039a92465e4fcfc",
+          "side": "after",
+          "region": "complete canvas including Panels A, B, C and footer",
+          "dimensions": [
+            2800,
+            1812
+          ]
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before_companion_fig1_study_overview.pdf",
+          "file_sha256": "57822b65223b2b0ba3b2067dcf5e86ed8cda5430445475d43e9b7ad896a5f252",
+          "side": "before",
+          "page": 1,
+          "region": "complete page; Panel B title; direct extracted text line 18"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after_companion_fig1_study_overview.pdf",
+          "file_sha256": "d3e88e41a4dd3b5ec0da73eec7532bf7d7e4b202fbb4074e18365fbc3e215c3f",
+          "side": "after",
+          "page": 1,
+          "region": "complete page; Panel B title; direct extracted text line 18"
+        }
+      ]
+    },
+    {
+      "id": "original-1.2",
+      "literal_clause": "authenticated companion sources",
+      "assessment": "SATISFIED",
+      "basis": "Both versions of PDF, manifest and README match independently resolved Git blobs, recomputed SHA1 blob identities, SHA256s, sizes and saved bytes. Newly cited CSV authenticates independently, without running a producer.",
+      "finding_ids": [
+        "IV103-ENDPOINT",
+        "IV103-PROVENANCE"
+      ],
+      "evidence": [
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before_companion_fig1_study_overview.pdf",
+          "file_sha256": "57822b65223b2b0ba3b2067dcf5e86ed8cda5430445475d43e9b7ad896a5f252",
+          "side": "before",
+          "page": 1,
+          "region": "complete page; Panel B title; direct extracted text line 18"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after_companion_fig1_study_overview.pdf",
+          "file_sha256": "d3e88e41a4dd3b5ec0da73eec7532bf7d7e4b202fbb4074e18365fbc3e215c3f",
+          "side": "after",
+          "page": 1,
+          "region": "complete page; Panel B title; direct extracted text line 18"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before_companion_figure_data_manifest.json",
+          "file_sha256": "c478fa4b1dbacb38bebe3be9aa8a14955b8fde30f5a5df3732a526f2866c4d25",
+          "side": "before"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after_companion_figure_data_manifest.json",
+          "file_sha256": "ba72e7185f71505c162431ba617414f372af363e8df4d2b45975445a54b2308c",
+          "side": "after"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before_companion_README.md",
+          "file_sha256": "6921ef531792442386b5a728d9488de89e597b702a1c1ee3adb459575516c653",
+          "side": "before",
+          "line_start": 1,
+          "line_end": 127
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after_companion_README.md",
+          "file_sha256": "92210260da911a5cb98433f768f6a60e622d50e04e68c75fcef50cf5dc2a5b26",
+          "side": "after",
+          "line_start": 1,
+          "line_end": 129
+        },
+        {
+          "git_commit": "8423ef9d1325c007ecd31849a668131197e2214d",
+          "git_path": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+          "git_blob": "956f01c764871c8d27ab34dab04195dba773432e",
+          "sha256": "833d3f670afe4aae5a481226c49d6fc11bf710c7e521178d3d83911da0e42cd8",
+          "rows": "CSV rows 2-11 (header is row 1)",
+          "columns": [
+            "point_mean",
+            "ci_low",
+            "ci_high"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "original-1.3",
+      "literal_clause": "identify all substantive claim changes",
+      "assessment": "SATISFIED",
+      "basis": "The complete figure comparison finds a revised framing and partial-conservation qualification in Panel B. All other published Figure 1 claims are unchanged. No scientific-truth or motive inference is made.",
+      "finding_ids": [
+        "IV103-CLAIM"
+      ],
+      "evidence": [
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before.png",
+          "file_sha256": "a6db5d8e4d76539835490604a92da4406a128f940548a3c7f5ce0ab7800e392d",
+          "side": "before",
+          "region": "complete canvas including Panels A, B, C and footer",
+          "dimensions": [
+            2800,
+            1812
+          ]
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after.png",
+          "file_sha256": "a8871bf5664b3ac5c9cbb4f9b2760351e3bb6b4a04f98c6a5039a92465e4fcfc",
+          "side": "after",
+          "region": "complete canvas including Panels A, B, C and footer",
+          "dimensions": [
+            2800,
+            1812
+          ]
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before_companion_fig1_study_overview.pdf",
+          "file_sha256": "57822b65223b2b0ba3b2067dcf5e86ed8cda5430445475d43e9b7ad896a5f252",
+          "side": "before",
+          "page": 1,
+          "region": "complete page; Panel B title; direct extracted text line 18"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after_companion_fig1_study_overview.pdf",
+          "file_sha256": "d3e88e41a4dd3b5ec0da73eec7532bf7d7e4b202fbb4074e18365fbc3e215c3f",
+          "side": "after",
+          "page": 1,
+          "region": "complete page; Panel B title; direct extracted text line 18"
+        }
+      ]
+    },
+    {
+      "id": "original-1.4",
+      "literal_clause": "identify all substantive endpoint changes",
+      "assessment": "SATISFIED",
+      "basis": "No Figure 1 plotted numeric endpoints change. Every pre-existing numeric leaf and plot/extracted field is preserved. New Fig. 4 mean/interval documentation is fully enumerated and checked to the frozen CSV with exact decimal comparisons.",
+      "finding_ids": [
+        "IV103-ENDPOINT"
+      ],
+      "evidence": [
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before.png",
+          "file_sha256": "a6db5d8e4d76539835490604a92da4406a128f940548a3c7f5ce0ab7800e392d",
+          "side": "before",
+          "region": "complete canvas including Panels A, B, C and footer",
+          "dimensions": [
+            2800,
+            1812
+          ]
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after.png",
+          "file_sha256": "a8871bf5664b3ac5c9cbb4f9b2760351e3bb6b4a04f98c6a5039a92465e4fcfc",
+          "side": "after",
+          "region": "complete canvas including Panels A, B, C and footer",
+          "dimensions": [
+            2800,
+            1812
+          ]
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before_companion_fig1_study_overview.pdf",
+          "file_sha256": "57822b65223b2b0ba3b2067dcf5e86ed8cda5430445475d43e9b7ad896a5f252",
+          "side": "before",
+          "page": 1,
+          "region": "complete page; Panel B title; direct extracted text line 18"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after_companion_fig1_study_overview.pdf",
+          "file_sha256": "d3e88e41a4dd3b5ec0da73eec7532bf7d7e4b202fbb4074e18365fbc3e215c3f",
+          "side": "after",
+          "page": 1,
+          "region": "complete page; Panel B title; direct extracted text line 18"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before_companion_figure_data_manifest.json",
+          "file_sha256": "c478fa4b1dbacb38bebe3be9aa8a14955b8fde30f5a5df3732a526f2866c4d25",
+          "side": "before"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after_companion_figure_data_manifest.json",
+          "file_sha256": "ba72e7185f71505c162431ba617414f372af363e8df4d2b45975445a54b2308c",
+          "side": "after"
+        },
+        {
+          "git_commit": "8423ef9d1325c007ecd31849a668131197e2214d",
+          "git_path": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+          "git_blob": "956f01c764871c8d27ab34dab04195dba773432e",
+          "sha256": "833d3f670afe4aae5a481226c49d6fc11bf710c7e521178d3d83911da0e42cd8",
+          "rows": "CSV rows 2-11 (header is row 1)",
+          "columns": [
+            "point_mean",
+            "ci_low",
+            "ci_high"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "original-1.5",
+      "literal_clause": "identify all substantive provenance changes versus render-only differences",
+      "assessment": "SATISFIED",
+      "basis": "All 40 JSON operations and three README hunks independently match. Every addition, method note and output digest update is classified. No unseen sibling-figure interpretation is inferred. Title glyph layout and alternate-format rasterization are distinguished from substantive wording.",
+      "finding_ids": [
+        "IV103-PROVENANCE",
+        "IV103-RENDER"
+      ],
+      "evidence": [
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before_companion_figure_data_manifest.json",
+          "file_sha256": "c478fa4b1dbacb38bebe3be9aa8a14955b8fde30f5a5df3732a526f2866c4d25",
+          "side": "before"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after_companion_figure_data_manifest.json",
+          "file_sha256": "ba72e7185f71505c162431ba617414f372af363e8df4d2b45975445a54b2308c",
+          "side": "after"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before_companion_README.md",
+          "file_sha256": "6921ef531792442386b5a728d9488de89e597b702a1c1ee3adb459575516c653",
+          "side": "before",
+          "line_start": 1,
+          "line_end": 127
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after_companion_README.md",
+          "file_sha256": "92210260da911a5cb98433f768f6a60e622d50e04e68c75fcef50cf5dc2a5b26",
+          "side": "after",
+          "line_start": 1,
+          "line_end": 129
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before.png",
+          "file_sha256": "a6db5d8e4d76539835490604a92da4406a128f940548a3c7f5ce0ab7800e392d",
+          "side": "before",
+          "region": "complete canvas including Panels A, B, C and footer",
+          "dimensions": [
+            2800,
+            1812
+          ]
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after.png",
+          "file_sha256": "a8871bf5664b3ac5c9cbb4f9b2760351e3bb6b4a04f98c6a5039a92465e4fcfc",
+          "side": "after",
+          "region": "complete canvas including Panels A, B, C and footer",
+          "dimensions": [
+            2800,
+            1812
+          ]
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before_companion_fig1_study_overview.pdf",
+          "file_sha256": "57822b65223b2b0ba3b2067dcf5e86ed8cda5430445475d43e9b7ad896a5f252",
+          "side": "before",
+          "page": 1,
+          "region": "complete page; Panel B title; direct extracted text line 18"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after_companion_fig1_study_overview.pdf",
+          "file_sha256": "d3e88e41a4dd3b5ec0da73eec7532bf7d7e4b202fbb4074e18365fbc3e215c3f",
+          "side": "after",
+          "page": 1,
+          "region": "complete page; Panel B title; direct extracted text line 18"
+        },
+        {
+          "git_commit": "8423ef9d1325c007ecd31849a668131197e2214d",
+          "git_path": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+          "git_blob": "956f01c764871c8d27ab34dab04195dba773432e",
+          "sha256": "833d3f670afe4aae5a481226c49d6fc11bf710c7e521178d3d83911da0e42cd8",
+          "rows": "CSV rows 2-11 (header is row 1)",
+          "columns": [
+            "point_mean",
+            "ci_low",
+            "ci_high"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "original-1.6",
+      "literal_clause": "Existing recovery is not completed semantic review.",
+      "assessment": "SATISFIED_BY_THIS_INDEPENDENT_REVIEW",
+      "basis": "The original Wave03 UNRESOLVED/interpretation_complete=false record is retained unchanged. This review supplies direct full visual inspection, complete companion comparisons and source-backed classifications; prior recovery or P01 satisfaction labels were not accepted as proof.",
+      "finding_ids": [
+        "IV103-CLAIM",
+        "IV103-ENDPOINT",
+        "IV103-PROVENANCE",
+        "IV103-RENDER",
+        "IV103-HISTORY"
+      ],
+      "evidence": [
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/transition_interpretations.jsonl",
+          "file_sha256": "d7e2ed74fac4143e5349c261849e579232c4a5f38537a801cc521371ebd2e518",
+          "line": 107
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before.png",
+          "file_sha256": "a6db5d8e4d76539835490604a92da4406a128f940548a3c7f5ce0ab7800e392d",
+          "side": "before",
+          "region": "complete canvas including Panels A, B, C and footer",
+          "dimensions": [
+            2800,
+            1812
+          ]
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after.png",
+          "file_sha256": "a8871bf5664b3ac5c9cbb4f9b2760351e3bb6b4a04f98c6a5039a92465e4fcfc",
+          "side": "after",
+          "region": "complete canvas including Panels A, B, C and footer",
+          "dimensions": [
+            2800,
+            1812
+          ]
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before_companion_fig1_study_overview.pdf",
+          "file_sha256": "57822b65223b2b0ba3b2067dcf5e86ed8cda5430445475d43e9b7ad896a5f252",
+          "side": "before",
+          "page": 1,
+          "region": "complete page; Panel B title; direct extracted text line 18"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after_companion_fig1_study_overview.pdf",
+          "file_sha256": "d3e88e41a4dd3b5ec0da73eec7532bf7d7e4b202fbb4074e18365fbc3e215c3f",
+          "side": "after",
+          "page": 1,
+          "region": "complete page; Panel B title; direct extracted text line 18"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before_companion_figure_data_manifest.json",
+          "file_sha256": "c478fa4b1dbacb38bebe3be9aa8a14955b8fde30f5a5df3732a526f2866c4d25",
+          "side": "before"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after_companion_figure_data_manifest.json",
+          "file_sha256": "ba72e7185f71505c162431ba617414f372af363e8df4d2b45975445a54b2308c",
+          "side": "after"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before_companion_README.md",
+          "file_sha256": "6921ef531792442386b5a728d9488de89e597b702a1c1ee3adb459575516c653",
+          "side": "before",
+          "line_start": 1,
+          "line_end": 127
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after_companion_README.md",
+          "file_sha256": "92210260da911a5cb98433f768f6a60e622d50e04e68c75fcef50cf5dc2a5b26",
+          "side": "after",
+          "line_start": 1,
+          "line_end": 129
+        }
+      ]
+    }
+  ],
+  "root_contract_assessment": {
+    "source_specific_requirements": [],
+    "underlying_dependency_root_ids": [],
+    "source_specific_extra_obligations_exist": false,
+    "generic_final_study_execution_identity_not_invented": true,
+    "basis": "The controlling exact missing requirement is documentary interpretation. Root extra source requirements and dependency roots are empty. General warnings about study/run identity remain boundaries, not additional model-execution requirements for this conceptual publication transition."
+  },
+  "independent_claim_endpoint_provenance_verdict": [
+    {
+      "id": "IV103-CLAIM",
+      "category": "PUBLISHED_CLAIM_WORDING",
+      "conclusion": "SUPPORTED",
+      "finding": "Panel B changes Five-scale extension to Five scales and geometry reorganizes to geometry is only partially conserved. The causal role recurs assertion stays. This is a substantive editorial/scientific-claim wording qualification; it does not demonstrate geometry conservation, invariance, scientific correction or withdrawal. Scale-local ranks and the explicit non-homology caveat stay visible.",
+      "evidence": [
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before.png",
+          "file_sha256": "a6db5d8e4d76539835490604a92da4406a128f940548a3c7f5ce0ab7800e392d",
+          "side": "before",
+          "region": "Panel B including title and caveat",
+          "dimensions": [
+            2800,
+            1812
+          ]
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after.png",
+          "file_sha256": "a8871bf5664b3ac5c9cbb4f9b2760351e3bb6b4a04f98c6a5039a92465e4fcfc",
+          "side": "after",
+          "region": "Panel B including title and caveat",
+          "dimensions": [
+            2800,
+            1812
+          ]
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before_companion_fig1_study_overview.pdf",
+          "file_sha256": "57822b65223b2b0ba3b2067dcf5e86ed8cda5430445475d43e9b7ad896a5f252",
+          "side": "before",
+          "page": 1,
+          "region": "complete page; Panel B title; direct extracted text line 18"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after_companion_fig1_study_overview.pdf",
+          "file_sha256": "d3e88e41a4dd3b5ec0da73eec7532bf7d7e4b202fbb4074e18365fbc3e215c3f",
+          "side": "after",
+          "page": 1,
+          "region": "complete page; Panel B title; direct extracted text line 18"
+        }
+      ]
+    },
+    {
+      "id": "IV103-ENDPOINT",
+      "category": "NUMERIC_ENDPOINTS",
+      "conclusion": "SUPPORTED",
+      "finding": "Figure 1 contains no plotted experimental numeric endpoints. Its five scale/plane labels are unchanged. All 16 pre-existing plot_data fields, all 398 pre-existing extracted records and all 1507 pre-existing numeric leaves are unchanged. The ten added objective means are exact duplicates of the existing means; twenty interval endpoints are newly documented for Figure 4.",
+      "evidence": [
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before.png",
+          "file_sha256": "a6db5d8e4d76539835490604a92da4406a128f940548a3c7f5ce0ab7800e392d",
+          "side": "before",
+          "region": "complete canvas including Panels A, B, C and footer",
+          "dimensions": [
+            2800,
+            1812
+          ]
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after.png",
+          "file_sha256": "a8871bf5664b3ac5c9cbb4f9b2760351e3bb6b4a04f98c6a5039a92465e4fcfc",
+          "side": "after",
+          "region": "complete canvas including Panels A, B, C and footer",
+          "dimensions": [
+            2800,
+            1812
+          ]
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before_companion_fig1_study_overview.pdf",
+          "file_sha256": "57822b65223b2b0ba3b2067dcf5e86ed8cda5430445475d43e9b7ad896a5f252",
+          "side": "before",
+          "page": 1,
+          "region": "complete page; Panel B title; direct extracted text line 18"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after_companion_fig1_study_overview.pdf",
+          "file_sha256": "d3e88e41a4dd3b5ec0da73eec7532bf7d7e4b202fbb4074e18365fbc3e215c3f",
+          "side": "after",
+          "page": 1,
+          "region": "complete page; Panel B title; direct extracted text line 18"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before_companion_figure_data_manifest.json",
+          "file_sha256": "c478fa4b1dbacb38bebe3be9aa8a14955b8fde30f5a5df3732a526f2866c4d25",
+          "side": "before",
+          "json_pointers": [
+            "/plot_data",
+            "/extracted_values"
+          ]
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after_companion_figure_data_manifest.json",
+          "file_sha256": "ba72e7185f71505c162431ba617414f372af363e8df4d2b45975445a54b2308c",
+          "side": "after",
+          "json_pointers": [
+            "/plot_data",
+            "/extracted_values"
+          ]
+        },
+        {
+          "git_commit": "8423ef9d1325c007ecd31849a668131197e2214d",
+          "git_path": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+          "git_blob": "956f01c764871c8d27ab34dab04195dba773432e",
+          "sha256": "833d3f670afe4aae5a481226c49d6fc11bf710c7e521178d3d83911da0e42cd8",
+          "rows": "CSV rows 2-11 (header is row 1)",
+          "columns": [
+            "point_mean",
+            "ci_low",
+            "ci_high"
+          ]
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before_companion_README.md",
+          "file_sha256": "6921ef531792442386b5a728d9488de89e597b702a1c1ee3adb459575516c653",
+          "side": "before",
+          "line_start": 1,
+          "line_end": 127,
+          "section": "Figure 4 objective means"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after_companion_README.md",
+          "file_sha256": "92210260da911a5cb98433f768f6a60e622d50e04e68c75fcef50cf5dc2a5b26",
+          "side": "after",
+          "line_start": 1,
+          "line_end": 129,
+          "section": "Figure 4 objective means"
+        }
+      ]
+    },
+    {
+      "id": "IV103-PROVENANCE",
+      "category": "PROVENANCE_AND_FIGURE_ATTRIBUTION",
+      "conclusion": "SUPPORTED",
+      "finding": "The shared manifest records 30 new fig4 extracted entries, one objective_intervals object, one pair_resampling_robustness authority and one CSV source record; the notes array adds one Fig. 4 method note. Six output hashes for Figs. 1/3/4 change. Three README hunks add a CSV authority line, revise the Fig. 4 description to frozen percentile 95% intervals, and add the source under fig4. The new CSV is authenticated at 8423ef9d1325c007ecd31849a668131197e2214d, blob 956f01c764871c8d27ab34dab04195dba773432e. No existing fig1 attribution is replaced.",
+      "evidence": [
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before_companion_figure_data_manifest.json",
+          "file_sha256": "c478fa4b1dbacb38bebe3be9aa8a14955b8fde30f5a5df3732a526f2866c4d25",
+          "side": "before",
+          "json_pointers": [
+            "/notes",
+            "/outputs/fig1_study_overview.pdf",
+            "/outputs/fig1_study_overview.png",
+            "/outputs/fig3_five_scale_recurrence_reorganization.pdf",
+            "/outputs/fig3_five_scale_recurrence_reorganization.png",
+            "/outputs/fig4_objective_conditioned_functionalization.pdf",
+            "/outputs/fig4_objective_conditioned_functionalization.png"
+          ]
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after_companion_figure_data_manifest.json",
+          "file_sha256": "ba72e7185f71505c162431ba617414f372af363e8df4d2b45975445a54b2308c",
+          "side": "after",
+          "json_pointers": [
+            "/extracted_values/1.4B.contra.bootstrap.ci_high",
+            "/extracted_values/1.4B.contra.bootstrap.ci_low",
+            "/extracted_values/1.4B.contra.bootstrap.point_mean",
+            "/extracted_values/1.4B.vanilla.bootstrap.ci_high",
+            "/extracted_values/1.4B.vanilla.bootstrap.ci_low",
+            "/extracted_values/1.4B.vanilla.bootstrap.point_mean",
+            "/extracted_values/130M.contra.bootstrap.ci_high",
+            "/extracted_values/130M.contra.bootstrap.ci_low",
+            "/extracted_values/130M.contra.bootstrap.point_mean",
+            "/extracted_values/130M.vanilla.bootstrap.ci_high",
+            "/extracted_values/130M.vanilla.bootstrap.ci_low",
+            "/extracted_values/130M.vanilla.bootstrap.point_mean",
+            "/extracted_values/2.8B.contra.bootstrap.ci_high",
+            "/extracted_values/2.8B.contra.bootstrap.ci_low",
+            "/extracted_values/2.8B.contra.bootstrap.point_mean",
+            "/extracted_values/2.8B.vanilla.bootstrap.ci_high",
+            "/extracted_values/2.8B.vanilla.bootstrap.ci_low",
+            "/extracted_values/2.8B.vanilla.bootstrap.point_mean",
+            "/extracted_values/370M.contra.bootstrap.ci_high",
+            "/extracted_values/370M.contra.bootstrap.ci_low",
+            "/extracted_values/370M.contra.bootstrap.point_mean",
+            "/extracted_values/370M.vanilla.bootstrap.ci_high",
+            "/extracted_values/370M.vanilla.bootstrap.ci_low",
+            "/extracted_values/370M.vanilla.bootstrap.point_mean",
+            "/extracted_values/790M.contra.bootstrap.ci_high",
+            "/extracted_values/790M.contra.bootstrap.ci_low",
+            "/extracted_values/790M.contra.bootstrap.point_mean",
+            "/extracted_values/790M.vanilla.bootstrap.ci_high",
+            "/extracted_values/790M.vanilla.bootstrap.ci_low",
+            "/extracted_values/790M.vanilla.bootstrap.point_mean",
+            "/notes",
+            "/outputs/fig1_study_overview.pdf",
+            "/outputs/fig1_study_overview.png",
+            "/outputs/fig3_five_scale_recurrence_reorganization.pdf",
+            "/outputs/fig3_five_scale_recurrence_reorganization.png",
+            "/outputs/fig4_objective_conditioned_functionalization.pdf",
+            "/outputs/fig4_objective_conditioned_functionalization.png",
+            "/plot_data/objective_intervals",
+            "/scientific_authorities/pair_resampling_robustness",
+            "/sources/reports~1reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1~1objective_bootstrap.csv"
+          ]
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before_companion_README.md",
+          "file_sha256": "6921ef531792442386b5a728d9488de89e597b702a1c1ee3adb459575516c653",
+          "side": "before",
+          "line_start": 1,
+          "line_end": 127,
+          "changed_hunks": [
+            {
+              "operation": "insert",
+              "before_line_start": 5,
+              "before_line_end": 4,
+              "after_line_start": 5,
+              "after_line_end": 5,
+              "before": [],
+              "after": [
+                "Objective pair-resampling source: `reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv` @ `8423ef9d1325c007ecd31849a668131197e2214d`."
+              ]
+            },
+            {
+              "operation": "replace",
+              "before_line_start": 22,
+              "before_line_end": 22,
+              "after_line_start": 23,
+              "after_line_end": 23,
+              "before": [
+                "- Fig. 4: objective-conditioned readouts; prospective chronology is kept in the appendix rather than repeated in the visual narrative."
+              ],
+              "after": [
+                "- Fig. 4: objective-conditioned point means and frozen percentile 95% pair-resampling intervals; prospective chronology is kept in the appendix."
+              ]
+            },
+            {
+              "operation": "insert",
+              "before_line_start": 128,
+              "before_line_end": 127,
+              "after_line_start": 129,
+              "after_line_end": 129,
+              "before": [],
+              "after": [
+                "- `reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv` @ `8423ef9d1325c007ecd31849a668131197e2214d`"
+              ]
+            }
+          ]
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after_companion_README.md",
+          "file_sha256": "92210260da911a5cb98433f768f6a60e622d50e04e68c75fcef50cf5dc2a5b26",
+          "side": "after",
+          "line_start": 1,
+          "line_end": 129,
+          "changed_hunks": [
+            {
+              "operation": "insert",
+              "before_line_start": 5,
+              "before_line_end": 4,
+              "after_line_start": 5,
+              "after_line_end": 5,
+              "before": [],
+              "after": [
+                "Objective pair-resampling source: `reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv` @ `8423ef9d1325c007ecd31849a668131197e2214d`."
+              ]
+            },
+            {
+              "operation": "replace",
+              "before_line_start": 22,
+              "before_line_end": 22,
+              "after_line_start": 23,
+              "after_line_end": 23,
+              "before": [
+                "- Fig. 4: objective-conditioned readouts; prospective chronology is kept in the appendix rather than repeated in the visual narrative."
+              ],
+              "after": [
+                "- Fig. 4: objective-conditioned point means and frozen percentile 95% pair-resampling intervals; prospective chronology is kept in the appendix."
+              ]
+            },
+            {
+              "operation": "insert",
+              "before_line_start": 128,
+              "before_line_end": 127,
+              "after_line_start": 129,
+              "after_line_end": 129,
+              "before": [],
+              "after": [
+                "- `reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv` @ `8423ef9d1325c007ecd31849a668131197e2214d`"
+              ]
+            }
+          ]
+        },
+        {
+          "git_commit": "8423ef9d1325c007ecd31849a668131197e2214d",
+          "git_path": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/objective_bootstrap.csv",
+          "git_blob": "956f01c764871c8d27ab34dab04195dba773432e",
+          "sha256": "833d3f670afe4aae5a481226c49d6fc11bf710c7e521178d3d83911da0e42cd8",
+          "rows": "CSV rows 2-11 (header is row 1)",
+          "columns": [
+            "point_mean",
+            "ci_low",
+            "ci_high"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "IV103-RENDER",
+      "category": "RENDERING_DIFFERENCES",
+      "conclusion": "SUPPORTED",
+      "finding": "Full actual originals and companion PDF renders show only Panel B title changes. PNG and PDF paired pixel bounds are limited to title glyphs. Changed glyph layout follows the substantive new words; the same PDF font/size/origin is used. Panels A/C, scale boxes, arrows, colors, separators and footer have no paired visual content change. Alternate-format rasterization has a one-pixel difference at the measured left title bound.",
+      "evidence": [
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before.png",
+          "file_sha256": "a6db5d8e4d76539835490604a92da4406a128f940548a3c7f5ce0ab7800e392d",
+          "side": "before",
+          "region": "complete canvas including Panels A, B, C and footer",
+          "dimensions": [
+            2800,
+            1812
+          ]
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after.png",
+          "file_sha256": "a8871bf5664b3ac5c9cbb4f9b2760351e3bb6b4a04f98c6a5039a92465e4fcfc",
+          "side": "after",
+          "region": "complete canvas including Panels A, B, C and footer",
+          "dimensions": [
+            2800,
+            1812
+          ]
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before_companion_fig1_study_overview.pdf",
+          "file_sha256": "57822b65223b2b0ba3b2067dcf5e86ed8cda5430445475d43e9b7ad896a5f252",
+          "side": "before",
+          "page": 1,
+          "region": "complete page; Panel B title; direct extracted text line 18"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after_companion_fig1_study_overview.pdf",
+          "file_sha256": "d3e88e41a4dd3b5ec0da73eec7532bf7d7e4b202fbb4074e18365fbc3e215c3f",
+          "side": "after",
+          "page": 1,
+          "region": "complete page; Panel B title; direct extracted text line 18"
+        }
+      ]
+    },
+    {
+      "id": "IV103-HISTORY",
+      "category": "DOCUMENTARY_BOUNDARIES_AND_HISTORICAL_LIMITATIONS",
+      "conclusion": "SUPPORTED",
+      "finding": "Selected before commit is an ancestor of the selected after commit, but is not its immediate commit parent. After parent 8423ef9d1325c007ecd31849a668131197e2214d retains the before PNG blob. This authenticates the selected path transition only; it does not establish global adoption, actor/motive, historical run equality or scientific truth. All earlier original unresolved statuses and historical/raw ref FAILs remain unchanged, and HV000116 snapshot capture chronology remains unverified.",
+      "evidence": [
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "line": 213,
+          "file_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "line_sha256": "9d6580b016135d5f0d0bea17b093820fee26b803d3c14853454d9d6361fb61e0"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "line": 100,
+          "file_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "line_sha256": "d9decb473b8125f513df84d224d30f2249a7771ca5e359519250f21564faa87d"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/transition_interpretations.jsonl",
+          "line": 107,
+          "file_sha256": "d7e2ed74fac4143e5349c261849e579232c4a5f38537a801cc521371ebd2e518",
+          "line_sha256": "b09b1cb248f891bd917ce173c3807fd4113f6f5aa7802a8aa6af66335deb0b41"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/census_exit_reconciliation_20261014/debt_reconciliation.jsonl",
+          "line": 213,
+          "file_sha256": "6f7b5412dcdadfa26086a72197541a4389130306024c65373f94353e5bb99bca",
+          "line_sha256": "2bc77b97b606263b31400afb367cba2721e0a28334c5b4f0b85733b060e469db"
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/publication_semantic_batch_p01_20261014/validation.json",
+          "file_sha256": "1e53cc62fe3afa05be15238c5357a12640adf45059ebccca16be85864e7dee61",
+          "json_pointers": [
+            "/raw_failed_checks_retained",
+            "/historical_failures_retained",
+            "/uncertified_intervals"
+          ]
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/publication_semantic_batch_p01_20261014/evidence_manifest.json",
+          "file_sha256": "e164a60ccc25620413e1221bb6252ebfdeece9fd8ac7cf7a2cbec4286f8d74d8",
+          "json_pointers": [
+            "/ref_policy_qualification",
+            "/universe/4"
+          ]
+        }
+      ]
+    }
+  ],
+  "all_original_documentary_requirements_satisfied": true,
+  "remaining_original_documentary_requirements": [],
+  "candidate_packet_satisfaction_label_used_as_proof": false,
+  "verification_scope": "Exact HV000103 selected before/after documentary transition and complete shared companion pairs; independent verification only.",
+  "other_owners_adjudicated": [],
+  "other_completed_candidates_pending": [
+    "HV000107",
+    "HV000113"
+  ],
+  "scientific_certification": false,
+  "scientific_replication": false,
+  "global_adoption_certification": false,
+  "original_authority_invented": false,
+  "applied_closure_credit": 0,
+  "canonical_accounting": {
+    "original": 222,
+    "satisfied": 17,
+    "strict_blockers": 195
+  },
+  "canonical_debt_or_overlay_modified": false,
+  "historical_limitations": {
+    "prior_failures": [
+      {
+        "evidence": {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/rs125_130m_parent_provenance/validation.json",
+          "file_sha256": "73fce08697f524a7a3fe80e8886cae9376cb77e965c850a91ebda3fe26b963b8",
+          "json_pointer": "/overall_static_validation"
+        },
+        "status": "FAIL_REQUIRED_REFS_UNCHANGED_CHECK",
+        "preserved_without_relabeling": true
+      },
+      {
+        "evidence": {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/rs125_130m_parent_provenance/validation.json",
+          "file_sha256": "73fce08697f524a7a3fe80e8886cae9376cb77e965c850a91ebda3fe26b963b8",
+          "json_pointer": "/overall_static_validation"
+        },
+        "status": "FAIL_REQUIRED_REFS_UNCHANGED_CHECK",
+        "preserved_without_relabeling": true
+      }
+    ],
+    "p01_raw_failure": [
+      {
+        "name": "ALL_GIT_REFS_UNCHANGED",
+        "status": "FAIL_REFS_MOVED",
+        "qualification": {
+          "raw_endpoint_unchanged": "FAIL_REFS_MOVED",
+          "historical_failures_unchanged": true,
+          "qualified_result": "PASS_AUTHENTICATED_UNRELATED_FAST_FORWARD_PINNED_INPUT_INDEPENDENCE",
+          "exact_movements": [
+            {
+              "ref": "refs/heads/gen5-causal-role-state-ownership",
+              "before": "bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b",
+              "after": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+              "after_object_type": "commit",
+              "classification": "NON_DESTRUCTIVE_FAST_FORWARD",
+              "non_destructive_authenticated": true,
+              "source": "External to this task: no ref-writing command was executed; actor/cause/time not certified"
+            },
+            {
+              "ref": "refs/remotes/origin/gen5-causal-role-state-ownership",
+              "before": "bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b",
+              "after": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+              "after_object_type": "commit",
+              "classification": "NON_DESTRUCTIVE_FAST_FORWARD",
+              "non_destructive_authenticated": true,
+              "source": "External to this task: no ref-writing command was executed; actor/cause/time not certified"
+            }
+          ],
+          "independence_checks": [
+            {
+              "ref": "refs/heads/gen5-causal-role-state-ownership",
+              "before": "bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b",
+              "after": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+              "full_changed_paths": [
+                "src/contramamba/gen5_shared_bypass_g2_loaded_parent_bridge.py",
+                "tests/test_gen5_shared_bypass_g2_loaded_parent_bridge_synthetic.py"
+              ],
+              "pinned_dependency_path_overlap": [],
+              "all_paths_in_gen5_namespace": true,
+              "history_status": "NON_DESTRUCTIVE_FAST_FORWARD",
+              "pinned_input_independence": "PASS_FIXED_COMMIT_BLOB_AND_SAVED_BYTE_BINDINGS_NO_MOVING_REF_INPUT"
+            },
+            {
+              "ref": "refs/remotes/origin/gen5-causal-role-state-ownership",
+              "before": "bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b",
+              "after": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+              "full_changed_paths": [
+                "src/contramamba/gen5_shared_bypass_g2_loaded_parent_bridge.py",
+                "tests/test_gen5_shared_bypass_g2_loaded_parent_bridge_synthetic.py"
+              ],
+              "pinned_dependency_path_overlap": [],
+              "all_paths_in_gen5_namespace": true,
+              "history_status": "NON_DESTRUCTIVE_FAST_FORWARD",
+              "pinned_input_independence": "PASS_FIXED_COMMIT_BLOB_AND_SAVED_BYTE_BINDINGS_NO_MOVING_REF_INPUT"
+            }
+          ],
+          "uncertified_intervals": [
+            "Before this task baseline; historical checks retained separately",
+            "Between endpoint observations, transient changes returning to identical endpoints are not certified"
+          ],
+          "actor_cause_wall_clock_time": "UNDETERMINED; no ref-writing command by this task"
+        }
+      }
+    ],
+    "p01_conditional_finding": "PASS_AUTHENTICATED_UNRELATED_FAST_FORWARD_PINNED_INPUT_INDEPENDENCE",
+    "historical_ref_authentication": [
+      {
+        "ref": "refs/heads/gen5-causal-role-state-ownership",
+        "before": "bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b",
+        "after": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+        "after_object_type": "commit",
+        "classification": "NON_DESTRUCTIVE_FAST_FORWARD",
+        "non_destructive_authenticated": true,
+        "source": "External to this task: no ref-writing command was executed; actor/cause/time not certified",
+        "independent_ancestry_exit": 0,
+        "independent_after_object_type": "commit",
+        "independent_net_changed_paths": [
+          "src/contramamba/gen5_shared_bypass_g2_loaded_parent_bridge.py",
+          "tests/test_gen5_shared_bypass_g2_loaded_parent_bridge_synthetic.py"
+        ],
+        "independent_all_range_changed_paths": [
+          "src/contramamba/gen5_shared_bypass_g2_loaded_parent_bridge.py",
+          "tests/test_gen5_shared_bypass_g2_loaded_parent_bridge_synthetic.py"
+        ],
+        "range_commit_count": 1,
+        "pinned_dependency_overlap": [],
+        "independently_nonblocking": true
+      },
+      {
+        "ref": "refs/remotes/origin/gen5-causal-role-state-ownership",
+        "before": "bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b",
+        "after": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+        "after_object_type": "commit",
+        "classification": "NON_DESTRUCTIVE_FAST_FORWARD",
+        "non_destructive_authenticated": true,
+        "source": "External to this task: no ref-writing command was executed; actor/cause/time not certified",
+        "independent_ancestry_exit": 0,
+        "independent_after_object_type": "commit",
+        "independent_net_changed_paths": [
+          "src/contramamba/gen5_shared_bypass_g2_loaded_parent_bridge.py",
+          "tests/test_gen5_shared_bypass_g2_loaded_parent_bridge_synthetic.py"
+        ],
+        "independent_all_range_changed_paths": [
+          "src/contramamba/gen5_shared_bypass_g2_loaded_parent_bridge.py",
+          "tests/test_gen5_shared_bypass_g2_loaded_parent_bridge_synthetic.py"
+        ],
+        "range_commit_count": 1,
+        "pinned_dependency_overlap": [],
+        "independently_nonblocking": true
+      }
+    ],
+    "p01_uncertified_intervals": [
+      "Before this task baseline; historical checks retained separately",
+      "Between endpoint observations, transient changes returning to identical endpoints are not certified"
+    ],
+    "current_uncertified_intervals": [
+      "Before the durable initial baseline, including the interval after the P01 final observation; endpoint equality cannot certify intervening history.",
+      "Between current endpoint observations, transient changes returning to the same endpoints are uncertified."
+    ],
+    "snapshot_limitation": "Existing tree snapshot chronology limitation; no new evidence",
+    "other_candidates": "HV000107 and HV000113 unchanged and pending separate independent verification.",
+    "prior_failures_actual_status": "FAIL_REQUIRED_REFS_UNCHANGED_CHECK",
+    "prebaseline_capture_ref_observation": {
+      "classification": "PRE_BASELINE_CAPTURE_REF_REPLACEMENT_OBSERVED",
+      "raw_endpoint_status": "FAIL_REFS_MOVED",
+      "movements": [
+        {
+          "ref": "refs/codex/turn-diffs/captures/1791955905036/cfe326cc-2a3a-4cf6-9ac2-5fa60681ca7e/base",
+          "before": "4a950cff26a485ef9e0077ecbc0f91daf57160f4",
+          "after": null
+        },
+        {
+          "ref": "refs/codex/turn-diffs/captures/1791958202329/a32568c7-13ce-4b40-a87b-b9ccdb07133a/base",
+          "before": null,
+          "after": "332726190bcf7e51efd2a65c1701f2d1341d4434"
+        }
+      ],
+      "objects": {
+        "old_type": "tree",
+        "new_type": "tree",
+        "old_bytes": "795",
+        "new_bytes": "795"
+      },
+      "old_tree_still_available": true,
+      "entire_old_tree_payload_preserved_in_new_tree": true,
+      "new_snapshot_additions": [
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/publication_semantic_batch_p01_20261014/checkpoint.json",
+          "blob": "d3ade775c7f77cf9d4eba32efe7b277bbeec1db9",
+          "sha256": "3198deacf7b67e04743cc87ae6667ca2d7d76e52fbab9d665e65bd137fc050d8",
+          "equals_frozen_packet": false
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/publication_semantic_batch_p01_20261014/evidence_manifest.json",
+          "blob": "73536740e992d4012a8af684ff235c7a912e833b",
+          "sha256": "f4bc5bca4ecb5010aebcc53046701da412f19f070c5ebbb2fe6e821a8ce75d69",
+          "equals_frozen_packet": false
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/publication_semantic_batch_p01_20261014/publication_assessments.jsonl",
+          "blob": "26df0ea9f6232e0ee97d96e83ae438a5266e5d13",
+          "sha256": "bc46d684d7000ad8f8aad57f2182b34200066d0931a6eb15d47787e7866ddf66",
+          "equals_frozen_packet": false
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/publication_semantic_batch_p01_20261014/report.md",
+          "blob": "a6bd593355f91f6afe18f71beadf7bd6c46313dc",
+          "sha256": "ea6ccd0e75f56a15fd650f96a5f1833531db1c294c142f60b8db73a49d525ebb",
+          "equals_frozen_packet": false
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/publication_semantic_batch_p01_20261014/validation.json",
+          "blob": "70e5f30f3d5c49cbf0f641e1f9d7987155fe46a5",
+          "sha256": "29be7fe7d4badb978e4d9056eb64a5ba2b5ab87b790bb23c33f4ead20efd0efc",
+          "equals_frozen_packet": false
+        }
+      ],
+      "source_or_original_input_changed": false,
+      "capture_refs_used_as_authority": false,
+      "qualification": "Pre-baseline snapshot coverage differs only by addition of the five byte-authenticated frozen P01 output files. No original pinned source, saved input or old tree payload is removed or changed. This is not an in-task start/end movement, a commit fast-forward, or a certification of the removed ref endpoint. P01 historical raw FAIL and current endpoint observation remain separate.",
+      "actor_cause_time": "UNDETERMINED; pre-baseline interval remains uncertified.",
+      "independence": {
+        "old_snapshot_payload_preserved": true,
+        "all_five_added_files_match_frozen_packet": false,
+        "pinned_authority_uses_no_capture_ref": true,
+        "original_source_or_saved_inputs_changed": false,
+        "qualified_finding": "NONBLOCKING_PREBASELINE_SNAPSHOT_EXTENSION_WITH_FIXED_INPUT_INDEPENDENCE",
+        "raw_endpoint_failure_retained": true,
+        "certifies_actor_cause_time": false,
+        "certifies_prebaseline_ref_stability": false
+      }
+    },
+    "current_new_ref_movements": [
+      {
+        "ref": "refs/heads/gen5-causal-role-state-ownership",
+        "before": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+        "after": "9b931dd038cb3a563e2f430bed733ef6c70bf283",
+        "after_type": "commit",
+        "is_ancestor_exit": 0,
+        "net_changed_paths": [
+          "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+        ],
+        "all_range_changed_paths": [
+          "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+        ],
+        "range_commit_count": 1,
+        "pinned_dependency_overlap": [],
+        "non_destructive": true,
+        "unrelated_to_pinned_input_paths": true,
+        "raw_status": "FAIL_REFS_MOVED",
+        "actor_cause_time": "UNDETERMINED; this task executed no ref writes",
+        "full_changed_path_statuses": [
+          "A\tscripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+        ],
+        "qualification": "PASS_AUTHENTICATED_UNRELATED_FAST_FORWARD_PINNED_INPUT_INDEPENDENCE"
+      },
+      {
+        "ref": "refs/remotes/origin/gen5-causal-role-state-ownership",
+        "before": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+        "after": "9b931dd038cb3a563e2f430bed733ef6c70bf283",
+        "after_type": "commit",
+        "is_ancestor_exit": 0,
+        "net_changed_paths": [
+          "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+        ],
+        "all_range_changed_paths": [
+          "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+        ],
+        "range_commit_count": 1,
+        "pinned_dependency_overlap": [],
+        "non_destructive": true,
+        "unrelated_to_pinned_input_paths": true,
+        "raw_status": "FAIL_REFS_MOVED",
+        "actor_cause_time": "UNDETERMINED; this task executed no ref writes",
+        "full_changed_path_statuses": [
+          "A\tscripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+        ],
+        "qualification": "PASS_AUTHENTICATED_UNRELATED_FAST_FORWARD_PINNED_INPUT_INDEPENDENCE"
+      }
+    ],
+    "current_ref_policy_qualification": {
+      "raw_endpoint_unchanged_status": "FAIL_REFS_MOVED",
+      "qualified_result": "PASS_AUTHENTICATED_UNRELATED_FAST_FORWARD_PINNED_INPUT_INDEPENDENCE",
+      "exact_movements": [
+        {
+          "ref": "refs/heads/gen5-causal-role-state-ownership",
+          "before": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+          "after": "9b931dd038cb3a563e2f430bed733ef6c70bf283",
+          "after_type": "commit",
+          "is_ancestor_exit": 0,
+          "net_changed_paths": [
+            "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+          ],
+          "all_range_changed_paths": [
+            "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+          ],
+          "range_commit_count": 1,
+          "pinned_dependency_overlap": [],
+          "non_destructive": true,
+          "unrelated_to_pinned_input_paths": true,
+          "raw_status": "FAIL_REFS_MOVED",
+          "actor_cause_time": "UNDETERMINED; this task executed no ref writes",
+          "full_changed_path_statuses": [
+            "A\tscripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+          ],
+          "qualification": "PASS_AUTHENTICATED_UNRELATED_FAST_FORWARD_PINNED_INPUT_INDEPENDENCE"
+        },
+        {
+          "ref": "refs/remotes/origin/gen5-causal-role-state-ownership",
+          "before": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+          "after": "9b931dd038cb3a563e2f430bed733ef6c70bf283",
+          "after_type": "commit",
+          "is_ancestor_exit": 0,
+          "net_changed_paths": [
+            "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+          ],
+          "all_range_changed_paths": [
+            "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+          ],
+          "range_commit_count": 1,
+          "pinned_dependency_overlap": [],
+          "non_destructive": true,
+          "unrelated_to_pinned_input_paths": true,
+          "raw_status": "FAIL_REFS_MOVED",
+          "actor_cause_time": "UNDETERMINED; this task executed no ref writes",
+          "full_changed_path_statuses": [
+            "A\tscripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+          ],
+          "qualification": "PASS_AUTHENTICATED_UNRELATED_FAST_FORWARD_PINNED_INPUT_INDEPENDENCE"
+        }
+      ],
+      "pinned_input_rechecks": [
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/census_exit_reconciliation_20261014/closure_readiness_matrix.jsonl",
+          "expected_sha256": "c1cebb13ae54df3e775d7818c949bf05e63365d02e6d3d72cdd06c6e00dd36bb",
+          "actual_sha256": "c1cebb13ae54df3e775d7818c949bf05e63365d02e6d3d72cdd06c6e00dd36bb",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/census_exit_reconciliation_20261014/debt_reconciliation.jsonl",
+          "expected_sha256": "6f7b5412dcdadfa26086a72197541a4389130306024c65373f94353e5bb99bca",
+          "actual_sha256": "6f7b5412dcdadfa26086a72197541a4389130306024c65373f94353e5bb99bca",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/census_exit_reconciliation_20261014/evidence_input_manifest.json",
+          "expected_sha256": "201384f3cefd2f40af1a146ad289e81d604aeb81aec57a549be51971929d4b62",
+          "actual_sha256": "201384f3cefd2f40af1a146ad289e81d604aeb81aec57a549be51971929d4b62",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/census_exit_reconciliation_20261014/report.md",
+          "expected_sha256": "fe7faab5374b22d8560085749c6714b1ca818f021c18e98058398a53e1b589a5",
+          "actual_sha256": "fe7faab5374b22d8560085749c6714b1ca818f021c18e98058398a53e1b589a5",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/census_exit_reconciliation_20261014/unresolved_critical_obligations.jsonl",
+          "expected_sha256": "be4317f903a0bfdf5d7250727275139617b8461fce48fcb5095c9f12d3ace01c",
+          "actual_sha256": "be4317f903a0bfdf5d7250727275139617b8461fce48fcb5095c9f12d3ace01c",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106.json",
+          "expected_sha256": "3c0ef4cf891e7cf33c33d911dc8861b627326f3768da6b988f7e6e2533c5e982",
+          "actual_sha256": "3c0ef4cf891e7cf33c33d911dc8861b627326f3768da6b988f7e6e2533c5e982",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/081.json",
+          "expected_sha256": "7b7d494e968ee48904c5e53d19f4c8fece4766b1620a34a1250f16e55c9d37e2",
+          "actual_sha256": "7b7d494e968ee48904c5e53d19f4c8fece4766b1620a34a1250f16e55c9d37e2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/042.json",
+          "expected_sha256": "94745360b6d342f52837fd609bde1a48df3f521c777c7d078fdbc9ab4684fb6f",
+          "actual_sha256": "94745360b6d342f52837fd609bde1a48df3f521c777c7d078fdbc9ab4684fb6f",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/071.json",
+          "expected_sha256": "91a6854155563beb4b24d979f2a8ba77be3fa9cff472a0e925b95c1c4724c602",
+          "actual_sha256": "91a6854155563beb4b24d979f2a8ba77be3fa9cff472a0e925b95c1c4724c602",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/093.json",
+          "expected_sha256": "0d250a5eb6b1b2c63ee393d7d34dfa114c78f45a8f3d29f74a9a57a12b037281",
+          "actual_sha256": "0d250a5eb6b1b2c63ee393d7d34dfa114c78f45a8f3d29f74a9a57a12b037281",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/031.json",
+          "expected_sha256": "5e713fde2f2de182ad2b35b93fe558fe854b8d58b52852a5a1b0bc7bfee4c335",
+          "actual_sha256": "5e713fde2f2de182ad2b35b93fe558fe854b8d58b52852a5a1b0bc7bfee4c335",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/060.json",
+          "expected_sha256": "1ed924bb64fd79b8bbf93f8b350f00b3d2752f5ed7c8914c2ae0967855564b66",
+          "actual_sha256": "1ed924bb64fd79b8bbf93f8b350f00b3d2752f5ed7c8914c2ae0967855564b66",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/047.json",
+          "expected_sha256": "7d60273b16778d24af96690a05e18cc6e63f1c8a1c665fcc118f706585208aa6",
+          "actual_sha256": "7d60273b16778d24af96690a05e18cc6e63f1c8a1c665fcc118f706585208aa6",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/014.json",
+          "expected_sha256": "cd36c146ea0ab41012065dc211502c3478c149ba2ec6ade4870847227c7b02c0",
+          "actual_sha256": "cd36c146ea0ab41012065dc211502c3478c149ba2ec6ade4870847227c7b02c0",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/064.json",
+          "expected_sha256": "b16bda7f26347504b69759b2ee09fcaa310a409b62517c181be8dea4c85a4b82",
+          "actual_sha256": "b16bda7f26347504b69759b2ee09fcaa310a409b62517c181be8dea4c85a4b82",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/048.json",
+          "expected_sha256": "480fda8ca57a9a5a68a934754648b5c3f4aeb25fae7947488b1486ff749a3f22",
+          "actual_sha256": "480fda8ca57a9a5a68a934754648b5c3f4aeb25fae7947488b1486ff749a3f22",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/090.json",
+          "expected_sha256": "89c31e19fba6299e98d905cc4161d089199c5d62bf3c54f0bfb41240787ccf76",
+          "actual_sha256": "89c31e19fba6299e98d905cc4161d089199c5d62bf3c54f0bfb41240787ccf76",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/publication_semantic_batch_p01_20261014/checkpoint.json",
+          "expected_sha256": "ea62344740f2dd34c407a2e4b96766d539875b9d03559b0c0a47248ef3165838",
+          "actual_sha256": "ea62344740f2dd34c407a2e4b96766d539875b9d03559b0c0a47248ef3165838",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/publication_semantic_batch_p01_20261014/evidence_manifest.json",
+          "expected_sha256": "e164a60ccc25620413e1221bb6252ebfdeece9fd8ac7cf7a2cbec4286f8d74d8",
+          "actual_sha256": "e164a60ccc25620413e1221bb6252ebfdeece9fd8ac7cf7a2cbec4286f8d74d8",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/publication_semantic_batch_p01_20261014/publication_assessments.jsonl",
+          "expected_sha256": "45c83cac1e05bbc9f99bb76be4ca6f159823554170e94e97908fea4cbf275942",
+          "actual_sha256": "45c83cac1e05bbc9f99bb76be4ca6f159823554170e94e97908fea4cbf275942",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/publication_semantic_batch_p01_20261014/report.md",
+          "expected_sha256": "aa65fb26a19e84b90d929b930807b745484b987d37c882b3764261b4ab9b2f62",
+          "actual_sha256": "aa65fb26a19e84b90d929b930807b745484b987d37c882b3764261b4ab9b2f62",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/census_exit_reconciliation_20261014/closure_readiness_matrix.jsonl",
+          "expected_sha256": "c1cebb13ae54df3e775d7818c949bf05e63365d02e6d3d72cdd06c6e00dd36bb",
+          "actual_sha256": "c1cebb13ae54df3e775d7818c949bf05e63365d02e6d3d72cdd06c6e00dd36bb",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/census_exit_reconciliation_20261014/debt_reconciliation.jsonl",
+          "expected_sha256": "6f7b5412dcdadfa26086a72197541a4389130306024c65373f94353e5bb99bca",
+          "actual_sha256": "6f7b5412dcdadfa26086a72197541a4389130306024c65373f94353e5bb99bca",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/census_exit_reconciliation_20261014/evidence_input_manifest.json",
+          "expected_sha256": "201384f3cefd2f40af1a146ad289e81d604aeb81aec57a549be51971929d4b62",
+          "actual_sha256": "201384f3cefd2f40af1a146ad289e81d604aeb81aec57a549be51971929d4b62",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/census_exit_reconciliation_20261014/report.md",
+          "expected_sha256": "fe7faab5374b22d8560085749c6714b1ca818f021c18e98058398a53e1b589a5",
+          "actual_sha256": "fe7faab5374b22d8560085749c6714b1ca818f021c18e98058398a53e1b589a5",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/census_exit_reconciliation_20261014/unresolved_critical_obligations.jsonl",
+          "expected_sha256": "be4317f903a0bfdf5d7250727275139617b8461fce48fcb5095c9f12d3ace01c",
+          "actual_sha256": "be4317f903a0bfdf5d7250727275139617b8461fce48fcb5095c9f12d3ace01c",
+          "matches": true
+        }
+      ],
+      "original_saved_object_rechecks": [
+        {
+          "side": "before",
+          "path": "paper/iclr2027/figures/fig1_study_overview.png",
+          "sha256": "a6db5d8e4d76539835490604a92da4406a128f940548a3c7f5ce0ab7800e392d",
+          "bytes_equal": true,
+          "matches": true
+        },
+        {
+          "side": "after",
+          "path": "paper/iclr2027/figures/fig1_study_overview.png",
+          "sha256": "a8871bf5664b3ac5c9cbb4f9b2760351e3bb6b4a04f98c6a5039a92465e4fcfc",
+          "bytes_equal": true,
+          "matches": true
+        },
+        {
+          "side": "before",
+          "path": "paper/iclr2027/figures/fig1_study_overview.pdf",
+          "sha256": "57822b65223b2b0ba3b2067dcf5e86ed8cda5430445475d43e9b7ad896a5f252",
+          "bytes_equal": true,
+          "matches": true
+        },
+        {
+          "side": "after",
+          "path": "paper/iclr2027/figures/fig1_study_overview.pdf",
+          "sha256": "d3e88e41a4dd3b5ec0da73eec7532bf7d7e4b202fbb4074e18365fbc3e215c3f",
+          "bytes_equal": true,
+          "matches": true
+        },
+        {
+          "side": "before",
+          "path": "paper/iclr2027/figures/figure_data_manifest.json",
+          "sha256": "c478fa4b1dbacb38bebe3be9aa8a14955b8fde30f5a5df3732a526f2866c4d25",
+          "bytes_equal": true,
+          "matches": true
+        },
+        {
+          "side": "after",
+          "path": "paper/iclr2027/figures/figure_data_manifest.json",
+          "sha256": "ba72e7185f71505c162431ba617414f372af363e8df4d2b45975445a54b2308c",
+          "bytes_equal": true,
+          "matches": true
+        },
+        {
+          "side": "before",
+          "path": "paper/iclr2027/figures/README.md",
+          "sha256": "6921ef531792442386b5a728d9488de89e597b702a1c1ee3adb459575516c653",
+          "bytes_equal": true,
+          "matches": true
+        },
+        {
+          "side": "after",
+          "path": "paper/iclr2027/figures/README.md",
+          "sha256": "92210260da911a5cb98433f768f6a60e622d50e04e68c75fcef50cf5dc2a5b26",
+          "bytes_equal": true,
+          "matches": true
+        }
+      ],
+      "no_ref_writing_command_executed": true,
+      "actor_cause_time": "UNDETERMINED",
+      "uncertified_intervals": [
+        "Before the durable initial baseline, including the interval after the P01 final observation; endpoint equality cannot certify intervening history.",
+        "Between current endpoint observations, transient changes returning to the same endpoints are uncertified."
+      ]
+    }
+  },
+  "next_action": "Only a separately authorized controller integration review may apply the exact verified debt closure. This task applies no credit and starts no other verification."
+}

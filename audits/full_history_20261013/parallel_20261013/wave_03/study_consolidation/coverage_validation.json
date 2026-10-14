@@ -1,0 +1,1281 @@
+{
+  "all409_queue_records_accounted": true,
+  "authority": "Current user task; existing evidence; AGENTS.md",
+  "baseline_candidate_groups": 38,
+  "baseline_study_identity_statuses": {
+    "PROVISIONAL_SOURCE_SUPPORTED": 26
+  },
+  "baseline_study_ledger_count": 26,
+  "canonical_ledgers_modified": false,
+  "commands_executed": [
+    "git status --short",
+    "git branch --show-current",
+    "git rev-parse HEAD",
+    "rg --files audits/full_history_20261013/parallel_20261013",
+    "rg --files audits/full_history_20261013 (filtered for prior ledger/inventory paths)",
+    "Get-Content AGENTS.md and the saved Wave03/prior study reports",
+    "PowerShell inline Python saved JSON/JSONL schema, counts, excerpts, exact-path and SHA256 inspections",
+    "python audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/consolidate.py",
+    "python audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/verify_and_report.py",
+    "git diff --check",
+    "git diff --stat",
+    "git diff --cached --stat",
+    "git status --short --branch",
+    "git rev-parse HEAD"
+  ],
+  "commit_push_git_mutation": "NOT_RUN",
+  "confirmed_independent_studies_added": 0,
+  "confirmed_memberships_added": 0,
+  "content_damage_sources": 4,
+  "content_full_semantic_gaps_closed": 0,
+  "content_roles_established": 99,
+  "content_tasks_remaining": 103,
+  "debt_classification_counts": {
+    "BOUNDED_HISTORICAL_LIMITATION": 3,
+    "CENSUS_BLOCKING": 211,
+    "SCIENTIFIC_VALIDATION_DEFERRED": 8
+  },
+  "declared_wave03_output_hashes_checked": 19,
+  "deduplicated_debt_records": 222,
+  "deferred_scientific_validation": 8,
+  "existing_provisional_study_references": [
+    "STUDY-001",
+    "STUDY-009",
+    "STUDY-012",
+    "STUDY-019",
+    "STUDY-024"
+  ],
+  "explained_historical_status_conflicts": [
+    {
+      "original_queue_id": "WORK-03cc1c57ea19975ac815",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-053e54c410b7bcf2d451",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-05b236dddac06d712a21",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-0a8ec85208cc9211f8e5",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-0ae3d99488baaba14e2a",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-0ca9053bf519924cb49b",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-11935737f6845404717d",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-11f72ec3d698c8ac5357",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-13eb5b7974eb1636cb66",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-17f9133dc2a181417799",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-1b2c72b490f077938d5c",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-1f8fe6692f6af2f6ad4c",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-208067f955bfcf458736",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-21b1746f872efe6dc4c8",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-23d044d2cb559484389f",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-26508659ac69f5e260ca",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-26f4120f1a8e4892e031",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-2908a7e76eb3e9de0803",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-2f20e3b0ff7a0e63d01c",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-3321cfd06bc3573fd7e7",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-3886f5c693a1ef3f251a",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-3cb8e4f83e88e128b0dc",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-3dfc6d34f548af194cfa",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-3f62cf98ce6eb4e4441b",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-40ede16db0e01de8d45b",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-414496e583cb8bea9f25",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-43fdb0c667a1245d37a9",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-45fa07c347df26e5fa9d",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-4782ee2410a44f7813c6",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-4796c30e7fedd69046e7",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-499bdc6b1e61ae7f0829",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-50595b56f445ac73b32f",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-518b254e507e0d4480ec",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-53b91942b605df3f8f80",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-5619bbcb4c030aa20ca9",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-5680634eb540df9ffa72",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-5a45ab918eb45db7084a",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-5c980ed97d5e801c32eb",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-5f07b839e0796971e48d",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-5f7a608e6d07ead819f0",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-62b0b37a3e88f124cfa1",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-671490db3862efb68f07",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-6e227f061608536c9e7a",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-731aabc6935f120f6a1c",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-74ca268b35da69682b20",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-76f4b9050fae2ca566e6",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-7a021435fb160a34a2eb",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-7b7b555c5aef75286005",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-7f6389687c59a00dd0ba",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-8310a79462e8eab0be64",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-8473880e480a8ead25ed",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-863fa75b3f1b326ce9f6",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-878cd7c679aaa492fe08",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-885cc00218949d6bbd17",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-89d871282d69574acf6c",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-8a9c1c8fee557d3e2c37",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-8c8f01ee7b066dc95160",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-8ee58700b22db08bfaa0",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-8fda8e8f8cdc1ff4f22e",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-9252911e19cd921ed6b3",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-9362e6d6f23e7553ea2c",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-96a711c4990018ec1b2e",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-985c41272cc93aac3ae1",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-9893ad80355f65041523",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-99c895429550997a2620",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-9c976768b97c4edbc076",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-9e493e5dedc13b6357d2",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-a0544fe0c3dd1b5b01b8",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-a0d46f9e37d2ac3e7b66",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-a1d8d38246af63616a31",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-a419a47aa12f3da08b09",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-a67936f2dca0c61f09c5",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-a778533d311570c729a5",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-a935e47c3d95727a9f5d",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-abea777ef972de9f75be",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-af1c6cfba2d71e44d255",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-b184a8303ade36c2e764",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-b4cd32b4800f9c76f0a9",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-bbc442fe7d5b4bf00988",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-be0e8dfbb1db69f06675",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-bf251ded4d323bb7b496",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-c3b46f246b855c7bbb68",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-c42070817270c6491ba5",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-c6113bfd1a8e2954780c",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-c7e02f815c63d631ad75",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-ca05926101fd02030631",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-cf12f92b4983786a48da",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-d49945c6d8b160cb4c58",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-d6fdd70ac6e51399f3f4",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-d74e6a3dc872a5f87361",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-d849b4e4b175316d2756",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-de24ffd84953579540de",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-df617ce0d24d0e3f526c",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-e0c75384e17a0e588635",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-e2c1a20206afed1b198a",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-e4a6a9dfc8bc6b38dfa0",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-e69f669389990d00a27b",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-e7d5aceeb5db3dc8787f",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-e887ab010152ed6d90de",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-ecd72d215f191b9a0a7b",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-ee65fee985932046dd2a",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-f0e5105debca37bc8f7a",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-f2467407f84420ad1be0",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-f3be38f9a9f355e49cc9",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-f874fa4476afeac804fb",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-f9319ff1b286a768eb53",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-fa4d2310f71cd684dd2f",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    },
+    {
+      "original_queue_id": "WORK-ff20ea8d7e07492f64af",
+      "resolution": "EXPLAINED_LATER_SOURCE_BACKED_ADJUDICATION_LEGACY_PRESERVED"
+    }
+  ],
+  "git_head": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571",
+  "independent_saved_output_readback": {
+    "all409_partition": true,
+    "deferred_original_payloads_exact": true,
+    "git_checks": {
+      "git diff --cached --stat": {
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "git diff --check": {
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "git diff --stat": {
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "git rev-parse HEAD": {
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571"
+      },
+      "git status --short --branch": {
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "## HEAD (no branch)\n?? audits/"
+      }
+    },
+    "input_preservation_checks": {
+      "AGENTS.md": true,
+      "audits/full_history_20261013/anomaly_candidates.jsonl": true,
+      "audits/full_history_20261013/coverage_report.md": true,
+      "audits/full_history_20261013/evidence_graph.jsonl": true,
+      "audits/full_history_20261013/expansion_01/expansion_report.md": true,
+      "audits/full_history_20261013/expansion_01/historical_unreachable_commit_audit.json": true,
+      "audits/full_history_20261013/expansion_01/ledger_correction_candidates.jsonl": true,
+      "audits/full_history_20261013/expansion_01/new_anomaly_candidates.jsonl": true,
+      "audits/full_history_20261013/expansion_01/omitted_reports_inventory.jsonl": true,
+      "audits/full_history_20261013/expansion_01/recovered_scientific_records.jsonl": true,
+      "audits/full_history_20261013/expansion_01/remaining_coverage_manifest.json": true,
+      "audits/full_history_20261013/expansion_02/evidence_relationships.jsonl": true,
+      "audits/full_history_20261013/expansion_02/execution_run_ledger.jsonl": true,
+      "audits/full_history_20261013/expansion_02/historical_revision_analysis.jsonl": true,
+      "audits/full_history_20261013/expansion_02/reconciliation_report.md": true,
+      "audits/full_history_20261013/expansion_02/remaining_coverage_manifest.json": true,
+      "audits/full_history_20261013/expansion_02/source_to_study_mapping.jsonl": true,
+      "audits/full_history_20261013/expansion_02/static_discrepancy_candidates.jsonl": true,
+      "audits/full_history_20261013/expansion_02/study_identity_ledger.jsonl": true,
+      "audits/full_history_20261013/expansion_03/build_inventory.py": true,
+      "audits/full_history_20261013/expansion_03/coverage_reconciliation.json": true,
+      "audits/full_history_20261013/expansion_03/expansion_report.md": true,
+      "audits/full_history_20261013/expansion_03/historical_source_versions.jsonl": true,
+      "audits/full_history_20261013/expansion_03/remaining_candidate_inventory.jsonl": true,
+      "audits/full_history_20261013/expansion_03/source_classification_ledger.jsonl": true,
+      "audits/full_history_20261013/expansion_03/source_universe_manifest.jsonl": true,
+      "audits/full_history_20261013/expansion_03/unprocessed_source_manifest.jsonl": true,
+      "audits/full_history_20261013/expansion_03/unresolved_identity_links.jsonl": true,
+      "audits/full_history_20261013/expansion_03/validate_inventory.py": true,
+      "audits/full_history_20261013/expansion_04a/completed_source_inspections.jsonl": true,
+      "audits/full_history_20261013/expansion_04a/coverage_validation.json": true,
+      "audits/full_history_20261013/expansion_04a/enhance_inspections.py": true,
+      "audits/full_history_20261013/expansion_04a/expansion_report.md": true,
+      "audits/full_history_20261013/expansion_04a/inspect_sources.py": true,
+      "audits/full_history_20261013/expansion_04a/record_visual_inspection.py": true,
+      "audits/full_history_20261013/expansion_04a/scientific_source_extractions.jsonl": true,
+      "audits/full_history_20261013/expansion_04a/source_relationship_candidates.jsonl": true,
+      "audits/full_history_20261013/expansion_04a/target_manifest.jsonl": true,
+      "audits/full_history_20261013/expansion_04a/unresolved_sources.jsonl": true,
+      "audits/full_history_20261013/expansion_04a/validate_coverage.py": true,
+      "audits/full_history_20261013/expansion_04a_recovery/coverage_reconciliation.json": true,
+      "audits/full_history_20261013/expansion_04a_recovery/frozen_target_manifest.jsonl": true,
+      "audits/full_history_20261013/expansion_04a_recovery/inspect_recovery.py": true,
+      "audits/full_history_20261013/expansion_04a_recovery/recovered_scientific_content.jsonl": true,
+      "audits/full_history_20261013/expansion_04a_recovery/recovery_report.md": true,
+      "audits/full_history_20261013/expansion_04a_recovery/source_recovery_results.jsonl": true,
+      "audits/full_history_20261013/expansion_04a_recovery/source_relationship_candidates.jsonl": true,
+      "audits/full_history_20261013/expansion_04a_recovery/unavailable_evidence_registry.jsonl": true,
+      "audits/full_history_20261013/experiment_ledger.jsonl": true,
+      "audits/full_history_20261013/hypothesis_ledger.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/integration_01/historical_version_reconciliation.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/integration_01/input_fingerprints.json": true,
+      "audits/full_history_20261013/parallel_20261013/integration_01/integrated_relationship_candidates.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/integration_01/integrated_source_coverage.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/integration_01/integration_report.md": true,
+      "audits/full_history_20261013/parallel_20261013/integration_01/integration_validation.json": true,
+      "audits/full_history_20261013/parallel_20261013/integration_01/provisional_study_identity_links.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/integration_01/reconcile.py": true,
+      "audits/full_history_20261013/parallel_20261013/integration_01/remaining_work_queue.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/integration_01/validate_outputs.py": true,
+      "audits/full_history_20261013/parallel_20261013/relationships_321/adjudicated_relationship_candidates.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/relationships_321/coverage_validation.json": true,
+      "audits/full_history_20261013/parallel_20261013/relationships_321/graph_self_link_audit.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/relationships_321/relationship_target_manifest.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/relationships_321/report.md": true,
+      "audits/full_history_20261013/parallel_20261013/relationships_321/unsupported_or_unresolved_edges.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/semantic_88/adjudicated_classifications.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/semantic_88/coverage_validation.json": true,
+      "audits/full_history_20261013/parallel_20261013/semantic_88/report.md": true,
+      "audits/full_history_20261013/parallel_20261013/semantic_88/source_role_relationships.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/semantic_88/target_manifest.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/semantic_88/unresolved_classifications.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/study_identity_116/coverage_validation.json": true,
+      "audits/full_history_20261013/parallel_20261013/study_identity_116/provisional_study_identity_links.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/study_identity_116/report.md": true,
+      "audits/full_history_20261013/parallel_20261013/study_identity_116/study_identity_evidence.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/study_identity_116/target_manifest.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/study_identity_116/unresolved_identity_dependencies.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/tensor_06/coverage_validation.json": true,
+      "audits/full_history_20261013/parallel_20261013/tensor_06/remaining_gaps.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/tensor_06/report.md": true,
+      "audits/full_history_20261013/parallel_20261013/tensor_06/target_manifest.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/tensor_06/tensor_inspection_results.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/versions_shard_0/coverage_validation.json": true,
+      "audits/full_history_20261013/parallel_20261013/versions_shard_0/historical_version_chains.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/versions_shard_0/report.md": true,
+      "audits/full_history_20261013/parallel_20261013/versions_shard_0/selected_targets.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/versions_shard_0/semantic_revision_records.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/versions_shard_0/unresolved_versions.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/versions_shard_1/coverage_validation.json": true,
+      "audits/full_history_20261013/parallel_20261013/versions_shard_1/historical_version_chains.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/versions_shard_1/report.md": true,
+      "audits/full_history_20261013/parallel_20261013/versions_shard_1/selected_targets.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/versions_shard_1/semantic_revision_records.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/versions_shard_1/unresolved_versions.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/chronology/coverage_validation.json": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/chronology/predecessor_resolution.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/chronology/report.md": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/chronology/target_manifest.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/chronology/tree_chronology_records.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/chronology/unresolved_chronology.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/binary_source_inspections.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/bounded_content_inspections.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/coverage_validation.json": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/recovered_source_evidence.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/remaining_content_gaps.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/report.md": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/target_manifest.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/coverage_validation.json": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/graph_correction_proposals.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/relationship_adjudications.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/report.md": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/target_manifest.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/unresolved_graph_items.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/input_fingerprints.json": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/integration_report.md": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/remaining_census_work_queue.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/study_identity_reconciliation.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/candidate_study_memberships.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/coverage_validation.json": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/empty_source_dispositions.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/report.md": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/study_identity_adjudications.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/target_manifest.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/unresolved_study_dependencies.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/coverage_validation.json": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/reconstruct.py": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/report.md": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/scientifically_consequential_revisions.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/selected_targets.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/transition_review.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/unresolved_transitions.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/validate_outputs.py": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/coverage_validation.json": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/report.md": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/scientifically_consequential_revisions.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/selected_targets.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/transition_review.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/unresolved_transitions.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/coverage_validation.json": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/recovered_scientific_source_records.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/remaining_content_gaps.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/report.md": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/source_content_recovery.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/source_damage_registry.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/target_manifest.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/coverage_validation.json": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/git_attribution_assessment.json": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/relationship_adjudications.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/remaining_provenance_gaps.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/report.md": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/snapshot_chronology_assessment.json": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/target_manifest.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/coverage_validation.json": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/historical_scientific_changes.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/remaining_transition_gaps.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/report.md": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/target_manifest.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/transition_interpretations.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/coverage_validation.json": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/historical_scientific_changes.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/remaining_transition_gaps.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/report.md": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/target_manifest.jsonl": true,
+      "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/transition_interpretations.jsonl": true,
+      "audits/full_history_20261013/reference_coverage.jsonl": true,
+      "audits/full_history_20261013/scientific_audit_summary.md": true
+    },
+    "locator_files_parsed": 19,
+    "producer_imported_or_executed": false,
+    "protected_dependencies_open": true,
+    "status": "PASS_FOR_ACCOUNTING_TRACEABILITY_AND_PRESERVATION_ONLY",
+    "study_bijection": true,
+    "ten_identity_dimensions_per_study": true,
+    "unchanged_inputs_rechecked": 167,
+    "unique_debt_keys": true,
+    "unique_memberships": true,
+    "wave_bijection": true
+  },
+  "input_file_count": 167,
+  "input_integrity_verdict": "SAVED_OUTPUT_HASHES_AND_CONSUMED_INPUT_PRESERVATION_PASS",
+  "integration02_parent_fingerprints_checked": 136,
+  "literal_path_context_is_not_run_or_membership_binding": true,
+  "output_counts": {
+    "deferred_scientific_validation.jsonl": 8,
+    "provisional_study_memberships.jsonl": 63,
+    "study_identity_76.jsonl": 76,
+    "unresolved_census_debt.jsonl": 222,
+    "wave03_result_reconciliation.jsonl": 325
+  },
+  "output_fingerprints_excluding_report_validation_and_scripts": {
+    "deferred_scientific_validation.jsonl": {
+      "bytes": 31750,
+      "sha256": "baf261b8f3a1ad8dac8620aceab9c2459cdf0b49f04bd24f406cfdb586faa891"
+    },
+    "input_fingerprints.json": {
+      "bytes": 90252,
+      "sha256": "d77296f761db310d364be680c05f528c9019bd8a50f8d3a47b311266ef0cf8ca"
+    },
+    "provisional_study_memberships.jsonl": {
+      "bytes": 675267,
+      "sha256": "f4ec48438e8f709b3254263e26d5498ee766a6194dbdce6ae7cb0cb5524d6cd9"
+    },
+    "study_identity_76.jsonl": {
+      "bytes": 13693131,
+      "sha256": "c6d93552982859e98abab90901ef8db297f5a1b3c63e498ec218ab424cc6c76d"
+    },
+    "unresolved_census_debt.jsonl": {
+      "bytes": 397836,
+      "sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631"
+    },
+    "wave03_result_reconciliation.jsonl": {
+      "bytes": 2404558,
+      "sha256": "cafff20a422e4f3d148fa8dfe0abafcd3066c680810690cbeaa1318d4a00ff69"
+    }
+  },
+  "phase": "HISTORICAL_CENSUS_CONSOLIDATION_ONLY",
+  "protected_dependencies_preserved": [
+    "RS069",
+    "RS124",
+    "RS065",
+    "RS101",
+    "RS126"
+  ],
+  "provenance_dispositions": {
+    "BOUNDED_LIMITATION": 2,
+    "EVIDENCE_MISSING": 4
+  },
+  "provisional_candidate_reference_count": 40,
+  "provisional_candidate_references": [
+    "CANDIDATE-02E-022",
+    "CANDIDATE-02E-027",
+    "CANDIDATE-02E-057",
+    "CANDIDATE-E-015",
+    "CANDIDATE-E-017",
+    "CANDIDATE-E-030",
+    "CANDIDATE-E-032",
+    "CANDIDATE-E-035",
+    "CANDIDATE-E-040",
+    "CANDIDATE-E-042",
+    "CANDIDATE-E-048",
+    "CANDIDATE-E-064",
+    "CANDIDATE-E-065",
+    "CANDIDATE-E-066",
+    "CANDIDATE-E-068",
+    "CANDIDATE-E-070",
+    "CANDIDATE-E-085",
+    "CANDIDATE-E-093",
+    "CANDIDATE-E-101",
+    "CANDIDATE-E-105",
+    "CANDIDATE-E-106",
+    "CANDIDATE-E-109",
+    "CANDIDATE-E-110",
+    "CANDIDATE-E-111",
+    "CANDIDATE-E-112",
+    "CANDIDATE-E-113",
+    "CANDIDATE-E-114",
+    "CANDIDATE-E-119",
+    "CANDIDATE-E-122",
+    "CANDIDATE-E-126",
+    "CANDIDATE-E-129",
+    "CANDIDATE-E-137",
+    "CANDIDATE-E-139",
+    "CANDIDATE-E-140",
+    "CANDIDATE-E-141",
+    "CANDIDATE-E-LOCATION-BOUNDARY",
+    "CANDIDATE-E-ROUTE-ORDER",
+    "CANDIDATE-E-SLOT-GUARD",
+    "CANDIDATE-E-STRUCTURED-COVERAGE",
+    "CANDIDATE-E-TEXT-LOCATION"
+  ],
+  "provisional_membership_rows": 63,
+  "queue_category_counts": {
+    "GIT_REFERENCE_PROVENANCE_LIMITATION": 1,
+    "HISTORICAL_TRANSITION_INTERPRETATION": 216,
+    "SCIENTIFIC_NUMERICAL_VALIDATION_DEFERRED": 8,
+    "SNAPSHOT_CHRONOLOGY": 1,
+    "SOURCE_CONTENT_RECOVERY": 103,
+    "SOURCE_RELATIONSHIP_UNCERTAINTY": 4,
+    "STUDY_IDENTITY_DEPENDENCY": 76
+  },
+  "queue_schema_fields": [
+    "blocking_dependencies",
+    "blocks_reference_actor_attribution_only",
+    "blocks_source_census_closure",
+    "blocks_study_identity_closure",
+    "category",
+    "current_status",
+    "deduplication_key",
+    "evidence_recovered",
+    "exact_missing_information",
+    "id",
+    "only_later_scientific_verification",
+    "original_queue_id",
+    "original_queue_ids",
+    "original_source_identities",
+    "original_source_ids",
+    "reason_open",
+    "scientific_execution_authorized"
+  ],
+  "queue_unique_ids": 409,
+  "ready_for_independent_completeness_verification": false,
+  "reason_not_ready": "35 open transitions; 103 incomplete/damaged source tasks; 76 run/boundary dependencies; four unauthenticated graph correspondences; strict capture chronology unresolved.",
+  "saved_shard1_unresolved_placeholders": 108,
+  "scientific_truth_declared": false,
+  "shard_transition_counts": {
+    "transitions_0": {
+      "open": 24,
+      "reconstructed": 84,
+      "targets": 108
+    },
+    "transitions_1": {
+      "open": 11,
+      "reconstructed": 97,
+      "targets": 108
+    }
+  },
+  "source_inventory": {
+    "historical_version_records": 1565,
+    "ledger_rewrites": 0,
+    "records_deleted": 0,
+    "source_to_study_records": 152,
+    "source_universe_records": 4474,
+    "target_inventory_joins": 76,
+    "untargeted_sources": "Unchanged full inventory retained and fingerprinted; no claims about new semantic closure"
+  },
+  "status": "PASS_STRUCTURAL_RECONCILIATION_RESEARCH_CENSUS_PARTIAL",
+  "strict_blocking_debt_records": 212,
+  "study_disposition_counts": {
+    "DEPENDENT_ON_VERSION_RECONSTRUCTION": 2,
+    "DISTINCT_STUDY_CANDIDATE": 3,
+    "LINKED_TO_EXISTING_STUDY": 5,
+    "LINKED_TO_PROVISIONAL_CANDIDATE": 48,
+    "PROVISIONAL_CANDIDATE_BOUNDARY_OPEN": 3,
+    "SUPPORTING_OR_PROCEDURAL": 15
+  },
+  "study_exact_wave03_source_revision_matches": 0,
+  "study_identity_dependencies_open": 76,
+  "study_identity_dependencies_resolved": 0,
+  "study_ids": [
+    "WORK-068c2fdbfacf5e8865dc",
+    "WORK-0830858ab5abf50e895b",
+    "WORK-0ec17090992ab40b7b9d",
+    "WORK-12caee79c54b2402e33a",
+    "WORK-168cde35a324b17f49c4",
+    "WORK-1b174e2c12e403300fc3",
+    "WORK-1d7b7d48459ca82acf3a",
+    "WORK-1ffea4265e782ca50589",
+    "WORK-200e2b2dff7d114c747e",
+    "WORK-21eb11a4f0a3efa2a26c",
+    "WORK-24e3c39181e10e108bdc",
+    "WORK-24e731491624fc69dc5d",
+    "WORK-251cac671a2d2f47a069",
+    "WORK-2f7328c623fc4f4da312",
+    "WORK-30d3a10176772a4cc05f",
+    "WORK-310fc8cf6be91b9da220",
+    "WORK-3154a199e348e6728bef",
+    "WORK-335cb16e63cb8d2d584a",
+    "WORK-345ce1e43047d565add0",
+    "WORK-437e99c26eaf54d6a816",
+    "WORK-495d864784fbc050ad6a",
+    "WORK-4c64c13edcf376da9f97",
+    "WORK-4cfe059f68586ceb69d9",
+    "WORK-50a1b69b55bb644fcf0d",
+    "WORK-559ee9f6e666d162a0ce",
+    "WORK-58edd599bbe2c51fec09",
+    "WORK-5a0423e6da141c70aafc",
+    "WORK-5e0605a841a3f88b67ec",
+    "WORK-5fafbbdb8ea2fc667a5a",
+    "WORK-71a868583b4e60bda033",
+    "WORK-824991b80a3d460bf08f",
+    "WORK-892a4794db72a5e187b1",
+    "WORK-8d01f242e4262fe91fcf",
+    "WORK-8d0d8bd791774cab18d9",
+    "WORK-8f031a83507664b786cc",
+    "WORK-91f3a79d21f4e9769a8b",
+    "WORK-929788bd0377d2013f04",
+    "WORK-945e067a20ae60eccee5",
+    "WORK-94894e526d7593d206cd",
+    "WORK-9619aefe161c9f751c3c",
+    "WORK-9f89ac2c6118fa5f3a17",
+    "WORK-a226d7cb3c0795f8659c",
+    "WORK-a24bd7e24bc9d823de95",
+    "WORK-a7694bbced613b2dc49c",
+    "WORK-b043cbd84c46ba57dc2e",
+    "WORK-b2c53418165442eac7f2",
+    "WORK-b8891cd313015d8f3335",
+    "WORK-be0f46308332144e9750",
+    "WORK-c068b5198fcc1c1f826a",
+    "WORK-c15ba2ff9f4c2a27b484",
+    "WORK-c24f2efa8a2846b459a1",
+    "WORK-c3bb37a79a6433dbd61d",
+    "WORK-c6a3615d8aa72a6f6737",
+    "WORK-c72e261d97455759afa9",
+    "WORK-cd406e608bc6fdedc007",
+    "WORK-cfaf3184a8d43e096d3e",
+    "WORK-d1f23f8ca4f8de82b90b",
+    "WORK-d3e9faa2c959568fd433",
+    "WORK-d67b0e7cd44268be738c",
+    "WORK-dc0380e681e0b8770d31",
+    "WORK-de904750f6f3c458ed35",
+    "WORK-dfa90134da7b7ac796b0",
+    "WORK-e04ca5b4b13445c145bf",
+    "WORK-e3886bdc61f4664fec87",
+    "WORK-e477f96008d53f72c7e0",
+    "WORK-e55e918a334ff8ab686f",
+    "WORK-e819c88a5fdc924b7568",
+    "WORK-e962be423cf995b957af",
+    "WORK-e9bb929235e511614152",
+    "WORK-ef41dd838e2067b75c21",
+    "WORK-f35ee68a5b5dfbb693ce",
+    "WORK-f56d1c9d82c4c7dcb4f6",
+    "WORK-f6fd4f762833a7131a92",
+    "WORK-f9819d2915241c3fc1f2",
+    "WORK-f9c30d1ed05d13ae74d1",
+    "WORK-fed4380f14d437f24a46"
+  ],
+  "study_literal_path_context_leads": 6,
+  "study_record_role_counts": {
+    "ANALYSIS_ONLY": 31,
+    "ANALYSIS_ONLY_DESIGN": 1,
+    "PROCEDURAL_SUPPORT": 14,
+    "PROVISIONAL_NEW_STUDY_DESIGN": 10,
+    "RETRY_OR_TOOLING_REPRODUCTION": 2,
+    "REVISION": 18
+  },
+  "study_targets": 76,
+  "tooling_notes": [
+    "Two initial producer runs stopped on heterogeneous prior empty-source dependency/membership schemas (KeyError); adapter corrections succeeded. These were consolidation tooling errors, not scientific test results.",
+    "The Python interpreter emits a stale installation-location warning. Final producer and verifier exit zero."
+  ],
+  "tooling_warning": "Python reports a stale interpreter-location warning; successful executed commands exit zero.",
+  "training_evaluation_inference_red_team": "NOT_RUN",
+  "transitions_total_open": 35,
+  "transitions_total_reconstructed": 181,
+  "unchanged_input_count": 167,
+  "unexplained_status_conflicts": [],
+  "unsupported_replications_added": 0,
+  "wave03_exact_unique_original_queue_id_coverage": true,
+  "wave03_ids": [
+    "SHARED-INTERNAL-REF-ATTRIBUTION",
+    "SHARED-SNAPSHOT-303f2863736d4ecb723314dab8a7616c43e49207",
+    "WORK-03af32ac2bacb6323f3f",
+    "WORK-03cc1c57ea19975ac815",
+    "WORK-03cdeb48f45a29dce728",
+    "WORK-04c6478f2c94fb111b8f",
+    "WORK-053e54c410b7bcf2d451",
+    "WORK-057e3b48edb2404a24c7",
+    "WORK-0584971faf99df6ee0d9",
+    "WORK-05b236dddac06d712a21",
+    "WORK-062bed4ba995d2da8a79",
+    "WORK-085e0d47e9e22d36b740",
+    "WORK-08dda8f0c7f3a3a023e8",
+    "WORK-0a45a8d319d76e222f29",
+    "WORK-0a8ec85208cc9211f8e5",
+    "WORK-0a9663e578d3d76b5c1d",
+    "WORK-0ae3d99488baaba14e2a",
+    "WORK-0b9efef814d46da09291",
+    "WORK-0ca9053bf519924cb49b",
+    "WORK-0cd27982d49418c88c95",
+    "WORK-0e878cfc50d7ca0466d2",
+    "WORK-10df4370c79da5b584bf",
+    "WORK-11935737f6845404717d",
+    "WORK-11c729d2d848a6b8b8b2",
+    "WORK-11f72ec3d698c8ac5357",
+    "WORK-13bc324b4f7e8995e98d",
+    "WORK-13eb5b7974eb1636cb66",
+    "WORK-15fba35e370c60914279",
+    "WORK-16c1a81a388e9a6c2355",
+    "WORK-17f9133dc2a181417799",
+    "WORK-17f9ee769aafef099243",
+    "WORK-186e2ca91d53707e169e",
+    "WORK-1b0c48b08e529f7249e9",
+    "WORK-1b2c72b490f077938d5c",
+    "WORK-1c64f36f04bc1e66b5d1",
+    "WORK-1c67d763abbcc2ff37b2",
+    "WORK-1f47e789824cb3cdfb9d",
+    "WORK-1f8fe6692f6af2f6ad4c",
+    "WORK-1fd2c1a43fa421e89ff4",
+    "WORK-208067f955bfcf458736",
+    "WORK-20e7ac1d4f068d46929b",
+    "WORK-21b1746f872efe6dc4c8",
+    "WORK-2267984904d6e6ac07f7",
+    "WORK-226c926ad08d8a114f2d",
+    "WORK-2364c78c1522d162dc0a",
+    "WORK-23d044d2cb559484389f",
+    "WORK-24c5ccefa233ee922c49",
+    "WORK-2511087a6b437bd3b987",
+    "WORK-26508659ac69f5e260ca",
+    "WORK-2666a793a5d321e6fb09",
+    "WORK-26f4120f1a8e4892e031",
+    "WORK-289ede0b14457b6b65fa",
+    "WORK-2908a7e76eb3e9de0803",
+    "WORK-2beb3752d26287096a2a",
+    "WORK-2c26d8f16e96d0163230",
+    "WORK-2dd92405d18f409a6b96",
+    "WORK-2e3efaa12fc537095c31",
+    "WORK-2f20e3b0ff7a0e63d01c",
+    "WORK-2f3e2a2c3be9f71370fe",
+    "WORK-313f562f36028a3bdf1f",
+    "WORK-3321cfd06bc3573fd7e7",
+    "WORK-3424f26cf75bce74dd5e",
+    "WORK-34895a07e8856734170a",
+    "WORK-35229f578446781722f5",
+    "WORK-37d4088a1ecbecf44b6d",
+    "WORK-3886f5c693a1ef3f251a",
+    "WORK-38bf1ebd1d903d1f37e9",
+    "WORK-394a5b109b2b5e46f4ec",
+    "WORK-3ba9ad337be973487a85",
+    "WORK-3cb8e4f83e88e128b0dc",
+    "WORK-3dfc4a642ff38f87e652",
+    "WORK-3dfc6d34f548af194cfa",
+    "WORK-3e7b4e8a467160e7f121",
+    "WORK-3edad65b7759442730e0",
+    "WORK-3f31a6f3b9d28b9a7435",
+    "WORK-3f62cf98ce6eb4e4441b",
+    "WORK-400855d18ecf6aa0af02",
+    "WORK-40c4bae128df8c30db1d",
+    "WORK-40ede16db0e01de8d45b",
+    "WORK-4128999cbee98d17fbcd",
+    "WORK-414496e583cb8bea9f25",
+    "WORK-421f6ad35bbbf06f96b1",
+    "WORK-43fdb0c667a1245d37a9",
+    "WORK-44c068e4cb3c06e49e39",
+    "WORK-45fa07c347df26e5fa9d",
+    "WORK-45fba66b7cc349ac0c1b",
+    "WORK-4782ee2410a44f7813c6",
+    "WORK-478ecf14bcdd5640e81b",
+    "WORK-4796c30e7fedd69046e7",
+    "WORK-47c4cbab91abd7d9f4e9",
+    "WORK-4806f24596930213249a",
+    "WORK-48d6fd3600a43dc1eb7c",
+    "WORK-497ee859b89f13469a42",
+    "WORK-499bdc6b1e61ae7f0829",
+    "WORK-4b870700af75367684f2",
+    "WORK-4d5a179b62f483da55c3",
+    "WORK-50595b56f445ac73b32f",
+    "WORK-50a6eacd33a88d7b86ef",
+    "WORK-50b26d24ffec6b20784c",
+    "WORK-50ba523b65c6b06758d6",
+    "WORK-518b254e507e0d4480ec",
+    "WORK-529d9793f1fbfe287a0b",
+    "WORK-53b91942b605df3f8f80",
+    "WORK-53ba86f374bd4243f4df",
+    "WORK-5619bbcb4c030aa20ca9",
+    "WORK-56722861020cc2f9afa0",
+    "WORK-5680634eb540df9ffa72",
+    "WORK-5844c2da50ba37c83d87",
+    "WORK-5881193b847e4c9b7a7e",
+    "WORK-588ea91c630be0b5c953",
+    "WORK-5a29b5ba05a968167b03",
+    "WORK-5a45ab918eb45db7084a",
+    "WORK-5a5d9c24bbe7480d1341",
+    "WORK-5c169f70d94d194b0af9",
+    "WORK-5c980ed97d5e801c32eb",
+    "WORK-5d5d036c0f2ba7ba403b",
+    "WORK-5f07b839e0796971e48d",
+    "WORK-5f415b8c8a1cd1f1b38b",
+    "WORK-5f7a608e6d07ead819f0",
+    "WORK-60424acd55fdf551a69d",
+    "WORK-62b0b37a3e88f124cfa1",
+    "WORK-65e1a20044dce32f3308",
+    "WORK-671490db3862efb68f07",
+    "WORK-6986d2197f2c6de73218",
+    "WORK-6b826559dcde8bfad93c",
+    "WORK-6b9c4a8486c616337601",
+    "WORK-6e227f061608536c9e7a",
+    "WORK-7100cc57ee78969bd2db",
+    "WORK-72551af97a26de64341f",
+    "WORK-725e173d3223841f6df3",
+    "WORK-72661b82f8f9bc6c00ae",
+    "WORK-731aabc6935f120f6a1c",
+    "WORK-732bf5c062a2f6d84b9f",
+    "WORK-740573fcdce81bcff8c0",
+    "WORK-74ca268b35da69682b20",
+    "WORK-76336a124890ebdb8034",
+    "WORK-76f4b9050fae2ca566e6",
+    "WORK-793fa1213f5f13715400",
+    "WORK-796af6a39b10011b8237",
+    "WORK-7a021435fb160a34a2eb",
+    "WORK-7a7318e75bfc65e15637",
+    "WORK-7ac230f7f2c238992b8d",
+    "WORK-7b7b555c5aef75286005",
+    "WORK-7ba3a39f84fdd735291f",
+    "WORK-7d8da0256ad88db640fe",
+    "WORK-7f6389687c59a00dd0ba",
+    "WORK-8093012a228f31f2ee52",
+    "WORK-809945fc334722114220",
+    "WORK-819b52e77065faa3390c",
+    "WORK-8310a79462e8eab0be64",
+    "WORK-83dd21eb2e8d743e958b",
+    "WORK-83f956a1f41aea05d955",
+    "WORK-8473880e480a8ead25ed",
+    "WORK-84d1190b2a0bb15f7900",
+    "WORK-863fa75b3f1b326ce9f6",
+    "WORK-864e29a2a3521eb2fa5f",
+    "WORK-86f3781bc0531f833912",
+    "WORK-875c9a418ab9fb58d9fd",
+    "WORK-878cd7c679aaa492fe08",
+    "WORK-87f4612da51fd87a9fc7",
+    "WORK-8826bf2a175b42195fe8",
+    "WORK-885cc00218949d6bbd17",
+    "WORK-887df7b1ef44b8ab31ff",
+    "WORK-89d871282d69574acf6c",
+    "WORK-8a72bacdcaa8c9d10710",
+    "WORK-8a9c1c8fee557d3e2c37",
+    "WORK-8c07dc0627b6358d34dd",
+    "WORK-8c8f01ee7b066dc95160",
+    "WORK-8d8339f5275bcd962707",
+    "WORK-8dbbe9748980d0c653b9",
+    "WORK-8de994716720da4f6334",
+    "WORK-8ee58700b22db08bfaa0",
+    "WORK-8f3c769152265d046478",
+    "WORK-8fda8e8f8cdc1ff4f22e",
+    "WORK-914103f83fd677d64b27",
+    "WORK-914dc2a154f88effdb1a",
+    "WORK-914f0e99afdf5d98b86a",
+    "WORK-9252911e19cd921ed6b3",
+    "WORK-92db5cf11e11070eac09",
+    "WORK-9362e6d6f23e7553ea2c",
+    "WORK-9363206bb8998b585d04",
+    "WORK-9464a00cac640c69f6a2",
+    "WORK-94d19a5ce2b571f32207",
+    "WORK-9572e33b11a60165f997",
+    "WORK-96a711c4990018ec1b2e",
+    "WORK-96fabd03274863c09dc9",
+    "WORK-978a9a8b2e439a7d9cb0",
+    "WORK-9830ee7dd8b7cd1c5493",
+    "WORK-985c41272cc93aac3ae1",
+    "WORK-988540aa244c96db9b5b",
+    "WORK-988d5e5c3eec1105c99f",
+    "WORK-9893ad80355f65041523",
+    "WORK-98d123ac93721d10726a",
+    "WORK-99052752806966f80927",
+    "WORK-99c895429550997a2620",
+    "WORK-99e708222ec8889ed27f",
+    "WORK-9a0aab64612cc0a0db54",
+    "WORK-9b9523cde2f323cdce26",
+    "WORK-9c976768b97c4edbc076",
+    "WORK-9dd93a50cd41984c68a3",
+    "WORK-9e0422c49f697c5f10aa",
+    "WORK-9e493e5dedc13b6357d2",
+    "WORK-a00bd02f882e43022d1e",
+    "WORK-a0544fe0c3dd1b5b01b8",
+    "WORK-a05c446150cc5ab55769",
+    "WORK-a0d46f9e37d2ac3e7b66",
+    "WORK-a15bbae6324b182f7c56",
+    "WORK-a1d8d38246af63616a31",
+    "WORK-a26d2f963b2ac901d8f9",
+    "WORK-a329f671b5f42a52c2b1",
+    "WORK-a419a47aa12f3da08b09",
+    "WORK-a54c55975cb84be34600",
+    "WORK-a58e14130d5785078fcc",
+    "WORK-a5f5b19efac9a0d8d68a",
+    "WORK-a603b3b0be9e863a04cd",
+    "WORK-a67936f2dca0c61f09c5",
+    "WORK-a7112e961d45d2b54297",
+    "WORK-a777615ac180f1d84cb1",
+    "WORK-a778533d311570c729a5",
+    "WORK-a902589c7dfd902f4c9c",
+    "WORK-a91a78bc71d457585be7",
+    "WORK-a935e47c3d95727a9f5d",
+    "WORK-abbc3161e832d25c80af",
+    "WORK-abea777ef972de9f75be",
+    "WORK-ac06ee1a8050e7ffc216",
+    "WORK-adb8740a1b0a2aee16ab",
+    "WORK-af1c6cfba2d71e44d255",
+    "WORK-b10c78eb572059b21c34",
+    "WORK-b110ab12f2742657a595",
+    "WORK-b184a8303ade36c2e764",
+    "WORK-b1881f775ae7599e6cec",
+    "WORK-b4a5f19286e64af72ca0",
+    "WORK-b4cd32b4800f9c76f0a9",
+    "WORK-b5c9c13e78dd670c3ab6",
+    "WORK-b94c77e6d93c21042639",
+    "WORK-b9586208810f13787d11",
+    "WORK-bbc442fe7d5b4bf00988",
+    "WORK-bc96c0738704e6e0080f",
+    "WORK-be0e8dfbb1db69f06675",
+    "WORK-beefb181add175f55e9d",
+    "WORK-bf251ded4d323bb7b496",
+    "WORK-c12c05ccd66ad859bdb5",
+    "WORK-c296568d90d5ab01d2ce",
+    "WORK-c30efc0ee2b5942609e2",
+    "WORK-c3b46f246b855c7bbb68",
+    "WORK-c41e136b68d681adb371",
+    "WORK-c42070817270c6491ba5",
+    "WORK-c48d00bf4b45647f34c8",
+    "WORK-c4fe9fb5ecba951469b8",
+    "WORK-c5529fef1dc46a1ce8c3",
+    "WORK-c6113bfd1a8e2954780c",
+    "WORK-c6a1d91f2c2e130e5321",
+    "WORK-c6e2a58b1be60d76aca5",
+    "WORK-c7e02f815c63d631ad75",
+    "WORK-c9f41e64e4f8944157b5",
+    "WORK-ca05926101fd02030631",
+    "WORK-ca1c82de7c0b0727e2b2",
+    "WORK-ccc1606b1b328afd036c",
+    "WORK-cd8a633f7c33b9dba74e",
+    "WORK-ce86737d17b0488b5af0",
+    "WORK-cef55ddc7cf9a5d12433",
+    "WORK-cf12f92b4983786a48da",
+    "WORK-d0a5a9c1b9f63a2dd601",
+    "WORK-d181b41668191d9e217c",
+    "WORK-d49945c6d8b160cb4c58",
+    "WORK-d6c84c1003e8464bffdb",
+    "WORK-d6fdd70ac6e51399f3f4",
+    "WORK-d7227a4c137cdaae76e9",
+    "WORK-d74e6a3dc872a5f87361",
+    "WORK-d78f1f9cff737d35c2be",
+    "WORK-d849b4e4b175316d2756",
+    "WORK-d8b0ce9c075b18df9a11",
+    "WORK-d9e6504ce78f4c82aa1e",
+    "WORK-dbb04014bb415e9ca510",
+    "WORK-dc9ce64cd7b26f1589a3",
+    "WORK-dd82e2e7b4dacdf1f17c",
+    "WORK-de16012afe6fd54e0c27",
+    "WORK-de24ffd84953579540de",
+    "WORK-de4dfa1fee0de4dc444d",
+    "WORK-dec276e2b69072d7c7c5",
+    "WORK-df617ce0d24d0e3f526c",
+    "WORK-e07aebf5ad215cb1ba69",
+    "WORK-e087d1ce72135cc01295",
+    "WORK-e0c75384e17a0e588635",
+    "WORK-e292fbbe71894420dc97",
+    "WORK-e2c1a20206afed1b198a",
+    "WORK-e46ef4503e74f8affd83",
+    "WORK-e4a6a9dfc8bc6b38dfa0",
+    "WORK-e65f3db3a397ebb42736",
+    "WORK-e69f669389990d00a27b",
+    "WORK-e6c1a333ee2a818005b1",
+    "WORK-e7d5aceeb5db3dc8787f",
+    "WORK-e8510154ae424aa50d50",
+    "WORK-e887ab010152ed6d90de",
+    "WORK-e9167b58949654ea1ab9",
+    "WORK-e967ae7039df7bd2e39e",
+    "WORK-eb77cb5698ac8bbdb92e",
+    "WORK-ecd72d215f191b9a0a7b",
+    "WORK-ede5b9bfa1e681b8161b",
+    "WORK-ee65fee985932046dd2a",
+    "WORK-eec42d47e30138798c2b",
+    "WORK-ef8777bf7f839cedebb6",
+    "WORK-f0e5105debca37bc8f7a",
+    "WORK-f16dfab50e69de23ae93",
+    "WORK-f1dd38aca10c7235f263",
+    "WORK-f2467407f84420ad1be0",
+    "WORK-f278730c819b40e6a62d",
+    "WORK-f3be38f9a9f355e49cc9",
+    "WORK-f3e07cb88db8b7d0dc37",
+    "WORK-f453b99da3d13afb4983",
+    "WORK-f4c03465bccdc8c18b72",
+    "WORK-f52225e9ca05b420a618",
+    "WORK-f6c8ce1eb05e210582a3",
+    "WORK-f874fa4476afeac804fb",
+    "WORK-f91c420f246f86a1203b",
+    "WORK-f923217bde5e1a7b22b1",
+    "WORK-f9319ff1b286a768eb53",
+    "WORK-f9e18f571317f72671a3",
+    "WORK-f9eec4a798874b84964f",
+    "WORK-fa31fcc4d4cd1ef39ea1",
+    "WORK-fa4d2310f71cd684dd2f",
+    "WORK-fa841cf55a9c207ee292",
+    "WORK-fabf03e0b6a612cb4e19",
+    "WORK-fc3a9a325bf17ad5e2ac",
+    "WORK-ff20ea8d7e07492f64af"
+  ],
+  "wave03_targets": 325
+}

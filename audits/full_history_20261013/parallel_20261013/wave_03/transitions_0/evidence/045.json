@@ -1,0 +1,219 @@
+{
+  "shard_ordinal": 45,
+  "original_queue_id": "WORK-76336a124890ebdb8034",
+  "original_source_ids": [
+    "HV001475"
+  ],
+  "original_source_identity": {
+    "commit": "a69a0dd47853e3ec68f7c5aa21bb8d692c89a86a",
+    "path": "tests/test_reason_router_gen5_phase2_state_update_ownership.py",
+    "blob": "535d959c7968cd2f2e6149b1b0cab1e36687ef76",
+    "object_type": "commit",
+    "bytes": 12329,
+    "sha256": "8a5b2b6bd7615ba362c15dcec68b834ce573010ddf4dcf1f3fcb8584af35ed81"
+  },
+  "before": {
+    "commit": "95f7d8b7392a9bad98fd450f1f23ea221bd4e242",
+    "path": "tests/test_reason_router_gen5_phase2_state_update_ownership.py",
+    "blob": "6ea2d8ddde76d560dfe99da2dc3ac940ae2ccbec",
+    "object_type": "commit",
+    "bytes": 10014,
+    "sha256": "22ccb76a910a1012b27c9132d539ec3426b4b0acf11cce6e2d589f18b7a46021"
+  },
+  "after": {
+    "commit": "a69a0dd47853e3ec68f7c5aa21bb8d692c89a86a",
+    "path": "tests/test_reason_router_gen5_phase2_state_update_ownership.py",
+    "blob": "535d959c7968cd2f2e6149b1b0cab1e36687ef76",
+    "object_type": "commit",
+    "bytes": 12329,
+    "sha256": "8a5b2b6bd7615ba362c15dcec68b834ce573010ddf4dcf1f3fcb8584af35ed81"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0268"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "_copy_nonzero_correction",
+      "test_accelerated_matches_reference_forward_and_gradients",
+      "test_streaming_backend_removes_sequence_state_stack"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate test assertion/fixture contracts and their relationship to the historical implementation and stage authority from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 0 removed/replaced lines and 87 added/replaced lines in 3 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "95f7d8b7392a9bad98fd450f1f23ea221bd4e242",
+      "blob": "6ea2d8ddde76d560dfe99da2dc3ac940ae2ccbec"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 12,
+      "before_end_exclusive": 12,
+      "after_start": 12,
+      "after_end_exclusive": 13,
+      "before": [],
+      "after": [
+        "    accelerated_correction_mixer_contribution,"
+      ],
+      "before_context": [
+        "",
+        "from contramamba.gen5_phase2_state_update_ownership import (",
+        "    ARMS,",
+        "    CorrectionShape,",
+        "    Phase2Layer22MixerWrapper,",
+        "    StateWriteCorrection,"
+      ],
+      "after_context": [
+        "",
+        "from contramamba.gen5_phase2_state_update_ownership import (",
+        "    ARMS,",
+        "    CorrectionShape,",
+        "    Phase2Layer22MixerWrapper,",
+        "    StateWriteCorrection,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 20,
+      "before_end_exclusive": 20,
+      "after_start": 21,
+      "after_end_exclusive": 24,
+      "before": [],
+      "after": [
+        "    reference_correction_mixer_contribution,",
+        "    reference_state_stack_bytes,",
+        "    streaming_state_bytes,"
+      ],
+      "before_context": [
+        "    parent_parameter_fingerprint,",
+        "    phase2_active_mask,",
+        "    phase2_final_three_way_ce,",
+        "    reference_correction_recurrence,",
+        "    remove_phase2_layer22_wrapper,",
+        "    validate_arm,"
+      ],
+      "after_context": [
+        "    parent_parameter_fingerprint,",
+        "    phase2_active_mask,",
+        "    phase2_final_three_way_ce,",
+        "    reference_correction_recurrence,",
+        "    remove_phase2_layer22_wrapper,",
+        "    validate_arm,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 327,
+      "before_end_exclusive": 327,
+      "after_start": 331,
+      "after_end_exclusive": 414,
+      "before": [],
+      "after": [
+        "",
+        "",
+        "def _copy_nonzero_correction(source, target):",
+        "    with torch.no_grad():",
+        "        target.A_theta.weight.copy_(source.A_theta.weight)",
+        "        target.B_theta.weight.copy_(source.B_theta.weight)",
+        "",
+        "",
+        "def test_accelerated_matches_reference_forward_and_gradients():",
+        "    torch.manual_seed(17)",
+        "    mixer = TinyMixer()",
+        "    for parameter in mixer.parameters():",
+        "        parameter.requires_grad_(False)",
+        "",
+        "    r, c = orthogonal_bases(TEST_SHAPE.state_width)",
+        "    ref_corr = StateWriteCorrection(",
+        "        arm=\"G5-M1\",",
+        "        r22=r,",
+        "        c22=c,",
+        "        seed=5201,",
+        "        shape=TEST_SHAPE,",
+        "        strict_frozen_dimensions=False,",
+        "    )",
+        "    acc_corr = StateWriteCorrection(",
+        "        arm=\"G5-M1\",",
+        "        r22=r,",
+        "        c22=c,",
+        "        seed=5201,",
+        "        shape=TEST_SHAPE,",
+        "        strict_frozen_dimensions=False,",
+        "    )",
+        "    with torch.no_grad():",
+        "        ref_corr.B_theta.weight.normal_(0.0, 0.02)",
+        "    _copy_nonzero_correction(ref_corr, acc_corr)",
+        "",
+        "    x = torch.randn(2, 5, 4)",
+        "    mask = torch.tensor(",
+        "        [[1, 1, 1, 0, 0], [1, 1, 1, 1, 0]],",
+        "        dtype=torch.bool,",
+        "    )",
+        "",
+        "    ref = reference_correction_mixer_contribution(",
+        "        mixer,",
+        "        x,",
+        "        ref_corr,",
+        "        attention_mask=mask,",
+        "    )",
+        "    acc = accelerated_correction_mixer_contribution(",
+        "        mixer,",
+        "        x,",
+        "        acc_corr,",
+        "        attention_mask=mask,",
+        "        checkpoint_recompute=True,",
+        "    )",
+        "    assert torch.allclose(ref, acc, atol=1e-6, rtol=1e-6)",
+        "",
+        "    ref_loss = ref.square().sum()",
+        "    acc_loss = acc.square().sum()",
+        "    ref_loss.backward()",
+        "    acc_loss.backward()",
+        "",
+        "    assert torch.allclose(",
+        "        ref_corr.A_theta.weight.grad,",
+        "        acc_corr.A_theta.weight.grad,",
+        "        atol=1e-6,",
+        "        rtol=1e-5,",
+        "    )",
+        "    assert torch.allclose(",
+        "        ref_corr.B_theta.weight.grad,",
+        "        acc_corr.B_theta.weight.grad,",
+        "        atol=1e-6,",
+        "        rtol=1e-5,",
+        "    )",
+        "",
+        "",
+        "def test_streaming_backend_removes_sequence_state_stack():",
+        "    batch = 2880",
+        "    seq = 128",
+        "    reference = reference_state_stack_bytes(batch, seq, dtype_bytes=4)",
+        "    streaming = streaming_state_bytes(batch, dtype_bytes=4)",
+        "    assert reference == 36_238_786_560",
+        "    assert streaming == 283_115_520",
+        "    assert reference == streaming * seq"
+      ],
+      "before_context": [
+        "    assert \"C22\" not in parameter_names",
+        "    assert \"R22\" in buffer_names",
+        "    assert \"C22\" in buffer_names"
+      ],
+      "after_context": [
+        "    assert \"C22\" not in parameter_names",
+        "    assert \"R22\" in buffer_names",
+        "    assert \"C22\" in buffer_names"
+      ]
+    }
+  ]
+}

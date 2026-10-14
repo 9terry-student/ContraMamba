@@ -1,0 +1,237 @@
+{
+  "shard_ordinal": 29,
+  "original_queue_id": "WORK-478ecf14bcdd5640e81b",
+  "original_source_ids": [
+    "HV001434"
+  ],
+  "original_source_identity": {
+    "commit": "3341c1002c14b7df09923491b6e51873398d4c0c",
+    "path": "tests/test_reason_router_gen4_native_mamba_state_measurement.py",
+    "blob": "2af1f45ec9e354f0003670c5c170fdc24a62184f",
+    "object_type": "commit",
+    "bytes": 31006,
+    "sha256": "184f9f37be18ea4bfc2360a637913337b56971ff47c3aed45070ad312b9c974a"
+  },
+  "before": {
+    "commit": "3e5a79593427707c1a66bc3fa6e21878af2a4d68",
+    "path": "tests/test_reason_router_gen4_native_mamba_state_measurement.py",
+    "blob": "fb3175aaf2d8b15f399906b0c235c0739a5419e5",
+    "object_type": "commit",
+    "bytes": 29395,
+    "sha256": "00e2b00f3dbb159503dd8a2531070c8b5fd449dc70c0e9c6e49caa20e3be0212"
+  },
+  "after": {
+    "commit": "3341c1002c14b7df09923491b6e51873398d4c0c",
+    "path": "tests/test_reason_router_gen4_native_mamba_state_measurement.py",
+    "blob": "2af1f45ec9e354f0003670c5c170fdc24a62184f",
+    "object_type": "commit",
+    "bytes": 31006,
+    "sha256": "184f9f37be18ea4bfc2360a637913337b56971ff47c3aed45070ad312b9c974a"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0256"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "test_authority_constants",
+      "test_runtime_gate_rejects_old_cpu_build_tag",
+      "test_runtime_gate_rejects_other_torch_build_tag",
+      "test_runtime_gate_rejects_wrong_numpy_version",
+      "test_runtime_gate_rejects_wrong_python_version",
+      "test_runtime_gate_rejects_wrong_transformers_version",
+      "test_runtime_gate_wrong_version"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate test assertion/fixture contracts and their relationship to the historical implementation and stage authority from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 4 removed/replaced lines and 89 added/replaced lines in 3 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "9608e80efced2f6029bb4265eabf8e46df8d638c",
+      "blob": "fb3175aaf2d8b15f399906b0c235c0739a5419e5"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 137,
+      "before_end_exclusive": 137,
+      "after_start": 137,
+      "after_end_exclusive": 144,
+      "before": [],
+      "after": [
+        "",
+        "    assert m.EXPECTED_VERSIONS == {",
+        "        \"python\": \"3.12.13\",",
+        "        \"numpy\": \"2.0.2\",",
+        "        \"torch\": \"2.10.0+cu128\",",
+        "        \"transformers\": \"5.0.0\",",
+        "    }"
+      ],
+      "before_context": [
+        "        m.PHASE_C_AUTHORITY_COMMIT",
+        "        == \"480ff74aebf5ef942aa9f47fa78c06612a8f97a4\"",
+        "    )",
+        "",
+        "    assert m.PRIMARY_LAYER_INDEX == 11",
+        "    assert m.NATIVE_MAMBA_LAYER_COUNT == 24"
+      ],
+      "after_context": [
+        "        m.PHASE_C_AUTHORITY_COMMIT",
+        "        == \"480ff74aebf5ef942aa9f47fa78c06612a8f97a4\"",
+        "    )",
+        "",
+        "    assert m.PRIMARY_LAYER_INDEX == 11",
+        "    assert m.NATIVE_MAMBA_LAYER_COUNT == 24"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 1163,
+      "before_end_exclusive": 1164,
+      "after_start": 1170,
+      "after_end_exclusive": 1171,
+      "before": [
+        "def test_runtime_gate_wrong_version("
+      ],
+      "after": [
+        "def test_runtime_gate_rejects_old_cpu_build_tag("
+      ],
+      "before_context": [
+        "    m.runtime_gate()",
+        "",
+        "",
+        "    tmp_path,",
+        "    monkeypatch,",
+        "):"
+      ],
+      "after_context": [
+        "    m.runtime_gate()",
+        "",
+        "",
+        "    tmp_path,",
+        "    monkeypatch,",
+        "):"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 1174,
+      "before_end_exclusive": 1177,
+      "after_start": 1181,
+      "after_end_exclusive": 1262,
+      "before": [
+        "    versions[",
+        "        \"transformers\"",
+        "    ] = \"wrong\""
+      ],
+      "after": [
+        "    versions[\"torch\"] = \"2.10.0+cpu\"",
+        "",
+        "    with pytest.raises(",
+        "        m.ContractError,",
+        "        match=\"runtime version\",",
+        "    ):",
+        "        m.runtime_gate()",
+        "",
+        "",
+        "def test_runtime_gate_rejects_other_torch_build_tag(",
+        "    tmp_path,",
+        "    monkeypatch,",
+        "):",
+        "    _, versions, _, _ = (",
+        "        build_runtime_baseline(",
+        "            tmp_path,",
+        "            monkeypatch,",
+        "        )",
+        "    )",
+        "",
+        "    versions[\"torch\"] = \"2.10.0+cu130\"",
+        "",
+        "    with pytest.raises(",
+        "        m.ContractError,",
+        "        match=\"runtime version\",",
+        "    ):",
+        "        m.runtime_gate()",
+        "",
+        "",
+        "def test_runtime_gate_rejects_wrong_python_version(",
+        "    tmp_path,",
+        "    monkeypatch,",
+        "):",
+        "    _, versions, _, _ = (",
+        "        build_runtime_baseline(",
+        "            tmp_path,",
+        "            monkeypatch,",
+        "        )",
+        "    )",
+        "",
+        "    versions[\"python\"] = \"3.12.12\"",
+        "",
+        "    with pytest.raises(",
+        "        m.ContractError,",
+        "        match=\"runtime version\",",
+        "    ):",
+        "        m.runtime_gate()",
+        "",
+        "",
+        "def test_runtime_gate_rejects_wrong_numpy_version(",
+        "    tmp_path,",
+        "    monkeypatch,",
+        "):",
+        "    _, versions, _, _ = (",
+        "        build_runtime_baseline(",
+        "            tmp_path,",
+        "            monkeypatch,",
+        "        )",
+        "    )",
+        "",
+        "    versions[\"numpy\"] = \"2.0.1\"",
+        "",
+        "    with pytest.raises(",
+        "        m.ContractError,",
+        "        match=\"runtime version\",",
+        "    ):",
+        "        m.runtime_gate()",
+        "",
+        "",
+        "def test_runtime_gate_rejects_wrong_transformers_version(",
+        "    tmp_path,",
+        "    monkeypatch,",
+        "):",
+        "    _, versions, _, _ = (",
+        "        build_runtime_baseline(",
+        "            tmp_path,",
+        "            monkeypatch,",
+        "        )",
+        "    )",
+        "",
+        "    versions[\"transformers\"] = \"wrong\""
+      ],
+      "before_context": [
+        "        )",
+        "    )",
+        "",
+        "",
+        "    with pytest.raises(",
+        "        m.ContractError,"
+      ],
+      "after_context": [
+        "        )",
+        "    )",
+        "",
+        "",
+        "    with pytest.raises(",
+        "        m.ContractError,"
+      ]
+    }
+  ]
+}

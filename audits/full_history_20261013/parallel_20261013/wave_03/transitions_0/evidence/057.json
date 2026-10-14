@@ -1,0 +1,1148 @@
+{
+  "shard_ordinal": 57,
+  "original_queue_id": "WORK-8dbbe9748980d0c653b9",
+  "original_source_ids": [
+    "HV000625"
+  ],
+  "original_source_identity": {
+    "commit": "32a39c916e6dfa18e809094ac71d8c0d58497d00",
+    "path": "scripts/analyze_stage182b_clean_frame_failure_localization.py",
+    "blob": "c9dbc72def5d53b992970afae712d66eb2a79b63",
+    "object_type": "commit",
+    "bytes": 70982,
+    "sha256": "bd91d249f38322cfcfdb2b14620f36688b36ae91ad3841d43605ef3b8fe97711"
+  },
+  "before": {
+    "commit": "8d628f84421e402d06e7ff842ffe35dbcc799205",
+    "path": "scripts/analyze_stage182b_clean_frame_failure_localization.py",
+    "blob": "3662b9488515560c44c7a4fe2db0119dfb2915e4",
+    "object_type": "commit",
+    "bytes": 58978,
+    "sha256": "4fbf1618285b9ac25f3d5505b0c9d46d6abc70ac448dea589d4eefed7839d23a"
+  },
+  "after": {
+    "commit": "32a39c916e6dfa18e809094ac71d8c0d58497d00",
+    "path": "scripts/analyze_stage182b_clean_frame_failure_localization.py",
+    "blob": "c9dbc72def5d53b992970afae712d66eb2a79b63",
+    "object_type": "commit",
+    "bytes": 70982,
+    "sha256": "bd91d249f38322cfcfdb2b14620f36688b36ae91ad3841d43605ef3b8fe97711"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0071"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "main",
+      "markdown",
+      "parse_args",
+      "sha256"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 33 removed/replaced lines and 229 added/replaced lines in 31 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "8d628f84421e402d06e7ff842ffe35dbcc799205",
+      "blob": "3662b9488515560c44c7a4fe2db0119dfb2915e4"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 12,
+      "before_end_exclusive": 12,
+      "after_start": 12,
+      "after_end_exclusive": 13,
+      "before": [],
+      "after": [
+        "import hashlib"
+      ],
+      "before_context": [
+        "",
+        "import argparse",
+        "import csv",
+        "import json",
+        "import math",
+        "import random"
+      ],
+      "after_context": [
+        "",
+        "import argparse",
+        "import csv",
+        "import json",
+        "import math",
+        "import random"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 139,
+      "before_end_exclusive": 139,
+      "after_start": 140,
+      "after_end_exclusive": 151,
+      "before": [],
+      "after": [
+        "",
+        "",
+        "def sha256(path: Path) -> str:",
+        "    digest = hashlib.sha256()",
+        "    try:",
+        "        with path.open(\"rb\") as handle:",
+        "            for chunk in iter(lambda: handle.read(1024 * 1024), b\"\"):",
+        "                digest.update(chunk)",
+        "    except OSError as exc:",
+        "        raise LocalizationBlocked(f\"cannot hash {path}: {exc}\") from exc",
+        "    return digest.hexdigest()"
+      ],
+      "before_context": [
+        "        raise LocalizationBlocked(f\"cannot read CSV {path}: {exc}\") from exc",
+        "    require(bool(header), f\"CSV has no header: {path}\")",
+        "    return rows, header",
+        "",
+        "",
+        "def write_csv(path: Path, rows: list[dict[str, Any]], fields: list[str]) -> None:"
+      ],
+      "after_context": [
+        "        raise LocalizationBlocked(f\"cannot read CSV {path}: {exc}\") from exc",
+        "    require(bool(header), f\"CSV has no header: {path}\")",
+        "    return rows, header",
+        "",
+        "",
+        "def write_csv(path: Path, rows: list[dict[str, Any]], fields: list[str]) -> None:"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 297,
+      "before_end_exclusive": 299,
+      "after_start": 309,
+      "after_end_exclusive": 311,
+      "before": [
+        "    parser.add_argument(\"--stage179a-report\", type=Path, required=True)",
+        "    parser.add_argument(\"--stage179a-hard39-attribution\", type=Path, required=True)"
+      ],
+      "after": [
+        "    parser.add_argument(\"--stage179a-report\", type=Path, default=None)",
+        "    parser.add_argument(\"--stage179a-hard39-attribution\", type=Path, default=None)"
+      ],
+      "before_context": [
+        "    parser.add_argument(\"--stage182a-canonical-control-audit\", type=Path, required=True)",
+        "    parser.add_argument(\"--stage180a-hidden-item-key\", type=Path, required=True)",
+        "    parser.add_argument(\"--stage180a-pass2-packet\", type=Path, required=True)",
+        "    parser.add_argument(\"--stage176a-row-transitions\", type=Path, required=True)",
+        "    parser.add_argument(\"--output-dir\", type=Path, required=True)",
+        "    parser.add_argument(\"--bootstrap-samples\", type=int, default=5000)"
+      ],
+      "after_context": [
+        "    parser.add_argument(\"--stage182a-canonical-control-audit\", type=Path, required=True)",
+        "    parser.add_argument(\"--stage180a-hidden-item-key\", type=Path, required=True)",
+        "    parser.add_argument(\"--stage180a-pass2-packet\", type=Path, required=True)",
+        "    parser.add_argument(\"--stage176a-row-transitions\", type=Path, required=True)",
+        "    parser.add_argument(\"--output-dir\", type=Path, required=True)",
+        "    parser.add_argument(\"--bootstrap-samples\", type=int, default=5000)"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 313,
+      "before_end_exclusive": 313,
+      "after_start": 325,
+      "after_end_exclusive": 328,
+      "before": [],
+      "after": [
+        "    movement = report[\"representation_movement_analysis\"]",
+        "    coverage = report[\"artifact_coverage\"]",
+        "    provenance = report.get(\"provenance\", {})"
+      ],
+      "before_context": [
+        "    paired = report[\"matched_control_analysis\"]",
+        "    centroid = report[\"centroid_readout_analysis\"]",
+        "    projection = report[\"projection_bias_analysis\"]",
+        "    return f\"\"\"# Stage182-B clean native-frame failure localization",
+        "",
+        "**Decision:** `{report['decision']}`"
+      ],
+      "after_context": [
+        "    paired = report[\"matched_control_analysis\"]",
+        "    centroid = report[\"centroid_readout_analysis\"]",
+        "    projection = report[\"projection_bias_analysis\"]",
+        "    return f\"\"\"# Stage182-B clean native-frame failure localization",
+        "",
+        "**Decision:** `{report['decision']}`"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 316,
+      "before_end_exclusive": 316,
+      "after_start": 331,
+      "after_end_exclusive": 339,
+      "before": [],
+      "after": [
+        "",
+        "**Artifact source mode:** `{coverage.get('artifact_source_mode')}`",
+        "",
+        "## Artifact provenance",
+        "",
+        "Stage180-A manifest SHA: `{provenance.get('stage180a_manifest_sha256')}`. Stage180-A Pass-2 packet SHA: `{provenance.get('stage180a_pass2_packet_sha256')}`. Stage182-A candidate CSV SHA: `{provenance.get('stage182a_candidate_csv_sha256')}`. Stage182-A decision: `{provenance.get('stage182a_report_decision')}`.",
+        "",
+        "{coverage.get('provenance_limitation', '')}"
+      ],
+      "before_context": [
+        "    return f\"\"\"# Stage182-B clean native-frame failure localization",
+        "",
+        "**Decision:** `{report['decision']}`",
+        "",
+        "## Fixed clean cohorts",
+        ""
+      ],
+      "after_context": [
+        "    return f\"\"\"# Stage182-B clean native-frame failure localization",
+        "",
+        "**Decision:** `{report['decision']}`",
+        "",
+        "## Fixed clean cohorts",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 329,
+      "before_end_exclusive": 330,
+      "after_start": 352,
+      "after_end_exclusive": 353,
+      "before": [
+        "Candidate centroid-correct rate was `{centroid.get('candidate_centroid_correct_rate')}` and matched-control centroid-correct rate was `{centroid.get('matched_control_centroid_correct_rate')}`. Stage179 centroid outputs are gold-conditioned, leave-one-row-out, transductive diagnostics—not a deployable classifier or a Stage182 fitted probe."
+      ],
+      "after": [
+        "Centroid/head subanalysis availability: `{centroid.get('subanalysis_available')}`. Candidate centroid-correct rate was `{centroid.get('candidate_centroid_correct_rate')}` and matched-control centroid-correct rate was `{centroid.get('matched_control_centroid_correct_rate')}`. Stage179 centroid outputs are gold-conditioned, leave-one-row-out, transductive diagnostics—not a deployable classifier or a Stage182 fitted probe."
+      ],
+      "before_context": [
+        "",
+        "## Centroid and readout",
+        "",
+        "",
+        "Projection/bias decomposition availability: `{projection.get('bias_specific_subanalysis_available')}`. A bias-specific conclusion is reported only when the stored projection reconstructs the native logit with an effectively constant inferred bias and maximum error at most `1e-5`.",
+        ""
+      ],
+      "after_context": [
+        "",
+        "## Centroid and readout",
+        "",
+        "",
+        "Projection subanalysis availability: `{projection.get('subanalysis_available')}`. Bias-specific decomposition availability: `{projection.get('bias_specific_subanalysis_available')}`. A bias-specific conclusion is reported only when the stored projection reconstructs the native logit with an effectively constant inferred bias and maximum error at most `1e-5`.",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 331,
+      "before_end_exclusive": 332,
+      "after_start": 354,
+      "after_end_exclusive": 357,
+      "before": [
+        "Projection/bias decomposition availability: `{projection.get('bias_specific_subanalysis_available')}`. A bias-specific conclusion is reported only when the stored projection reconstructs the native logit with an effectively constant inferred bias and maximum error at most `1e-5`."
+      ],
+      "after": [
+        "Projection subanalysis availability: `{projection.get('subanalysis_available')}`. Bias-specific decomposition availability: `{projection.get('bias_specific_subanalysis_available')}`. A bias-specific conclusion is reported only when the stored projection reconstructs the native logit with an effectively constant inferred bias and maximum error at most `1e-5`.",
+        "",
+        "Representation-movement subanalysis availability: `{movement.get('subanalysis_available')}`. Missing centroid, projection, or movement fields do not suppress scalar-margin analysis."
+      ],
+      "before_context": [
+        "",
+        "Candidate centroid-correct rate was `{centroid.get('candidate_centroid_correct_rate')}` and matched-control centroid-correct rate was `{centroid.get('matched_control_centroid_correct_rate')}`. Stage179 centroid outputs are gold-conditioned, leave-one-row-out, transductive diagnostics—not a deployable classifier or a Stage182 fitted probe.",
+        "",
+        "",
+        "## Stratified evidence",
+        ""
+      ],
+      "after_context": [
+        "",
+        "Centroid/head subanalysis availability: `{centroid.get('subanalysis_available')}`. Candidate centroid-correct rate was `{centroid.get('candidate_centroid_correct_rate')}` and matched-control centroid-correct rate was `{centroid.get('matched_control_centroid_correct_rate')}`. Stage179 centroid outputs are gold-conditioned, leave-one-row-out, transductive diagnostics—not a deployable classifier or a Stage182 fitted probe.",
+        "",
+        "",
+        "## Stratified evidence",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 351,
+      "before_end_exclusive": 351,
+      "after_start": 376,
+      "after_end_exclusive": 382,
+      "before": [],
+      "after": [
+        "        external_report = args.stage179a_report is not None",
+        "        external_hard39 = args.stage179a_hard39_attribution is not None",
+        "        require(external_report == external_hard39,",
+        "                \"--stage179a-report and --stage179a-hard39-attribution must be provided together\")",
+        "        artifact_source_mode = (\"external_stage179_artifacts\" if external_report",
+        "                                else \"embedded_stage180a_pass2\")"
+      ],
+      "before_context": [
+        "    try:",
+        "        require(args.bootstrap_samples >= 1000, \"--bootstrap-samples must be at least 1000\")",
+        "        require(args.minimum_candidates >= 1, \"--minimum-candidates must be at least 1\")",
+        "        current = \"input_read\"",
+        "        report182 = read_json(args.stage182a_report)",
+        "        report179 = read_json(args.stage179a_report)"
+      ],
+      "after_context": [
+        "    try:",
+        "        require(args.bootstrap_samples >= 1000, \"--bootstrap-samples must be at least 1000\")",
+        "        require(args.minimum_candidates >= 1, \"--minimum-candidates must be at least 1\")",
+        "        current = \"input_read\"",
+        "        report182 = read_json(args.stage182a_report)",
+        "        report179 = read_json(args.stage179a_report) if external_report else None"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 353,
+      "before_end_exclusive": 354,
+      "after_start": 384,
+      "after_end_exclusive": 385,
+      "before": [
+        "        report179 = read_json(args.stage179a_report)"
+      ],
+      "after": [
+        "        report179 = read_json(args.stage179a_report) if external_report else None"
+      ],
+      "before_context": [
+        "        require(args.minimum_candidates >= 1, \"--minimum-candidates must be at least 1\")",
+        "        current = \"input_read\"",
+        "        report182 = read_json(args.stage182a_report)",
+        "        require(report182.get(\"decision\") == EXPECTED_182A, \"unexpected Stage182-A decision\")",
+        "        require(report179.get(\"decision\") == EXPECTED_179A, \"unexpected Stage179-A decision\")",
+        "        candidates_raw, _ = read_csv(args.stage182a_clean_candidates)"
+      ],
+      "after_context": [
+        "                                else \"embedded_stage180a_pass2\")",
+        "        current = \"input_read\"",
+        "        report182 = read_json(args.stage182a_report)",
+        "        require(report182.get(\"decision\") == EXPECTED_182A, \"unexpected Stage182-A decision\")",
+        "        if report179 is not None:",
+        "            require(report179.get(\"decision\") == EXPECTED_179A, \"unexpected Stage179-A decision\")"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 355,
+      "before_end_exclusive": 356,
+      "after_start": 386,
+      "after_end_exclusive": 388,
+      "before": [
+        "        require(report179.get(\"decision\") == EXPECTED_179A, \"unexpected Stage179-A decision\")"
+      ],
+      "after": [
+        "        if report179 is not None:",
+        "            require(report179.get(\"decision\") == EXPECTED_179A, \"unexpected Stage179-A decision\")"
+      ],
+      "before_context": [
+        "        report182 = read_json(args.stage182a_report)",
+        "        report179 = read_json(args.stage179a_report)",
+        "        require(report182.get(\"decision\") == EXPECTED_182A, \"unexpected Stage182-A decision\")",
+        "        candidates_raw, _ = read_csv(args.stage182a_clean_candidates)",
+        "        controls_raw, _ = read_csv(args.stage182a_clean_controls)",
+        "        items_raw, _ = read_csv(args.stage182a_unique_item_integrity)"
+      ],
+      "after_context": [
+        "        report182 = read_json(args.stage182a_report)",
+        "        report179 = read_json(args.stage179a_report) if external_report else None",
+        "        require(report182.get(\"decision\") == EXPECTED_182A, \"unexpected Stage182-A decision\")",
+        "        candidates_raw, _ = read_csv(args.stage182a_clean_candidates)",
+        "        controls_raw, _ = read_csv(args.stage182a_clean_controls)",
+        "        items_raw, _ = read_csv(args.stage182a_unique_item_integrity)"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 362,
+      "before_end_exclusive": 363,
+      "after_start": 394,
+      "after_end_exclusive": 396,
+      "before": [
+        "        hard179_raw, _ = read_csv(args.stage179a_hard39_attribution)"
+      ],
+      "after": [
+        "        hard179_raw, _ = (read_csv(args.stage179a_hard39_attribution)",
+        "                          if external_hard39 else ([], []))"
+      ],
+      "before_context": [
+        "        canonical_raw, _ = read_csv(args.stage182a_canonical_control_audit)",
+        "        hidden_raw, _ = read_csv(args.stage180a_hidden_item_key)",
+        "        pass2_raw, _ = read_csv(args.stage180a_pass2_packet)",
+        "        transitions_raw, _ = read_csv(args.stage176a_row_transitions)",
+        "",
+        "        current = \"identity_validation\""
+      ],
+      "after_context": [
+        "        canonical_raw, _ = read_csv(args.stage182a_canonical_control_audit)",
+        "        hidden_raw, _ = read_csv(args.stage180a_hidden_item_key)",
+        "        pass2_raw, _ = read_csv(args.stage180a_pass2_packet)",
+        "        transitions_raw, _ = read_csv(args.stage176a_row_transitions)",
+        "        provenance_limitation = (",
+        "            \"\" if external_report else"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 364,
+      "before_end_exclusive": 364,
+      "after_start": 397,
+      "after_end_exclusive": 413,
+      "before": [],
+      "after": [
+        "        provenance_limitation = (",
+        "            \"\" if external_report else",
+        "            \"Stage179-derived scalar values were frozen into the Stage180-A packet. \"",
+        "            \"Direct Stage179 runtime report provenance was unavailable. \"",
+        "            \"No scalar was reconstructed or recomputed.\"",
+        "        )",
+        "        input_hashes = report182.get(\"input_validation\", {}).get(\"input_sha256\", {})",
+        "        provenance = {",
+        "            \"artifact_source_mode\": artifact_source_mode,",
+        "            \"stage180a_manifest_sha256\": input_hashes.get(\"stage180a_manifest\"),",
+        "            \"stage180a_pass2_packet_sha256\": sha256(args.stage180a_pass2_packet),",
+        "            \"stage182a_candidate_csv_sha256\": sha256(args.stage182a_clean_candidates),",
+        "            \"stage182a_report_decision\": report182.get(\"decision\"),",
+        "            \"stage179a_report_decision\": report179.get(\"decision\") if report179 else None,",
+        "            \"scalar_reconstructed_or_recomputed\": False,",
+        "        }"
+      ],
+      "before_context": [
+        "        pass2_raw, _ = read_csv(args.stage180a_pass2_packet)",
+        "        hard179_raw, _ = read_csv(args.stage179a_hard39_attribution)",
+        "        transitions_raw, _ = read_csv(args.stage176a_row_transitions)",
+        "",
+        "        current = \"identity_validation\"",
+        "        def unique(rows: list[dict[str, Any]], name: str) -> dict[str, dict[str, Any]]:"
+      ],
+      "after_context": [
+        "        hard179_raw, _ = (read_csv(args.stage179a_hard39_attribution)",
+        "                          if external_hard39 else ([], []))",
+        "        transitions_raw, _ = read_csv(args.stage176a_row_transitions)",
+        "",
+        "        current = \"identity_validation\"",
+        "        def unique(rows: list[dict[str, Any]], name: str) -> dict[str, dict[str, Any]]:"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 406,
+      "before_end_exclusive": 409,
+      "after_start": 455,
+      "after_end_exclusive": 459,
+      "before": [
+        "        require(candidate_ids <= set(identity(row) for row in hard179_raw),",
+        "                \"Stage179 hard-39 attribution lacks candidate IDs\",",
+        "                missing_ids=sorted(candidate_ids - set(identity(row) for row in hard179_raw)))"
+      ],
+      "after": [
+        "        if external_hard39:",
+        "            require(candidate_ids <= set(identity(row) for row in hard179_raw),",
+        "                    \"Stage179 hard-39 attribution lacks candidate IDs\",",
+        "                    missing_ids=sorted(candidate_ids - set(identity(row) for row in hard179_raw)))"
+      ],
+      "before_context": [
+        "            matched_ids.add(matched)",
+        "        require(not offending, \"candidate mismatch invariant failed\", offending_candidate_rows=offending)",
+        "        require(len(matched_ids) == 14, \"matched candidate controls must be one-to-one\")",
+        "",
+        "        current = \"artifact_normalization\"",
+        "        review_to_id: dict[str, str] = {}"
+      ],
+      "after_context": [
+        "            matched_ids.add(matched)",
+        "        require(not offending, \"candidate mismatch invariant failed\", offending_candidate_rows=offending)",
+        "        require(len(matched_ids) == 14, \"matched candidate controls must be one-to-one\")",
+        "",
+        "        current = \"artifact_normalization\"",
+        "        review_to_id: dict[str, str] = {}"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 419,
+      "before_end_exclusive": 419,
+      "after_start": 469,
+      "after_end_exclusive": 470,
+      "before": [],
+      "after": [
+        "        pass2_by_source_id: dict[str, list[dict[str, Any]]] = defaultdict(list)"
+      ],
+      "before_context": [
+        "            require(review not in review_to_id, \"duplicate review ID in hidden key\", duplicate_ids=[review])",
+        "            review_to_id[review] = str(row_id)",
+        "        pass2_with_ids: list[dict[str, Any]] = []",
+        "        for row in pass2_raw:",
+        "            review = str(row.get(\"review_instance_id\", \"\"))",
+        "            require(review in review_to_id, \"Pass-2 review ID absent from hidden key\", missing_ids=[review])"
+      ],
+      "after_context": [
+        "            require(review not in review_to_id, \"duplicate review ID in hidden key\", duplicate_ids=[review])",
+        "            review_to_id[review] = str(row_id)",
+        "        pass2_with_ids: list[dict[str, Any]] = []",
+        "        for row in pass2_raw:",
+        "            review = str(row.get(\"review_instance_id\", \"\"))",
+        "            require(review in review_to_id, \"Pass-2 review ID absent from hidden key\", missing_ids=[review])"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 422,
+      "before_end_exclusive": 426,
+      "after_start": 473,
+      "after_end_exclusive": 515,
+      "before": [
+        "            pass2_with_ids.append({**row, \"row_id\": review_to_id[review]})",
+        "        sources = [(\"stage180a_pass2\", merge_normalized(pass2_with_ids, \"Stage180-A Pass-2\")),",
+        "                   (\"stage179a_hard39\", merge_normalized(hard179_raw, \"Stage179-A hard39\")),",
+        "                   (\"stage176a_transitions\", merge_normalized(transitions_raw, \"Stage176-A transitions\"))]"
+      ],
+      "after": [
+        "            source_id = review_to_id[review]",
+        "            normalized_row = {**row, \"row_id\": source_id}",
+        "            pass2_with_ids.append(normalized_row)",
+        "            pass2_by_source_id[source_id].append(normalized_row)",
+        "        require(candidate_ids <= set(pass2_by_source_id),",
+        "                \"Stage180-A Pass-2 packet lacks candidate IDs\",",
+        "                missing_ids=sorted(candidate_ids - set(pass2_by_source_id)))",
+        "",
+        "        matched_aliases = {",
+        "            \"frame_label\": (\"matched_control_native_frame_label\",),",
+        "            \"frame_prediction\": (\"matched_control_frame_prediction\",),",
+        "            \"frame_logit\": (\"matched_control_frame_logit\",),",
+        "            \"frame_probability\": (\"matched_control_frame_prob\", \"matched_control_frame_probability\"),",
+        "        }",
+        "        embedded_matched: dict[str, dict[str, Any]] = {}",
+        "        for candidate_id in sorted(candidate_ids):",
+        "            expected_control = str(candidate_by_id[candidate_id][\"matched_source_row_id\"])",
+        "            packet_rows = pass2_by_source_id[candidate_id]",
+        "            linked_control_ids = {review_to_id[str(row[\"matched_control_review_instance_id\"])]",
+        "                                  for row in packet_rows",
+        "                                  if str(row.get(\"matched_control_review_instance_id\", \"\")) in review_to_id}",
+        "            require(linked_control_ids == {expected_control},",
+        "                    f\"Pass-2 matched-control identity mismatch for {candidate_id}\",",
+        "                    missing_ids=[expected_control],",
+        "                    extra_ids=sorted(linked_control_ids - {expected_control}))",
+        "            values: dict[str, Any] = {}",
+        "            for field, aliases in matched_aliases.items():",
+        "                observed = [normalize_value(field, row[alias]) for row in packet_rows for alias in aliases",
+        "                            if str(row.get(alias, \"\")).strip()]",
+        "                require(not observed or all(value_equal(observed[0], value) for value in observed[1:]),",
+        "                        f\"repeat rows conflict for embedded matched-control {field}: {candidate_id}\",",
+        "                        schema_mismatch={\"row_id\": candidate_id, \"field\": field})",
+        "                values[field] = observed[0] if observed else None",
+        "            embedded_matched[expected_control] = values",
+        "",
+        "        pass2_normalized = merge_normalized(pass2_with_ids, \"Stage180-A Pass-2\")",
+        "        sources = [(\"stage180a_pass2\", pass2_normalized)]",
+        "        if external_hard39:",
+        "            sources.append((\"stage179a_hard39\", merge_normalized(hard179_raw, \"Stage179-A hard39\")))",
+        "        sources.append((\"stage176a_transitions\", merge_normalized(transitions_raw, \"Stage176-A transitions\")))",
+        "        sources.append((\"stage182a_identity_fields\",",
+        "                        merge_normalized(candidates_raw + controls_raw, \"Stage182-A identity fields\")))"
+      ],
+      "before_context": [
+        "        for row in pass2_raw:",
+        "            review = str(row.get(\"review_instance_id\", \"\"))",
+        "            require(review in review_to_id, \"Pass-2 review ID absent from hidden key\", missing_ids=[review])",
+        "        wanted_ids = candidate_ids | matched_ids | clean_correct_ids | set(control_by_id)",
+        "        normalized: dict[str, dict[str, Any]] = {}",
+        "        for row_id in wanted_ids:"
+      ],
+      "after_context": [
+        "        for row in pass2_raw:",
+        "            review = str(row.get(\"review_instance_id\", \"\"))",
+        "            require(review in review_to_id, \"Pass-2 review ID absent from hidden key\", missing_ids=[review])",
+        "        wanted_ids = candidate_ids | matched_ids | clean_correct_ids | set(control_by_id)",
+        "        normalized: dict[str, dict[str, Any]] = {}",
+        "        for row_id in wanted_ids:"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 441,
+      "before_end_exclusive": 441,
+      "after_start": 530,
+      "after_end_exclusive": 542,
+      "before": [],
+      "after": [
+        "",
+        "        for control_id, embedded_values in embedded_matched.items():",
+        "            for field, value in embedded_values.items():",
+        "                if value is None:",
+        "                    continue",
+        "                existing = normalized[control_id][\"values\"].get(field)",
+        "                require(existing is None or value_equal(existing, value),",
+        "                        f\"embedded matched-control {field} disagrees with control row: {control_id}\",",
+        "                        schema_mismatch={\"row_id\": control_id, \"field\": field})",
+        "                if existing is None:",
+        "                    normalized[control_id][\"values\"][field] = value",
+        "                    normalized[control_id][\"sources\"][field] = \"embedded_stage180a_matched_control\""
+      ],
+      "before_context": [
+        "                        require(value_equal(chosen[field], value), f\"cross-artifact {field} mismatch for {row_id}\",",
+        "                                schema_mismatch={\"row_id\": row_id, \"field\": field})",
+        "            normalized[row_id] = {\"values\": chosen, \"sources\": field_source}",
+        "",
+        "        def enriched(row_id: str, row: dict[str, Any]) -> dict[str, Any]:",
+        "            values = normalized[row_id][\"values\"]"
+      ],
+      "after_context": [
+        "                        require(value_equal(chosen[field], value), f\"cross-artifact {field} mismatch for {row_id}\",",
+        "                                schema_mismatch={\"row_id\": row_id, \"field\": field})",
+        "            normalized[row_id] = {\"values\": chosen, \"sources\": field_source}",
+        "",
+        "        def enriched(row_id: str, row: dict[str, Any]) -> dict[str, Any]:",
+        "            values = normalized[row_id][\"values\"]"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 458,
+      "before_end_exclusive": 458,
+      "after_start": 559,
+      "after_end_exclusive": 596,
+      "before": [],
+      "after": [
+        "",
+        "        embedded_candidate_required = {",
+        "            \"native_frame_label\": \"frame_label\",",
+        "            \"native_frame_prediction\": \"frame_prediction\",",
+        "            \"native_frame_logit\": \"frame_logit\",",
+        "            \"native_frame_probability\": \"frame_probability\",",
+        "        }",
+        "        embedded_control_required = {",
+        "            \"matched_control_frame_prediction\": \"frame_prediction\",",
+        "            \"matched_control_frame_logit\": \"frame_logit\",",
+        "            \"matched_control_frame_prob\": \"frame_probability\",",
+        "        }",
+        "        embedded_candidate_field_coverage = {",
+        "            artifact_field: rate(",
+        "                sum(pass2_normalized.get(row_id, {}).get(canonical_field) is not None",
+        "                    for row_id in candidate_ids), 14)",
+        "            for artifact_field, canonical_field in embedded_candidate_required.items()",
+        "        }",
+        "        embedded_control_field_coverage = {",
+        "            artifact_field: rate(",
+        "                sum(embedded_matched.get(row_id, {}).get(canonical_field) is not None",
+        "                    for row_id in matched_ids), 14)",
+        "            for artifact_field, canonical_field in embedded_control_required.items()",
+        "        }",
+        "        embedded_required_scalar_coverage = min(",
+        "            list(embedded_candidate_field_coverage.values()) + list(embedded_control_field_coverage.values())",
+        "        )",
+        "        embedded_centroid_coverage = rate(",
+        "            sum(pass2_normalized.get(row_id, {}).get(\"centroid_correct\") is not None",
+        "                and pass2_normalized.get(row_id, {}).get(\"centroid_prediction\") is not None",
+        "                for row_id in candidate_ids | matched_ids), 28)",
+        "        embedded_projection_coverage = rate(",
+        "            sum(pass2_normalized.get(row_id, {}).get(\"frame_head_projection\") is not None",
+        "                for row_id in candidate_ids | matched_ids), 28)",
+        "        embedded_movement_coverage = rate(",
+        "            sum(pass2_normalized.get(row_id, {}).get(\"representation_movement_from_none\") is not None",
+        "                for row_id in candidate_ids | matched_ids), 28)"
+      ],
+      "before_context": [
+        "                missing_ids=sorted(candidate_ids - transition_ids))",
+        "        require(composition(candidates, \"stage176_cohort\") == {\"beneficial_correction\": 1, \"harmful_regression\": 13},",
+        "                \"Stage176 candidate cohort topology mismatch\")",
+        "",
+        "        current = \"paired_analysis\"",
+        "        candidate_rows: list[dict[str, Any]] = []"
+      ],
+      "after_context": [
+        "                missing_ids=sorted(candidate_ids - transition_ids))",
+        "        require(composition(candidates, \"stage176_cohort\") == {\"beneficial_correction\": 1, \"harmful_regression\": 13},",
+        "                \"Stage176 candidate cohort topology mismatch\")",
+        "",
+        "        current = \"paired_analysis\"",
+        "        candidate_rows: list[dict[str, Any]] = []"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 539,
+      "before_end_exclusive": 540,
+      "after_start": 677,
+      "after_end_exclusive": 683,
+      "before": [
+        "        relationship_verified = len(inferred) == len(projection_population) and bool(errors) and max(errors) <= 1e-5"
+      ],
+      "after": [
+        "        normalized_projection_coverage = rate(len(inferred), len(projection_population))",
+        "        projection_subanalysis_available = (normalized_projection_coverage is not None and",
+        "                                            normalized_projection_coverage >= .90)",
+        "        relationship_verified = (projection_subanalysis_available and",
+        "                                 len(inferred) == len(projection_population) and",
+        "                                 bool(errors) and max(errors) <= 1e-5)"
+      ],
+      "before_context": [
+        "                    for row in projection_population if scalar(row, \"frame_logit\") is not None and scalar(row, \"frame_head_projection\") is not None]",
+        "        bias = med(inferred)",
+        "        errors = [abs(value - float(bias)) for value in inferred] if bias is not None else []",
+        "        projection_rows = []",
+        "        for row in projection_population:",
+        "            logit, projection = scalar(row, \"frame_logit\"), scalar(row, \"frame_head_projection\")"
+      ],
+      "after_context": [
+        "                    for row in projection_population if scalar(row, \"frame_logit\") is not None and scalar(row, \"frame_head_projection\") is not None]",
+        "        bias = med(inferred)",
+        "        errors = [abs(value - float(bias)) for value in inferred] if bias is not None else []",
+        "        projection_rows = []",
+        "        for row in projection_population:",
+        "            logit, projection = scalar(row, \"frame_logit\"), scalar(row, \"frame_head_projection\")"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 558,
+      "before_end_exclusive": 559,
+      "after_start": 701,
+      "after_end_exclusive": 705,
+      "before": [
+        "        projection_analysis = {\"available_count\": len(inferred), \"inferred_bias_median\": bias,"
+      ],
+      "after": [
+        "        projection_analysis = {\"available_count\": len(inferred),",
+        "                               \"coverage\": normalized_projection_coverage,",
+        "                               \"subanalysis_available\": projection_subanalysis_available,",
+        "                               \"inferred_bias_median\": bias,"
+      ],
+      "before_context": [
+        "        positive_negative_rate = rate(sum(row[\"projection_positive_logit_negative\"] for row in fn_projection),",
+        "                                      sum(row[\"frame_head_projection\"] is not None and row[\"frame_logit\"] is not None for row in fn_projection))",
+        "        bias_dominant = relationship_verified and positive_negative_rate is not None and positive_negative_rate >= .70",
+        "                               \"inferred_bias_variance\": statistics.pvariance(inferred) if inferred else None,",
+        "                               \"maximum_reconstruction_error\": max(errors) if errors else None,",
+        "                               \"relationship_verified\": relationship_verified,"
+      ],
+      "after_context": [
+        "        positive_negative_rate = rate(sum(row[\"projection_positive_logit_negative\"] for row in fn_projection),",
+        "                                      sum(row[\"frame_head_projection\"] is not None and row[\"frame_logit\"] is not None for row in fn_projection))",
+        "        bias_dominant = relationship_verified and positive_negative_rate is not None and positive_negative_rate >= .70",
+        "                               \"inferred_bias_variance\": statistics.pvariance(inferred) if inferred else None,",
+        "                               \"maximum_reconstruction_error\": max(errors) if errors else None,",
+        "                               \"relationship_verified\": relationship_verified,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 578,
+      "before_end_exclusive": 578,
+      "after_start": 724,
+      "after_end_exclusive": 730,
+      "before": [],
+      "after": [
+        "        candidate_centroid_coverage = rate(len(candidate_centroid), 14)",
+        "        control_centroid_coverage = rate(len(control_centroid), 14)",
+        "        centroid_subanalysis_available = (candidate_centroid_coverage is not None and",
+        "                                          control_centroid_coverage is not None and",
+        "                                          candidate_centroid_coverage >= .90 and",
+        "                                          control_centroid_coverage >= .90)"
+      ],
+      "before_context": [
+        "                                  \"HEAD_WRONG_CENTROID_CORRECT\" if correct else \"HEAD_WRONG_CENTROID_WRONG\"})",
+        "        candidate_centroid = [row for row in centroid_rows if row[\"row_id\"] in candidate_ids and row[\"centroid_correct\"] is not None]",
+        "        control_centroid = [row for row in centroid_rows if row[\"row_id\"] in matched_ids and row[\"centroid_correct\"] is not None]",
+        "        centroid_analysis = {\"candidate_available_count\": len(candidate_centroid),",
+        "                             \"candidate_coverage\": rate(len(candidate_centroid), 14),",
+        "                             \"candidate_centroid_correct_rate\": rate(sum(row[\"centroid_correct\"] for row in candidate_centroid), len(candidate_centroid)),"
+      ],
+      "after_context": [
+        "                                  \"HEAD_WRONG_CENTROID_CORRECT\" if correct else \"HEAD_WRONG_CENTROID_WRONG\"})",
+        "        candidate_centroid = [row for row in centroid_rows if row[\"row_id\"] in candidate_ids and row[\"centroid_correct\"] is not None]",
+        "        control_centroid = [row for row in centroid_rows if row[\"row_id\"] in matched_ids and row[\"centroid_correct\"] is not None]",
+        "        centroid_analysis = {\"candidate_available_count\": len(candidate_centroid),",
+        "                             \"candidate_coverage\": candidate_centroid_coverage,",
+        "                             \"matched_control_coverage\": control_centroid_coverage,"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 579,
+      "before_end_exclusive": 580,
+      "after_start": 731,
+      "after_end_exclusive": 734,
+      "before": [
+        "                             \"candidate_coverage\": rate(len(candidate_centroid), 14),"
+      ],
+      "after": [
+        "                             \"candidate_coverage\": candidate_centroid_coverage,",
+        "                             \"matched_control_coverage\": control_centroid_coverage,",
+        "                             \"subanalysis_available\": centroid_subanalysis_available,"
+      ],
+      "before_context": [
+        "        candidate_centroid = [row for row in centroid_rows if row[\"row_id\"] in candidate_ids and row[\"centroid_correct\"] is not None]",
+        "        control_centroid = [row for row in centroid_rows if row[\"row_id\"] in matched_ids and row[\"centroid_correct\"] is not None]",
+        "        centroid_analysis = {\"candidate_available_count\": len(candidate_centroid),",
+        "                             \"candidate_centroid_correct_rate\": rate(sum(row[\"centroid_correct\"] for row in candidate_centroid), len(candidate_centroid)),",
+        "                             \"candidate_centroid_wrong_rate\": rate(sum(not row[\"centroid_correct\"] for row in candidate_centroid), len(candidate_centroid)),",
+        "                             \"matched_control_available_count\": len(control_centroid),"
+      ],
+      "after_context": [
+        "                                          candidate_centroid_coverage >= .90 and",
+        "                                          control_centroid_coverage >= .90)",
+        "        centroid_analysis = {\"candidate_available_count\": len(candidate_centroid),",
+        "                             \"candidate_centroid_correct_rate\": rate(sum(row[\"centroid_correct\"] for row in candidate_centroid), len(candidate_centroid)),",
+        "                             \"candidate_centroid_wrong_rate\": rate(sum(not row[\"centroid_correct\"] for row in candidate_centroid), len(candidate_centroid)),",
+        "                             \"matched_control_available_count\": len(control_centroid),"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 595,
+      "before_end_exclusive": 596,
+      "after_start": 749,
+      "after_end_exclusive": 759,
+      "before": [
+        "        movement_analysis: dict[str, Any] = {\"vector_direction_inference_authorized\": False, \"subsets\": {}}"
+      ],
+      "after": [
+        "        movement_available = sum(row[\"movement_status\"] == \"available\" for row in movement_rows)",
+        "        movement_applicable = sum(row[\"movement_status\"] != \"not_applicable\" for row in movement_rows)",
+        "        normalized_movement_coverage = rate(movement_available, movement_applicable)",
+        "        movement_analysis: dict[str, Any] = {",
+        "            \"vector_direction_inference_authorized\": False,",
+        "            \"coverage\": normalized_movement_coverage,",
+        "            \"subanalysis_available\": (normalized_movement_coverage is not None and",
+        "                                      normalized_movement_coverage >= .90),",
+        "            \"subsets\": {},",
+        "        }"
+      ],
+      "before_context": [
+        "                status = \"not_applicable\" if row[\"intervention_type\"] == \"none\" else \"available\" if value is not None else \"missing\"",
+        "                movement_rows.append({\"row_id\": row[\"row_id\"], \"subset\": subset, \"intervention_type\": row[\"intervention_type\"],",
+        "                                      \"movement_status\": status, \"representation_movement_from_none\": value})",
+        "        for subset in (\"candidate\", \"matched_control\", \"clean_hard_correct\"):",
+        "            values = [float(row[\"representation_movement_from_none\"]) for row in movement_rows",
+        "                      if row[\"subset\"] == subset and row[\"movement_status\"] == \"available\"]"
+      ],
+      "after_context": [
+        "                status = \"not_applicable\" if row[\"intervention_type\"] == \"none\" else \"available\" if value is not None else \"missing\"",
+        "                movement_rows.append({\"row_id\": row[\"row_id\"], \"subset\": subset, \"intervention_type\": row[\"intervention_type\"],",
+        "                                      \"movement_status\": status, \"representation_movement_from_none\": value})",
+        "        for subset in (\"candidate\", \"matched_control\", \"clean_hard_correct\"):",
+        "            values = [float(row[\"representation_movement_from_none\"]) for row in movement_rows",
+        "                      if row[\"subset\"] == subset and row[\"movement_status\"] == \"available\"]"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 697,
+      "before_end_exclusive": 700,
+      "after_start": 860,
+      "after_end_exclusive": 873,
+      "before": [
+        "        scalar_fields = (\"frame_label\", \"frame_prediction\", \"frame_logit\", \"frame_probability\")",
+        "        candidate_scalar_coverage = min(rate(sum(scalar(row, field) is not None for row in candidates), 14) for field in scalar_fields)",
+        "        control_scalar_coverage = min(rate(sum(scalar(row, field) is not None for row in matched_controls.values()), 14) for field in scalar_fields)"
+      ],
+      "after": [
+        "        candidate_scalar_fields = (\"frame_label\", \"frame_prediction\", \"frame_logit\", \"frame_probability\")",
+        "        control_scalar_fields = (\"frame_prediction\", \"frame_logit\", \"frame_probability\")",
+        "        candidate_scalar_coverage = min(",
+        "            rate(sum(scalar(row, field) is not None for row in candidates), 14)",
+        "            for field in candidate_scalar_fields",
+        "        )",
+        "        control_scalar_coverage = min(",
+        "            rate(sum(scalar(row, field) is not None for row in matched_controls.values()), 14)",
+        "            for field in control_scalar_fields",
+        "        )",
+        "        insufficient = (candidate_scalar_coverage < .90 or control_scalar_coverage < .90 or",
+        "                        (artifact_source_mode == \"embedded_stage180a_pass2\" and",
+        "                         embedded_required_scalar_coverage < .90))"
+      ],
+      "before_context": [
+        "                coverage_rows.append({\"artifact\": \"normalized_priority_sources\", \"cohort\": cohort_name, \"field\": field,",
+        "                                      \"available_count\": available, \"required_count\": len(group), \"coverage_rate\": rate(available, len(group)),",
+        "                                      \"threshold\": threshold, \"passed\": rate(available, len(group)) >= threshold})",
+        "",
+        "        compatible_dominant = len(fn_rows) / 14 >= .75",
+        "        negative_systematic = (len(fn_rows) >= args.minimum_candidates and med(fn_logits) is not None and med(fn_logits) < 0 and"
+      ],
+      "after_context": [
+        "                coverage_rows.append({\"artifact\": \"normalized_priority_sources\", \"cohort\": cohort_name, \"field\": field,",
+        "                                      \"available_count\": available, \"required_count\": len(group), \"coverage_rate\": rate(available, len(group)),",
+        "                                      \"threshold\": threshold, \"passed\": rate(available, len(group)) >= threshold})",
+        "",
+        "        compatible_dominant = len(fn_rows) / 14 >= .75",
+        "        negative_systematic = (len(fn_rows) >= args.minimum_candidates and med(fn_logits) is not None and med(fn_logits) < 0 and"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 704,
+      "before_end_exclusive": 705,
+      "after_start": 877,
+      "after_end_exclusive": 879,
+      "before": [
+        "        rep_gate = (len(candidates) >= args.minimum_candidates and centroid_analysis[\"candidate_centroid_wrong_rate\"] is not None and"
+      ],
+      "after": [
+        "        rep_gate = (not insufficient and centroid_subanalysis_available and",
+        "                    len(candidates) >= args.minimum_candidates and centroid_analysis[\"candidate_centroid_wrong_rate\"] is not None and"
+      ],
+      "before_context": [
+        "        compatible_dominant = len(fn_rows) / 14 >= .75",
+        "        negative_systematic = (len(fn_rows) >= args.minimum_candidates and med(fn_logits) is not None and med(fn_logits) < 0 and",
+        "                               fn_pair_ci[1] is not None and fn_pair_ci[1] < 0)",
+        "                    centroid_analysis[\"candidate_centroid_wrong_rate\"] >= .65 and",
+        "                    centroid_analysis[\"matched_control_centroid_correct_rate\"] is not None and",
+        "                    centroid_analysis[\"matched_control_centroid_correct_rate\"] >= .75 and paired_ci[1] is not None and paired_ci[1] < 0 and"
+      ],
+      "after_context": [
+        "        compatible_dominant = len(fn_rows) / 14 >= .75",
+        "        negative_systematic = (len(fn_rows) >= args.minimum_candidates and med(fn_logits) is not None and med(fn_logits) < 0 and",
+        "                               fn_pair_ci[1] is not None and fn_pair_ci[1] < 0)",
+        "                    centroid_analysis[\"candidate_centroid_wrong_rate\"] >= .65 and",
+        "                    centroid_analysis[\"matched_control_centroid_correct_rate\"] is not None and",
+        "                    centroid_analysis[\"matched_control_centroid_correct_rate\"] >= .75 and paired_ci[1] is not None and paired_ci[1] < 0 and"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 709,
+      "before_end_exclusive": 710,
+      "after_start": 883,
+      "after_end_exclusive": 885,
+      "before": [
+        "        readout_gate = (len(candidates) >= args.minimum_candidates and centroid_analysis[\"candidate_centroid_correct_rate\"] is not None and"
+      ],
+      "after": [
+        "        readout_gate = (not insufficient and centroid_subanalysis_available and",
+        "                        len(candidates) >= args.minimum_candidates and centroid_analysis[\"candidate_centroid_correct_rate\"] is not None and"
+      ],
+      "before_context": [
+        "                    centroid_analysis[\"matched_control_centroid_correct_rate\"] is not None and",
+        "                    centroid_analysis[\"matched_control_centroid_correct_rate\"] >= .75 and paired_ci[1] is not None and paired_ci[1] < 0 and",
+        "                    centroid_analysis[\"candidate_coverage\"] >= .80)",
+        "                        centroid_analysis[\"candidate_centroid_correct_rate\"] >= .65 and",
+        "                        centroid_analysis[\"matched_control_centroid_correct_rate\"] is not None and",
+        "                        centroid_analysis[\"matched_control_centroid_correct_rate\"] >= .75 and paired_ci[1] is not None and paired_ci[1] < 0 and"
+      ],
+      "after_context": [
+        "                    centroid_analysis[\"matched_control_centroid_correct_rate\"] is not None and",
+        "                    centroid_analysis[\"matched_control_centroid_correct_rate\"] >= .75 and paired_ci[1] is not None and paired_ci[1] < 0 and",
+        "                    centroid_analysis[\"candidate_coverage\"] >= .80)",
+        "                        centroid_analysis[\"candidate_centroid_correct_rate\"] >= .65 and",
+        "                        centroid_analysis[\"matched_control_centroid_correct_rate\"] is not None and",
+        "                        centroid_analysis[\"matched_control_centroid_correct_rate\"] >= .75 and paired_ci[1] is not None and paired_ci[1] < 0 and"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 713,
+      "before_end_exclusive": 717,
+      "after_start": 888,
+      "after_end_exclusive": 896,
+      "before": [
+        "                        ((projection_negative_rate is not None and projection_negative_rate >= .70) or bias_dominant))",
+        "        margin_gate = compatible_dominant and negative_systematic and candidate_scalar_coverage >= .90 and control_scalar_coverage >= .90",
+        "        insufficient = candidate_scalar_coverage < .90 or control_scalar_coverage < .90",
+        "        if rep_gate:"
+      ],
+      "after": [
+        "                        ((projection_subanalysis_available and projection_negative_rate is not None and",
+        "                          projection_negative_rate >= .70) or bias_dominant))",
+        "        margin_gate = (not insufficient and compatible_dominant and negative_systematic and",
+        "                       candidate_scalar_coverage >= .90 and control_scalar_coverage >= .90)",
+        "        polarity_gate = not insufficient and polarity_gate",
+        "        if insufficient:",
+        "            decision, next_stage = INSUFFICIENT, \"STAGE183_NATIVE_FRAME_ARTIFACT_RECOVERY_SPEC\"",
+        "        elif rep_gate:"
+      ],
+      "before_context": [
+        "                        centroid_analysis[\"candidate_centroid_correct_rate\"] >= .65 and",
+        "                        centroid_analysis[\"matched_control_centroid_correct_rate\"] is not None and",
+        "                        centroid_analysis[\"matched_control_centroid_correct_rate\"] >= .75 and paired_ci[1] is not None and paired_ci[1] < 0 and",
+        "            decision, next_stage = REPRESENTATION, \"STAGE183_FRAME_REPRESENTATION_LOCALIZATION_DESIGN_AUDIT\"",
+        "        elif readout_gate:",
+        "            decision, next_stage = READOUT, \"STAGE183_FRAME_READOUT_AND_POSITIVE_MARGIN_DESIGN_AUDIT\""
+      ],
+      "after_context": [
+        "                        centroid_analysis[\"candidate_centroid_correct_rate\"] >= .65 and",
+        "                        centroid_analysis[\"matched_control_centroid_correct_rate\"] is not None and",
+        "                        centroid_analysis[\"matched_control_centroid_correct_rate\"] >= .75 and paired_ci[1] is not None and paired_ci[1] < 0 and",
+        "            decision, next_stage = REPRESENTATION, \"STAGE183_FRAME_REPRESENTATION_LOCALIZATION_DESIGN_AUDIT\"",
+        "        elif readout_gate:",
+        "            decision, next_stage = READOUT, \"STAGE183_FRAME_READOUT_AND_POSITIVE_MARGIN_DESIGN_AUDIT\""
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 724,
+      "before_end_exclusive": 726,
+      "after_start": 903,
+      "after_end_exclusive": 903,
+      "before": [
+        "        elif insufficient:",
+        "            decision, next_stage = INSUFFICIENT, \"STAGE183_NATIVE_FRAME_ARTIFACT_RECOVERY_SPEC\""
+      ],
+      "after": [],
+      "before_context": [
+        "            decision, next_stage = MARGIN, \"STAGE183_COMPATIBLE_FRAME_POSITIVE_PRESERVATION_DESIGN_AUDIT\"",
+        "        elif polarity_gate:",
+        "            decision, next_stage = POLARITY, \"STAGE183_POLARITY_FRAME_DISENTANGLEMENT_DESIGN_AUDIT\"",
+        "        else:",
+        "            decision, next_stage = MIXED, \"STAGE183_STRATIFIED_CLEAN_FRAME_FAILURE_DESIGN_AUDIT\"",
+        "        gates = {REPRESENTATION: rep_gate, READOUT: readout_gate, MARGIN: margin_gate, POLARITY: polarity_gate,"
+      ],
+      "after_context": [
+        "            decision, next_stage = MARGIN, \"STAGE183_COMPATIBLE_FRAME_POSITIVE_PRESERVATION_DESIGN_AUDIT\"",
+        "        elif polarity_gate:",
+        "            decision, next_stage = POLARITY, \"STAGE183_POLARITY_FRAME_DISENTANGLEMENT_DESIGN_AUDIT\"",
+        "        else:",
+        "            decision, next_stage = MIXED, \"STAGE183_STRATIFIED_CLEAN_FRAME_FAILURE_DESIGN_AUDIT\"",
+        "        gates = {REPRESENTATION: rep_gate, READOUT: readout_gate, MARGIN: margin_gate, POLARITY: polarity_gate,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 736,
+      "before_end_exclusive": 736,
+      "after_start": 913,
+      "after_end_exclusive": 914,
+      "before": [],
+      "after": [
+        "                            \"artifact_source_mode\": artifact_source_mode,"
+      ],
+      "before_context": [
+        "",
+        "        report = {\"stage\": STAGE, \"decision\": decision,",
+        "                  \"scope\": {\"artifact_only\": True, \"evaluation_only_failure_localization\": True,",
+        "                            \"bootstrap_samples\": args.bootstrap_samples, \"seed\": args.seed, \"minimum_candidates\": args.minimum_candidates},",
+        "                  \"input_validation\": {\"status\": \"passed\", \"stage182a_decision\": EXPECTED_182A, \"stage179a_decision\": EXPECTED_179A,",
+        "                                       \"candidate_native_frame_mismatch_invariant\": True, \"contaminated_comparison_rows\": 0},"
+      ],
+      "after_context": [
+        "",
+        "        report = {\"stage\": STAGE, \"decision\": decision,",
+        "                  \"scope\": {\"artifact_only\": True, \"evaluation_only_failure_localization\": True,",
+        "                            \"bootstrap_samples\": args.bootstrap_samples, \"seed\": args.seed, \"minimum_candidates\": args.minimum_candidates},",
+        "                  \"input_validation\": {\"status\": \"passed\", \"stage182a_decision\": EXPECTED_182A,",
+        "                                       \"stage179a_decision\": report179.get(\"decision\") if report179 else None,"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 737,
+      "before_end_exclusive": 738,
+      "after_start": 915,
+      "after_end_exclusive": 918,
+      "before": [
+        "                  \"input_validation\": {\"status\": \"passed\", \"stage182a_decision\": EXPECTED_182A, \"stage179a_decision\": EXPECTED_179A,"
+      ],
+      "after": [
+        "                  \"input_validation\": {\"status\": \"passed\", \"stage182a_decision\": EXPECTED_182A,",
+        "                                       \"stage179a_decision\": report179.get(\"decision\") if report179 else None,",
+        "                                       \"stage179_runtime_decision_directly_validated\": report179 is not None,"
+      ],
+      "before_context": [
+        "        report = {\"stage\": STAGE, \"decision\": decision,",
+        "                  \"scope\": {\"artifact_only\": True, \"evaluation_only_failure_localization\": True,",
+        "                            \"bootstrap_samples\": args.bootstrap_samples, \"seed\": args.seed, \"minimum_candidates\": args.minimum_candidates},",
+        "                                       \"candidate_native_frame_mismatch_invariant\": True, \"contaminated_comparison_rows\": 0},",
+        "                  \"artifact_coverage\": {\"candidate_scalar_coverage\": candidate_scalar_coverage,",
+        "                                        \"matched_control_scalar_coverage\": control_scalar_coverage, \"rows\": coverage_rows},"
+      ],
+      "after_context": [
+        "                  \"scope\": {\"artifact_only\": True, \"evaluation_only_failure_localization\": True,",
+        "                            \"artifact_source_mode\": artifact_source_mode,",
+        "                            \"bootstrap_samples\": args.bootstrap_samples, \"seed\": args.seed, \"minimum_candidates\": args.minimum_candidates},",
+        "                                       \"candidate_native_frame_mismatch_invariant\": True, \"contaminated_comparison_rows\": 0},",
+        "                  \"provenance\": provenance,",
+        "                  \"artifact_coverage\": {"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 739,
+      "before_end_exclusive": 741,
+      "after_start": 919,
+      "after_end_exclusive": 936,
+      "before": [
+        "                  \"artifact_coverage\": {\"candidate_scalar_coverage\": candidate_scalar_coverage,",
+        "                                        \"matched_control_scalar_coverage\": control_scalar_coverage, \"rows\": coverage_rows},"
+      ],
+      "after": [
+        "                  \"provenance\": provenance,",
+        "                  \"artifact_coverage\": {",
+        "                                        \"artifact_source_mode\": artifact_source_mode,",
+        "                                        \"external_stage179_report_available\": external_report,",
+        "                                        \"external_stage179_hard39_available\": external_hard39,",
+        "                                        \"embedded_pass2_scalar_coverage\": {",
+        "                                            \"candidate_native_fields\": embedded_candidate_field_coverage,",
+        "                                            \"matched_control_fields\": embedded_control_field_coverage,",
+        "                                            \"minimum_required_coverage\": embedded_required_scalar_coverage,",
+        "                                        },",
+        "                                        \"embedded_centroid_coverage\": embedded_centroid_coverage,",
+        "                                        \"embedded_projection_coverage\": embedded_projection_coverage,",
+        "                                        \"embedded_movement_coverage\": embedded_movement_coverage,",
+        "                                        \"provenance_limitation\": provenance_limitation,",
+        "                                        \"candidate_scalar_coverage\": candidate_scalar_coverage,",
+        "                                        \"matched_control_scalar_coverage\": control_scalar_coverage,",
+        "                                        \"rows\": coverage_rows},"
+      ],
+      "before_context": [
+        "                            \"bootstrap_samples\": args.bootstrap_samples, \"seed\": args.seed, \"minimum_candidates\": args.minimum_candidates},",
+        "                  \"input_validation\": {\"status\": \"passed\", \"stage182a_decision\": EXPECTED_182A, \"stage179a_decision\": EXPECTED_179A,",
+        "                                       \"candidate_native_frame_mismatch_invariant\": True, \"contaminated_comparison_rows\": 0},",
+        "                  \"candidate_topology\": {\"candidate_count\": 14, \"matched_candidate_control_count\": 14,",
+        "                                         \"clean_hard_native_frame_correct_count\": 7, \"all_clean_control_count\": 30,",
+        "                                         \"candidate_family_count\": len({row[\"intervention_type\"] for row in candidates}),"
+      ],
+      "after_context": [
+        "                                       \"stage179a_decision\": report179.get(\"decision\") if report179 else None,",
+        "                                       \"stage179_runtime_decision_directly_validated\": report179 is not None,",
+        "                                       \"candidate_native_frame_mismatch_invariant\": True, \"contaminated_comparison_rows\": 0},",
+        "                  \"candidate_topology\": {\"candidate_count\": 14, \"matched_candidate_control_count\": 14,",
+        "                                         \"clean_hard_native_frame_correct_count\": 7, \"all_clean_control_count\": 30,",
+        "                                         \"candidate_family_count\": len({row[\"intervention_type\"] for row in candidates}),"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 761,
+      "before_end_exclusive": 762,
+      "after_start": 956,
+      "after_end_exclusive": 958,
+      "before": [
+        "                  \"limitations\": [\"Stage179 centroid is gold-conditioned and transductive, not deployable.\","
+      ],
+      "after": [
+        "                  \"limitations\": ([provenance_limitation] if provenance_limitation else []) +",
+        "                                 [\"Stage179 centroid is gold-conditioned and transductive, not deployable.\","
+      ],
+      "before_context": [
+        "                                \"polarity_gate\": polarity_gate, \"causal_mechanism_established\": False},",
+        "                  \"stage183_gate\": {\"authorized_next_stage\": next_stage, \"authorization_scope\": \"design_audit_only\",",
+        "                                    \"training_authorized\": False, \"rows\": gate_rows},",
+        "                                  \"Scalar movement magnitude does not establish representation direction.\",",
+        "                                  \"Family and cohort results are associations, not causal mechanisms.\",",
+        "                                  \"No final-classifier output is used as localization evidence.\"],"
+      ],
+      "after_context": [
+        "                                \"polarity_gate\": polarity_gate, \"causal_mechanism_established\": False},",
+        "                  \"stage183_gate\": {\"authorized_next_stage\": next_stage, \"authorization_scope\": \"design_audit_only\",",
+        "                                    \"training_authorized\": False, \"rows\": gate_rows},",
+        "                                  \"Scalar movement magnitude does not establish representation direction.\",",
+        "                                  \"Family and cohort results are associations, not causal mechanisms.\",",
+        "                                  \"No final-classifier output is used as localization evidence.\"],"
+      ]
+    }
+  ]
+}

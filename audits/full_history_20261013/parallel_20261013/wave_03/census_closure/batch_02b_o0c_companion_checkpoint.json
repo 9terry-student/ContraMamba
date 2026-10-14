@@ -1,0 +1,377 @@
+{
+  "closure_definition": "Integrate the exact changed observer companion for mechanism-level historical source interpretation, preserving the already reconstructed runner-pin change.",
+  "diff_sha256": "dafca5c31022440cdcc8bc7fb927e7f666d3cb45479f32acf44eb60c7538c0b3",
+  "exact_diff": "diff --git a/scripts/observe_longterm_o0c_selective_ssm_native_state_dynamics.py b/scripts/observe_longterm_o0c_selective_ssm_native_state_dynamics.py\nindex 7ac5d0d..49faa5e 100644\n--- a/scripts/observe_longterm_o0c_selective_ssm_native_state_dynamics.py\n+++ b/scripts/observe_longterm_o0c_selective_ssm_native_state_dynamics.py\n@@ -376,13 +376,14 @@ def measurements(rows:Sequence[Mapping[str,Any]],vectors:Sequence[Any],compariso\n     for pair in PAIR_ORDER:\n      for comparison,member in COMPARISONS:\n       anchor_map=comparison_anchors[(pair,comparison)]\n       for layer in layers:\n        dminus=anchor_map[\"anchor_pre_minus_1\"]\n        assert_pre_divergence(matrix[lookup[(pair,\"reference_sufficient\",layer,dminus)][\"vector_index\"]],matrix[lookup[(pair,member,layer,dminus)][\"vector_index\"]])\n-       for anchor in ANCHOR_ORDER:\n+      for anchor in ANCHOR_ORDER:\n+       for layer in layers:\n         t=anchor_map[anchor]; rr=lookup[(pair,\"reference_sufficient\",layer,t)]; mr=lookup[(pair,member,layer,t)]; rv=np.asarray(vectors[rr[\"vector_index\"]],dtype=\"<f4\"); mv=np.asarray(vectors[mr[\"vector_index\"]],dtype=\"<f4\"); rp=np.zeros_like(rv) if t==0 else np.asarray(vectors[lookup[(pair,\"reference_sufficient\",layer,t-1)][\"vector_index\"]],dtype=\"<f4\"); mp=np.zeros_like(mv) if t==0 else np.asarray(vectors[lookup[(pair,member,layer,t-1)][\"vector_index\"]],dtype=\"<f4\"); rt,mt=rv-rp,mv-mp; rn,mn,rtn,mtn=map(float,(np.linalg.norm(rv),np.linalg.norm(mv),np.linalg.norm(rt),np.linalg.norm(mt))); require(all(np.isfinite(x) and x>0 for x in (rn,mn,rtn,mtn)),\"nonfinite/zero metric\")\n         out.append({\"schema_version\":SCHEMA_VERSION,\"pair_id\":pair,\"comparison_id\":comparison,\"reference_condition\":\"reference_sufficient\",\"member_condition\":member,\"anchor_name\":anchor,\"absolute_token_index\":t,\"layer_index\":layer,\"reference_vector_index\":rr[\"vector_index\"],\"member_vector_index\":mr[\"vector_index\"],\"reference_previous_vector_index\":None if t==0 else lookup[(pair,\"reference_sufficient\",layer,t-1)][\"vector_index\"],\"member_previous_vector_index\":None if t==0 else lookup[(pair,member,layer,t-1)][\"vector_index\"],\"normalized_l2_state_distance\":float(np.linalg.norm(rv/rn-mv/mn)),\"reference_transition_l2\":rtn,\"member_transition_l2\":mtn,\"paired_transition_delta\":mtn-rtn,\"transition_direction_cosine\":float(np.dot(rt,mt)/(rtn*mtn)),\"pre_divergence_integrity_status\":\"PASS\"})\n     validate_measurements(out,rows,vectors); return out\n def validate_measurements(records:Sequence[Mapping[str,Any]],rows:Sequence[Mapping[str,Any]],vectors:Sequence[Any])->None:\n     matrix=np.ascontiguousarray(np.asarray(vectors,dtype=\"<f4\")); validate_state_rows(rows,matrix); byindex={r[\"vector_index\"]:r for r in rows}; indexes=set(byindex); pairs=dict(COMPARISONS); seen=[]\n     pre={(r[\"pair_id\"],r[\"comparison_id\"],r[\"layer_index\"]):r for r in records if r.get(\"anchor_name\")==\"anchor_pre_minus_1\"}",
+  "historical_identity_finding": "The pinned companion changes measurements traversal from pair/comparison/layer/anchor to pair/comparison/anchor/layer. All layer pre-divergence assertions now precede measurement emission for that comparison. The unchanged coordinate validator requires pair/comparison/anchor/layer order. The diff changes loop order, not metric expressions, cohort constants, model/checkpoint definitions or frozen observer policy.",
+  "limits": "Static source relationship only. No run adoption, successful execution, numerical result, replication or later artifact identity certified.",
+  "observer_endpoint_authentication": [
+    {
+      "bytes": 54116,
+      "git_blob_sha1_recomputed": "7ac5d0d5e93742c8d76cd3e467790a1866dbade9",
+      "line_indexed_original_excerpts": [
+        {
+          "line": 368,
+          "text": "     member=members[comparison]"
+        },
+        {
+          "line": 369,
+          "text": "     for anchor,t in anchor_map.items():"
+        },
+        {
+          "line": 370,
+          "text": "      require(anchor in ANCHOR_ORDER and type(t) is int and t>=0,\"comparison anchor coordinate\")"
+        },
+        {
+          "line": 371,
+          "text": "      for layer in layers:"
+        },
+        {
+          "line": 372,
+          "text": "       require((pair,\"reference_sufficient\",layer,t) in lookup and (pair,member,layer,t) in lookup,\"comparison anchor coordinate range\")"
+        },
+        {
+          "line": 373,
+          "text": ""
+        },
+        {
+          "line": 374,
+          "text": "def measurements(rows:Sequence[Mapping[str,Any]],vectors:Sequence[Any],comparison_anchors:Mapping[tuple[str,str],Mapping[str,int]])->list[dict[str,Any]]:"
+        },
+        {
+          "line": 375,
+          "text": "    matrix=np.ascontiguousarray(np.asarray(vectors,dtype=\"<f4\")); validate_state_rows(rows,matrix); lookup={(r[\"pair_id\"],r[\"condition\"],r[\"layer_index\"],r[\"absolute_token_index\"]):r for r in rows}; layers=sorted({r[\"layer_index\"] for r in rows}); _validate_comparison_anchors(comparison_anchors,lookup,layers); out=[]"
+        },
+        {
+          "line": 376,
+          "text": "    for pair in PAIR_ORDER:"
+        },
+        {
+          "line": 377,
+          "text": "     for comparison,member in COMPARISONS:"
+        },
+        {
+          "line": 378,
+          "text": "      anchor_map=comparison_anchors[(pair,comparison)]"
+        },
+        {
+          "line": 379,
+          "text": "      for layer in layers:"
+        },
+        {
+          "line": 380,
+          "text": "       dminus=anchor_map[\"anchor_pre_minus_1\"]"
+        },
+        {
+          "line": 381,
+          "text": "       assert_pre_divergence(matrix[lookup[(pair,\"reference_sufficient\",layer,dminus)][\"vector_index\"]],matrix[lookup[(pair,member,layer,dminus)][\"vector_index\"]])"
+        },
+        {
+          "line": 382,
+          "text": "       for anchor in ANCHOR_ORDER:"
+        },
+        {
+          "line": 383,
+          "text": "        t=anchor_map[anchor]; rr=lookup[(pair,\"reference_sufficient\",layer,t)]; mr=lookup[(pair,member,layer,t)]; rv=np.asarray(vectors[rr[\"vector_index\"]],dtype=\"<f4\"); mv=np.asarray(vectors[mr[\"vector_index\"]],dtype=\"<f4\"); rp=np.zeros_like(rv) if t==0 else np.asarray(vectors[lookup[(pair,\"reference_sufficient\",layer,t-1)][\"vector_index\"]],dtype=\"<f4\"); mp=np.zeros_like(mv) if t==0 else np.asarray(vectors[lookup[(pair,member,layer,t-1)][\"vector_index\"]],dtype=\"<f4\"); rt,mt=rv-rp,mv-mp; rn,mn,rtn,mtn=map(float,(np.linalg.norm(rv),np.linalg.norm(mv),np.linalg.norm(rt),np.linalg.norm(mt))); require(all(np.isfinite(x) and x>0 for x in (rn,mn,rtn,mtn)),\"nonfinite/zero metric\")"
+        },
+        {
+          "line": 384,
+          "text": "        out.append({\"schema_version\":SCHEMA_VERSION,\"pair_id\":pair,\"comparison_id\":comparison,\"reference_condition\":\"reference_sufficient\",\"member_condition\":member,\"anchor_name\":anchor,\"absolute_token_index\":t,\"layer_index\":layer,\"reference_vector_index\":rr[\"vector_index\"],\"member_vector_index\":mr[\"vector_index\"],\"reference_previous_vector_index\":None if t==0 else lookup[(pair,\"reference_sufficient\",layer,t-1)][\"vector_index\"],\"member_previous_vector_index\":None if t==0 else lookup[(pair,member,layer,t-1)][\"vector_index\"],\"normalized_l2_state_distance\":float(np.linalg.norm(rv/rn-mv/mn)),\"reference_transition_l2\":rtn,\"member_transition_l2\":mtn,\"paired_transition_delta\":mtn-rtn,\"transition_direction_cosine\":float(np.dot(rt,mt)/(rtn*mtn)),\"pre_divergence_integrity_status\":\"PASS\"})"
+        },
+        {
+          "line": 385,
+          "text": "    validate_measurements(out,rows,vectors); return out"
+        },
+        {
+          "line": 386,
+          "text": "def validate_measurements(records:Sequence[Mapping[str,Any]],rows:Sequence[Mapping[str,Any]],vectors:Sequence[Any])->None:"
+        },
+        {
+          "line": 387,
+          "text": "    matrix=np.ascontiguousarray(np.asarray(vectors,dtype=\"<f4\")); validate_state_rows(rows,matrix); byindex={r[\"vector_index\"]:r for r in rows}; indexes=set(byindex); pairs=dict(COMPARISONS); seen=[]"
+        },
+        {
+          "line": 388,
+          "text": "    pre={(r[\"pair_id\"],r[\"comparison_id\"],r[\"layer_index\"]):r for r in records if r.get(\"anchor_name\")==\"anchor_pre_minus_1\"}"
+        },
+        {
+          "line": 389,
+          "text": "    for r in records:"
+        },
+        {
+          "line": 390,
+          "text": "     require(set(r)==set(MEASUREMENT_KEYS) and r[\"comparison_id\"] in pairs and r[\"member_condition\"]==pairs[r[\"comparison_id\"]] and r[\"reference_condition\"]==\"reference_sufficient\" and r[\"anchor_name\"] in ANCHOR_ORDER,\"measurement schema\")"
+        },
+        {
+          "line": 391,
+          "text": "     require(r[\"reference_vector_index\"] in indexes and r[\"member_vector_index\"] in indexes,\"measurement references\"); rr,mr=byindex[r[\"reference_vector_index\"]],byindex[r[\"member_vector_index\"]]"
+        },
+        {
+          "line": 392,
+          "text": "     t=r[\"absolute_token_index\"]; require(type(t) is int and (rr[\"pair_id\"],rr[\"condition\"],rr[\"layer_index\"],rr[\"absolute_token_index\"])==(r[\"pair_id\"],\"reference_sufficient\",r[\"layer_index\"],t) and (mr[\"pair_id\"],mr[\"condition\"],mr[\"layer_index\"],mr[\"absolute_token_index\"])==(r[\"pair_id\"],r[\"member_condition\"],r[\"layer_index\"],t),\"measurement coordinate\")"
+        },
+        {
+          "line": 393,
+          "text": "     previous=(r[\"reference_previous_vector_index\"],r[\"member_previous_vector_index\"])"
+        },
+        {
+          "line": 394,
+          "text": "     if t==0: require(previous==(None,None),\"t0 predecessor\"); rp=np.zeros_like(matrix[rr[\"vector_index\"]]); mp=np.zeros_like(matrix[mr[\"vector_index\"]])"
+        },
+        {
+          "line": 395,
+          "text": "     else:"
+        },
+        {
+          "line": 396,
+          "text": "      require(all(type(x) is int and x in indexes for x in previous),\"previous indices\"); pr,pm=byindex[previous[0]],byindex[previous[1]]; require((pr[\"pair_id\"],pr[\"condition\"],pr[\"layer_index\"],pr[\"absolute_token_index\"])==(r[\"pair_id\"],\"reference_sufficient\",r[\"layer_index\"],t-1) and (pm[\"pair_id\"],pm[\"condition\"],pm[\"layer_index\"],pm[\"absolute_token_index\"])==(r[\"pair_id\"],r[\"member_condition\"],r[\"layer_index\"],t-1),\"wrong predecessor\"); rp,mp=matrix[previous[0]],matrix[previous[1]]"
+        },
+        {
+          "line": 397,
+          "text": "     rv,mv=matrix[rr[\"vector_index\"]],matrix[mr[\"vector_index\"]]; rt,mt=rv-rp,mv-mp; rn,mn,rtn,mtn=map(float,(np.linalg.norm(rv),np.linalg.norm(mv),np.linalg.norm(rt),np.linalg.norm(mt))); require(all(np.isfinite(x) and x>0 for x in (rn,mn,rtn,mtn)),\"metric norms\")"
+        },
+        {
+          "line": 398,
+          "text": "     expected={\"normalized_l2_state_distance\":float(np.linalg.norm(rv/rn-mv/mn)),\"reference_transition_l2\":rtn,\"member_transition_l2\":mtn,\"paired_transition_delta\":mtn-rtn,\"transition_direction_cosine\":float(np.dot(rt,mt)/(rtn*mtn))}"
+        },
+        {
+          "line": 399,
+          "text": "     pre_row=pre.get((r[\"pair_id\"],r[\"comparison_id\"],r[\"layer_index\"])); require(pre_row is not None,\"pre-divergence coordinate\")"
+        },
+        {
+          "line": 400,
+          "text": "     derived=\"PASS\" if np.allclose(matrix[pre_row[\"reference_vector_index\"]],matrix[pre_row[\"member_vector_index\"]],rtol=0.0,atol=1e-6) else \"FAIL\""
+        },
+        {
+          "line": 401,
+          "text": "     require(r[\"pre_divergence_integrity_status\"]==derived==\"PASS\" and all(r[k]==v for k,v in expected.items()),\"measurement reconstruction\")"
+        },
+        {
+          "line": 402,
+          "text": "     seen.append((r[\"pair_id\"],r[\"comparison_id\"],r[\"anchor_name\"],r[\"layer_index\"]))"
+        },
+        {
+          "line": 403,
+          "text": "    _require_measurement_coordinates(records,rows,seen)"
+        },
+        {
+          "line": 404,
+          "text": ""
+        },
+        {
+          "line": 405,
+          "text": "def _require_measurement_coordinates(records:Sequence[Mapping[str,Any]],rows:Sequence[Mapping[str,Any]],seen:Sequence[tuple[Any,...]]|None=None)->None:"
+        },
+        {
+          "line": 406,
+          "text": "    layers=sorted({r[\"layer_index\"] for r in rows}); expected=[(p,c,a,l) for p in PAIR_ORDER for c,_ in COMPARISONS for a in ANCHOR_ORDER for l in layers]"
+        },
+        {
+          "line": 407,
+          "text": "    actual=list(seen) if seen is not None else [(r.get(\"pair_id\"),r.get(\"comparison_id\"),r.get(\"anchor_name\"),r.get(\"layer_index\")) for r in records]"
+        },
+        {
+          "line": 408,
+          "text": "    require(actual==expected and len(set(actual))==len(actual),\"complete measurement coordinates/order\")"
+        },
+        {
+          "line": 409,
+          "text": ""
+        }
+      ],
+      "sha256": "ca284e0c1af71e052b17deb27c827f5aa831befdecfae87ade4e627d223a5275",
+      "source_identity": {
+        "blob": "7ac5d0d5e93742c8d76cd3e467790a1866dbade9",
+        "commit": "e03b38fa0681fd04d8633a7de184559bd0473133",
+        "path": "scripts/observe_longterm_o0c_selective_ssm_native_state_dynamics.py"
+      }
+    },
+    {
+      "bytes": 54143,
+      "git_blob_sha1_recomputed": "49faa5eeb659ce7fbec7004e0933deaa6fb08c3b",
+      "line_indexed_original_excerpts": [
+        {
+          "line": 368,
+          "text": "     member=members[comparison]"
+        },
+        {
+          "line": 369,
+          "text": "     for anchor,t in anchor_map.items():"
+        },
+        {
+          "line": 370,
+          "text": "      require(anchor in ANCHOR_ORDER and type(t) is int and t>=0,\"comparison anchor coordinate\")"
+        },
+        {
+          "line": 371,
+          "text": "      for layer in layers:"
+        },
+        {
+          "line": 372,
+          "text": "       require((pair,\"reference_sufficient\",layer,t) in lookup and (pair,member,layer,t) in lookup,\"comparison anchor coordinate range\")"
+        },
+        {
+          "line": 373,
+          "text": ""
+        },
+        {
+          "line": 374,
+          "text": "def measurements(rows:Sequence[Mapping[str,Any]],vectors:Sequence[Any],comparison_anchors:Mapping[tuple[str,str],Mapping[str,int]])->list[dict[str,Any]]:"
+        },
+        {
+          "line": 375,
+          "text": "    matrix=np.ascontiguousarray(np.asarray(vectors,dtype=\"<f4\")); validate_state_rows(rows,matrix); lookup={(r[\"pair_id\"],r[\"condition\"],r[\"layer_index\"],r[\"absolute_token_index\"]):r for r in rows}; layers=sorted({r[\"layer_index\"] for r in rows}); _validate_comparison_anchors(comparison_anchors,lookup,layers); out=[]"
+        },
+        {
+          "line": 376,
+          "text": "    for pair in PAIR_ORDER:"
+        },
+        {
+          "line": 377,
+          "text": "     for comparison,member in COMPARISONS:"
+        },
+        {
+          "line": 378,
+          "text": "      anchor_map=comparison_anchors[(pair,comparison)]"
+        },
+        {
+          "line": 379,
+          "text": "      for layer in layers:"
+        },
+        {
+          "line": 380,
+          "text": "       dminus=anchor_map[\"anchor_pre_minus_1\"]"
+        },
+        {
+          "line": 381,
+          "text": "       assert_pre_divergence(matrix[lookup[(pair,\"reference_sufficient\",layer,dminus)][\"vector_index\"]],matrix[lookup[(pair,member,layer,dminus)][\"vector_index\"]])"
+        },
+        {
+          "line": 382,
+          "text": "      for anchor in ANCHOR_ORDER:"
+        },
+        {
+          "line": 383,
+          "text": "       for layer in layers:"
+        },
+        {
+          "line": 384,
+          "text": "        t=anchor_map[anchor]; rr=lookup[(pair,\"reference_sufficient\",layer,t)]; mr=lookup[(pair,member,layer,t)]; rv=np.asarray(vectors[rr[\"vector_index\"]],dtype=\"<f4\"); mv=np.asarray(vectors[mr[\"vector_index\"]],dtype=\"<f4\"); rp=np.zeros_like(rv) if t==0 else np.asarray(vectors[lookup[(pair,\"reference_sufficient\",layer,t-1)][\"vector_index\"]],dtype=\"<f4\"); mp=np.zeros_like(mv) if t==0 else np.asarray(vectors[lookup[(pair,member,layer,t-1)][\"vector_index\"]],dtype=\"<f4\"); rt,mt=rv-rp,mv-mp; rn,mn,rtn,mtn=map(float,(np.linalg.norm(rv),np.linalg.norm(mv),np.linalg.norm(rt),np.linalg.norm(mt))); require(all(np.isfinite(x) and x>0 for x in (rn,mn,rtn,mtn)),\"nonfinite/zero metric\")"
+        },
+        {
+          "line": 385,
+          "text": "        out.append({\"schema_version\":SCHEMA_VERSION,\"pair_id\":pair,\"comparison_id\":comparison,\"reference_condition\":\"reference_sufficient\",\"member_condition\":member,\"anchor_name\":anchor,\"absolute_token_index\":t,\"layer_index\":layer,\"reference_vector_index\":rr[\"vector_index\"],\"member_vector_index\":mr[\"vector_index\"],\"reference_previous_vector_index\":None if t==0 else lookup[(pair,\"reference_sufficient\",layer,t-1)][\"vector_index\"],\"member_previous_vector_index\":None if t==0 else lookup[(pair,member,layer,t-1)][\"vector_index\"],\"normalized_l2_state_distance\":float(np.linalg.norm(rv/rn-mv/mn)),\"reference_transition_l2\":rtn,\"member_transition_l2\":mtn,\"paired_transition_delta\":mtn-rtn,\"transition_direction_cosine\":float(np.dot(rt,mt)/(rtn*mtn)),\"pre_divergence_integrity_status\":\"PASS\"})"
+        },
+        {
+          "line": 386,
+          "text": "    validate_measurements(out,rows,vectors); return out"
+        },
+        {
+          "line": 387,
+          "text": "def validate_measurements(records:Sequence[Mapping[str,Any]],rows:Sequence[Mapping[str,Any]],vectors:Sequence[Any])->None:"
+        },
+        {
+          "line": 388,
+          "text": "    matrix=np.ascontiguousarray(np.asarray(vectors,dtype=\"<f4\")); validate_state_rows(rows,matrix); byindex={r[\"vector_index\"]:r for r in rows}; indexes=set(byindex); pairs=dict(COMPARISONS); seen=[]"
+        },
+        {
+          "line": 389,
+          "text": "    pre={(r[\"pair_id\"],r[\"comparison_id\"],r[\"layer_index\"]):r for r in records if r.get(\"anchor_name\")==\"anchor_pre_minus_1\"}"
+        },
+        {
+          "line": 390,
+          "text": "    for r in records:"
+        },
+        {
+          "line": 391,
+          "text": "     require(set(r)==set(MEASUREMENT_KEYS) and r[\"comparison_id\"] in pairs and r[\"member_condition\"]==pairs[r[\"comparison_id\"]] and r[\"reference_condition\"]==\"reference_sufficient\" and r[\"anchor_name\"] in ANCHOR_ORDER,\"measurement schema\")"
+        },
+        {
+          "line": 392,
+          "text": "     require(r[\"reference_vector_index\"] in indexes and r[\"member_vector_index\"] in indexes,\"measurement references\"); rr,mr=byindex[r[\"reference_vector_index\"]],byindex[r[\"member_vector_index\"]]"
+        },
+        {
+          "line": 393,
+          "text": "     t=r[\"absolute_token_index\"]; require(type(t) is int and (rr[\"pair_id\"],rr[\"condition\"],rr[\"layer_index\"],rr[\"absolute_token_index\"])==(r[\"pair_id\"],\"reference_sufficient\",r[\"layer_index\"],t) and (mr[\"pair_id\"],mr[\"condition\"],mr[\"layer_index\"],mr[\"absolute_token_index\"])==(r[\"pair_id\"],r[\"member_condition\"],r[\"layer_index\"],t),\"measurement coordinate\")"
+        },
+        {
+          "line": 394,
+          "text": "     previous=(r[\"reference_previous_vector_index\"],r[\"member_previous_vector_index\"])"
+        },
+        {
+          "line": 395,
+          "text": "     if t==0: require(previous==(None,None),\"t0 predecessor\"); rp=np.zeros_like(matrix[rr[\"vector_index\"]]); mp=np.zeros_like(matrix[mr[\"vector_index\"]])"
+        },
+        {
+          "line": 396,
+          "text": "     else:"
+        },
+        {
+          "line": 397,
+          "text": "      require(all(type(x) is int and x in indexes for x in previous),\"previous indices\"); pr,pm=byindex[previous[0]],byindex[previous[1]]; require((pr[\"pair_id\"],pr[\"condition\"],pr[\"layer_index\"],pr[\"absolute_token_index\"])==(r[\"pair_id\"],\"reference_sufficient\",r[\"layer_index\"],t-1) and (pm[\"pair_id\"],pm[\"condition\"],pm[\"layer_index\"],pm[\"absolute_token_index\"])==(r[\"pair_id\"],r[\"member_condition\"],r[\"layer_index\"],t-1),\"wrong predecessor\"); rp,mp=matrix[previous[0]],matrix[previous[1]]"
+        },
+        {
+          "line": 398,
+          "text": "     rv,mv=matrix[rr[\"vector_index\"]],matrix[mr[\"vector_index\"]]; rt,mt=rv-rp,mv-mp; rn,mn,rtn,mtn=map(float,(np.linalg.norm(rv),np.linalg.norm(mv),np.linalg.norm(rt),np.linalg.norm(mt))); require(all(np.isfinite(x) and x>0 for x in (rn,mn,rtn,mtn)),\"metric norms\")"
+        },
+        {
+          "line": 399,
+          "text": "     expected={\"normalized_l2_state_distance\":float(np.linalg.norm(rv/rn-mv/mn)),\"reference_transition_l2\":rtn,\"member_transition_l2\":mtn,\"paired_transition_delta\":mtn-rtn,\"transition_direction_cosine\":float(np.dot(rt,mt)/(rtn*mtn))}"
+        },
+        {
+          "line": 400,
+          "text": "     pre_row=pre.get((r[\"pair_id\"],r[\"comparison_id\"],r[\"layer_index\"])); require(pre_row is not None,\"pre-divergence coordinate\")"
+        },
+        {
+          "line": 401,
+          "text": "     derived=\"PASS\" if np.allclose(matrix[pre_row[\"reference_vector_index\"]],matrix[pre_row[\"member_vector_index\"]],rtol=0.0,atol=1e-6) else \"FAIL\""
+        },
+        {
+          "line": 402,
+          "text": "     require(r[\"pre_divergence_integrity_status\"]==derived==\"PASS\" and all(r[k]==v for k,v in expected.items()),\"measurement reconstruction\")"
+        },
+        {
+          "line": 403,
+          "text": "     seen.append((r[\"pair_id\"],r[\"comparison_id\"],r[\"anchor_name\"],r[\"layer_index\"]))"
+        },
+        {
+          "line": 404,
+          "text": "    _require_measurement_coordinates(records,rows,seen)"
+        },
+        {
+          "line": 405,
+          "text": ""
+        },
+        {
+          "line": 406,
+          "text": "def _require_measurement_coordinates(records:Sequence[Mapping[str,Any]],rows:Sequence[Mapping[str,Any]],seen:Sequence[tuple[Any,...]]|None=None)->None:"
+        },
+        {
+          "line": 407,
+          "text": "    layers=sorted({r[\"layer_index\"] for r in rows}); expected=[(p,c,a,l) for p in PAIR_ORDER for c,_ in COMPARISONS for a in ANCHOR_ORDER for l in layers]"
+        },
+        {
+          "line": 408,
+          "text": "    actual=list(seen) if seen is not None else [(r.get(\"pair_id\"),r.get(\"comparison_id\"),r.get(\"anchor_name\"),r.get(\"layer_index\")) for r in records]"
+        },
+        {
+          "line": 409,
+          "text": "    require(actual==expected and len(set(actual))==len(actual),\"complete measurement coordinates/order\")"
+        }
+      ],
+      "sha256": "c84a9a32ba5dc6bc946425054cb7eb65fc7ac0fc731ac74ebd82329fddf7a5b7",
+      "source_identity": {
+        "blob": "49faa5eeb659ce7fbec7004e0933deaa6fb08c3b",
+        "commit": "60a53b6f5d1db8d7cbecded5b94d5231adcfc520",
+        "path": "scripts/observe_longterm_o0c_selective_ssm_native_state_dynamics.py"
+      }
+    }
+  ],
+  "source_debt_identity": [
+    {
+      "blob": "8d818e45911d61957b35b9470902ca079d76c692",
+      "commit": "723f655295430c434da4ecccdad79934360c9dcc",
+      "path": "scripts/run_longterm_o0c_selective_ssm_native_state_dynamics.py"
+    }
+  ],
+  "uncovered_deficiency": "Runner changed an exact observer commit pin; prior packet had not integrated the companion source delta."
+}

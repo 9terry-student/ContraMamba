@@ -1,0 +1,2704 @@
+{
+  "schema": "hv000103_independent_validation_v1",
+  "phase": "CENSUS_RECOVERY_ONLY",
+  "target": {
+    "source_id": "HV000103",
+    "debt_id": "DEBT-749ea4d7ff425c9846b4",
+    "publication": "Figure 1"
+  },
+  "verdict": "VERIFIED_FULL_DOCUMENTARY_SATISFACTION",
+  "status": "PASS_WITH_AUTHENTICATED_NONBLOCKING_REF_MOVEMENT",
+  "fresh_serialized_evidence_checks": {
+    "checks": [
+      {
+        "name": "ACCOUNTING_222_17_195",
+        "status": "PASS",
+        "detail": {
+          "original": 222,
+          "satisfied": 17,
+          "strict_blockers": 195
+        }
+      },
+      {
+        "name": "EXACT_ORIGINAL_DEBT_AND_ROOT",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "EXACT_ORIGINAL_TRANSITION_AND_REQUIREMENT",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "NO_INVENTED_EXTRA_ROOT_AUTHORITY",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "FRESH_COMPLETE_40_JSON_OPERATION_COMPARISON",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "FRESH_COMPLETE_THREE_README_HUNKS",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "PRE_EXISTING_NUMERIC_AND_EXTRACTED_FIELDS_PRESERVED",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "ALL_30_BOOTSTRAP_VALUES_AND_FIG4_ATTRIBUTION",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "FRESH_EIGHT_ORIGINAL_GIT_OBJECT_AND_SAVED_BYTE_CHECKS",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "FRESH_BOOTSTRAP_SOURCE_IDENTITY",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "COMPLETE_ACTUAL_PNG_AND_PDF_INSPECTION_RECORDED",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "TITLE_ONLY_PNG_AND_PDF_CHANGE",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "POSITIVE_CLAIM_HAS_EVIDENCE_original-1.1",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "POSITIVE_CLAIM_HAS_EVIDENCE_original-1.2",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "POSITIVE_CLAIM_HAS_EVIDENCE_original-1.3",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "POSITIVE_CLAIM_HAS_EVIDENCE_original-1.4",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "POSITIVE_CLAIM_HAS_EVIDENCE_original-1.5",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "POSITIVE_CLAIM_HAS_EVIDENCE_original-1.6",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "POSITIVE_CLAIM_HAS_EVIDENCE_IV103-CLAIM",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "POSITIVE_CLAIM_HAS_EVIDENCE_IV103-ENDPOINT",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "POSITIVE_CLAIM_HAS_EVIDENCE_IV103-PROVENANCE",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "POSITIVE_CLAIM_HAS_EVIDENCE_IV103-RENDER",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "POSITIVE_CLAIM_HAS_EVIDENCE_IV103-HISTORY",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "ALL_POSITIVE_CLAIM_EXACT_LOCATORS_AUTHENTICATE",
+        "status": "PASS",
+        "detail": {
+          "locators": 68,
+          "errors": []
+        }
+      },
+      {
+        "name": "ALL_LITERAL_CLAUSES_INDEPENDENTLY_ASSESSED",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "SCIENTIFIC_CERTIFICATION_AND_GLOBAL_ADOPTION_EXCLUDED",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "ZERO_CREDIT_NO_OTHER_OWNER_ADJUDICATION",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "ALL_FROZEN_PINNED_INPUTS_FRESHLY_AUTHENTICATE",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "EARLIER_HISTORICAL_FAIL_AND_P01_RAW_FAIL_RETAINED",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "NEW_RAW_FAIL_REFS_MOVED_RETAINED_SEPARATELY",
+        "status": "PASS",
+        "detail": null
+      },
+      {
+        "name": "HV000116_CHRONOLOGY_AND_UNCERTIFIED_INTERVALS_RETAINED",
+        "status": "PASS",
+        "detail": null
+      }
+    ],
+    "failed": [],
+    "counts": {
+      "original": 222,
+      "satisfied": 17,
+      "strict_blockers": 195
+    },
+    "positive_locator_count": 68
+  },
+  "pre_report_preservation": {
+    "checked_utc": "2026-10-14T06:24:04.586568+00:00",
+    "baseline_existing_audit_count": 788,
+    "baseline_tracked_count": 3593,
+    "mutated_existing_audit_files": [],
+    "mutated_tracked_files": [],
+    "new_audit_files": [
+      "audits/full_history_20261013/parallel_20261013/wave_04/publication_hv000103_independent_verification_20261014/checkpoint.json",
+      "audits/full_history_20261013/parallel_20261013/wave_04/publication_hv000103_independent_verification_20261014/independent_evidence_check.json",
+      "audits/full_history_20261013/parallel_20261013/wave_04/publication_hv000103_independent_verification_20261014/obligation_verdict.json"
+    ],
+    "new_audit_files_outside_scope": [],
+    "head": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571",
+    "head_preserved": true,
+    "status_porcelain_v2": "? audits/\n",
+    "status_preserved": true,
+    "symbolic_head": null,
+    "index_sha256": "223983e5960be89db1bdfa3532706d4d1e7064f71ceeb37c99188703b22ff68f",
+    "index_preserved": true,
+    "tracked_stage_listing_preserved": true,
+    "unstaged_diff_preserved": true,
+    "staged_diff_preserved": true,
+    "tracked_diff_stat": "",
+    "staged_diff_stat": "",
+    "refs": [
+      {
+        "ref": "refs/codex/turn-diffs/captures/1791958202329/a32568c7-13ce-4b40-a87b-b9ccdb07133a/base",
+        "object": "332726190bcf7e51efd2a65c1701f2d1341d4434",
+        "type": "tree",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/codex/turn-diffs/checkpoints/223e1b2ada891dccb924639f161a2a3f/0ba828004d8e7d49ba2b56f724de1a4d/1791823846684/8d45a963-b920-48ce-a5ed-5cb274d1ce7e",
+        "object": "303f2863736d4ecb723314dab8a7616c43e49207",
+        "type": "tree",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/codex/turn-diffs/checkpoints/7105d3700b4f3531e0883a54cf3062dc/8e71ee7397078937da7fe9a90a85ad61/1791938529851/4ac24cf8-6fc9-4112-ac57-d0be3adf252c",
+        "object": "549f185452112dba5732677ce795ede5425558e4",
+        "type": "tree",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/codex/turn-diffs/checkpoints/8ffd7ca6edb92ce8b1b25f8e3dcf896f/1254ddec5f4b1aa8e0a4a6fc223f391d/1791898161392/a8d9618a-42dc-4a98-a7b7-3259fcc382e8",
+        "object": "99597caddf0a24e5810e33654c45c4fa33f2b72a",
+        "type": "tree",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/codex/turn-diffs/checkpoints/9f1765da2bcafc78693789aef0d73a7d/8773496cdc31c140db02a853f36c31ee/1791822079155/9ba675fc-7f6e-4a8d-8e06-e2aa662f3777",
+        "object": "93b906efb2c2e96084f9cbd6bbd48cf89920cdba",
+        "type": "tree",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/g4k-seed181-checkpoint-replication-prep",
+        "object": "18a14e7cf07de24c5cb8b3ad3b421337324fcebd",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen-series",
+        "object": "ab80d9fbab103c73aaa459b10c5caeaa2f69dfd4",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-behavioral-restoration-bridge",
+        "object": "27ad8cd9a0962bf6e5e3c79c5a7e277e54a86317",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-k-directional-alignment-transport",
+        "object": "8496ece911e0d461f0abbdf1a0fa619f8a2f22ab",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-k-family-subspace-sensitivity",
+        "object": "88de940d1b24b4b02c670a9ae67a2046aa082b38",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-k-fast-cuda-equivalence",
+        "object": "ad375c88385eef507e151f95717e951919a6a3fe",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-k-large-correction-prospective-validation",
+        "object": "a4d661a04b8547f4955c1ecf28e21698c53ec74e",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-k-transport-failure-static-decomposition",
+        "object": "41f4678d09f7c779a8edc2eec6cc08a9effd9f41",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-k-xg1-cross-generator-replication",
+        "object": "29e0cc6330b5e5270b6057a02c1b86fdeb45ca96",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-k-xg2-basis-holdout",
+        "object": "2c237fa7d2f4d2fdf7029826599a164c69455f36",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-k-xg2-xg4-local-jacobian",
+        "object": "6e5db0a69e05417938bd05038cf9dba1a39846bf",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-mamba1-five-scale-coordinate-free-geometry",
+        "object": "593199d8e849572fc77b1b0bc7475d3d19468d12",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-mamba1-five-scale-ladder-extension",
+        "object": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-mamba370m-core-replication",
+        "object": "ea03cdaa5394de03389d31aa1089b51e10340a57",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-phase-d-cache-validator-correction",
+        "object": "a738b4c169d30b0a7e21563c3aba2c29c481c456",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen5-causal-role-state-ownership",
+        "object": "9b931dd038cb3a563e2f430bed733ef6c70bf283",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/iclr2027-mamba-five-scale-paper",
+        "object": "b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/longterm-k-series-native-state-kinematics",
+        "object": "5f5f4d6a80085ad8baf43445475d1c3049535c22",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/main",
+        "object": "75b56b5b9390c0d1dcbbc38330d5dfdba8f44d75",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/main-readme-sync",
+        "object": "ca1419603f397aaf4e157504c15b58cb403377de",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/o0c-minimal-scientific-runner-implementation",
+        "object": "ff2fb076f6e66a34a632515bb8502d8b1c90ad7f",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/p3w7-a0-seed180-normal-reference-freeze",
+        "object": "b32d73dfa49b6b9dfabf3093802904323cf679cd",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/p3w7-a0-seed181-replacement-result",
+        "object": "fb4f0e2c2a8382a642f1272b66f29552adaecb0e",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/p3w7-a0-seed182-result",
+        "object": "82739bdfc8eee184de10ed8f55434f203a6d59a5",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/p3w7-a1-a2-a3-factorial-execution-authority-n3",
+        "object": "be6bf6477d6b97b3da9aea117ca49f970a186b21",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2",
+        "object": "91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/p3w7-current-lineage-calibration-authority",
+        "object": "ba3fd1a82cba029dac05ba38a86d518252ab858f",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/migration/pre-migration-stash-0",
+        "object": "3d2691afcc8ec6c0f59ba304f73631b6bc903208",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/migration/pre-migration-stash-1",
+        "object": "7816ed12332bd5be3ec6e93214cefa7f728e8c6e",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/HEAD",
+        "object": "ca1419603f397aaf4e157504c15b58cb403377de",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/g4k-seed181-checkpoint-replication-prep",
+        "object": "18a14e7cf07de24c5cb8b3ad3b421337324fcebd",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-behavioral-restoration-bridge",
+        "object": "27ad8cd9a0962bf6e5e3c79c5a7e277e54a86317",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-k-directional-alignment-transport",
+        "object": "8496ece911e0d461f0abbdf1a0fa619f8a2f22ab",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-k-family-subspace-sensitivity",
+        "object": "88de940d1b24b4b02c670a9ae67a2046aa082b38",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-k-fast-cuda-equivalence",
+        "object": "ad375c88385eef507e151f95717e951919a6a3fe",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-k-large-correction-prospective-validation",
+        "object": "a4d661a04b8547f4955c1ecf28e21698c53ec74e",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-k-transport-failure-static-decomposition",
+        "object": "41f4678d09f7c779a8edc2eec6cc08a9effd9f41",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-k-xg1-cross-generator-replication",
+        "object": "29e0cc6330b5e5270b6057a02c1b86fdeb45ca96",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-k-xg2-basis-holdout",
+        "object": "2c237fa7d2f4d2fdf7029826599a164c69455f36",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-k-xg2-xg4-local-jacobian",
+        "object": "6e5db0a69e05417938bd05038cf9dba1a39846bf",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-mamba1-five-scale-coordinate-free-geometry",
+        "object": "593199d8e849572fc77b1b0bc7475d3d19468d12",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-mamba1-five-scale-ladder-extension",
+        "object": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-mamba370m-core-replication",
+        "object": "ea03cdaa5394de03389d31aa1089b51e10340a57",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-phase-d-cache-validator-correction",
+        "object": "a738b4c169d30b0a7e21563c3aba2c29c481c456",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen5-causal-role-state-ownership",
+        "object": "9b931dd038cb3a563e2f430bed733ef6c70bf283",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/iclr2027-mamba-five-scale-paper",
+        "object": "b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/longterm-k-series-native-state-kinematics",
+        "object": "5f5f4d6a80085ad8baf43445475d1c3049535c22",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/main",
+        "object": "ca1419603f397aaf4e157504c15b58cb403377de",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/o0c-minimal-scientific-runner-implementation",
+        "object": "ff2fb076f6e66a34a632515bb8502d8b1c90ad7f",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/p3w7-a0-seed180-normal-reference-freeze",
+        "object": "b32d73dfa49b6b9dfabf3093802904323cf679cd",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/p3w7-a0-seed181-replacement-result",
+        "object": "fb4f0e2c2a8382a642f1272b66f29552adaecb0e",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/p3w7-a0-seed182-result",
+        "object": "82739bdfc8eee184de10ed8f55434f203a6d59a5",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/p3w7-a1-a2-a3-factorial-execution-authority-n3",
+        "object": "be6bf6477d6b97b3da9aea117ca49f970a186b21",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2",
+        "object": "91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/p3w7-current-lineage-calibration-authority",
+        "object": "ba3fd1a82cba029dac05ba38a86d518252ab858f",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/stash",
+        "object": "3d2691afcc8ec6c0f59ba304f73631b6bc903208",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/tags/gen4-name-q1q3-states-60b430f",
+        "object": "60b430fccec9e51e4d1f12131eabf37d03a8be66",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/tags/gen4-native-mamba-phase-d-states-4a2ef82",
+        "object": "4a2ef821122a36c8e48ec261012519102b63d6c3",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/tags/gen4-r5-evaluator-checkpoints-cf08261",
+        "object": "cf0826174c2ab1b2203f68afbdeed9da3ff64aa2",
+        "type": "commit",
+        "peeled": ""
+      }
+    ],
+    "refs_raw_sha256": "8beab25b472eb74864f9591aeb1cbdf094ca672abd28417dc3c5155df00959b5",
+    "refs_metadata_preserved": false,
+    "ref_movements": [
+      {
+        "ref": "refs/heads/gen5-causal-role-state-ownership",
+        "before": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+        "after": "9b931dd038cb3a563e2f430bed733ef6c70bf283"
+      },
+      {
+        "ref": "refs/remotes/origin/gen5-causal-role-state-ownership",
+        "before": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+        "after": "9b931dd038cb3a563e2f430bed733ef6c70bf283"
+      }
+    ],
+    "show_ref_head_dereference": [
+      "ff806bd5bd8efc62fcf6420cf8b097a63ed70571 HEAD",
+      "332726190bcf7e51efd2a65c1701f2d1341d4434 refs/codex/turn-diffs/captures/1791958202329/a32568c7-13ce-4b40-a87b-b9ccdb07133a/base",
+      "303f2863736d4ecb723314dab8a7616c43e49207 refs/codex/turn-diffs/checkpoints/223e1b2ada891dccb924639f161a2a3f/0ba828004d8e7d49ba2b56f724de1a4d/1791823846684/8d45a963-b920-48ce-a5ed-5cb274d1ce7e",
+      "549f185452112dba5732677ce795ede5425558e4 refs/codex/turn-diffs/checkpoints/7105d3700b4f3531e0883a54cf3062dc/8e71ee7397078937da7fe9a90a85ad61/1791938529851/4ac24cf8-6fc9-4112-ac57-d0be3adf252c",
+      "99597caddf0a24e5810e33654c45c4fa33f2b72a refs/codex/turn-diffs/checkpoints/8ffd7ca6edb92ce8b1b25f8e3dcf896f/1254ddec5f4b1aa8e0a4a6fc223f391d/1791898161392/a8d9618a-42dc-4a98-a7b7-3259fcc382e8",
+      "93b906efb2c2e96084f9cbd6bbd48cf89920cdba refs/codex/turn-diffs/checkpoints/9f1765da2bcafc78693789aef0d73a7d/8773496cdc31c140db02a853f36c31ee/1791822079155/9ba675fc-7f6e-4a8d-8e06-e2aa662f3777",
+      "18a14e7cf07de24c5cb8b3ad3b421337324fcebd refs/heads/g4k-seed181-checkpoint-replication-prep",
+      "ab80d9fbab103c73aaa459b10c5caeaa2f69dfd4 refs/heads/gen-series",
+      "27ad8cd9a0962bf6e5e3c79c5a7e277e54a86317 refs/heads/gen4-behavioral-restoration-bridge",
+      "8496ece911e0d461f0abbdf1a0fa619f8a2f22ab refs/heads/gen4-k-directional-alignment-transport",
+      "88de940d1b24b4b02c670a9ae67a2046aa082b38 refs/heads/gen4-k-family-subspace-sensitivity",
+      "ad375c88385eef507e151f95717e951919a6a3fe refs/heads/gen4-k-fast-cuda-equivalence",
+      "a4d661a04b8547f4955c1ecf28e21698c53ec74e refs/heads/gen4-k-large-correction-prospective-validation",
+      "41f4678d09f7c779a8edc2eec6cc08a9effd9f41 refs/heads/gen4-k-transport-failure-static-decomposition",
+      "29e0cc6330b5e5270b6057a02c1b86fdeb45ca96 refs/heads/gen4-k-xg1-cross-generator-replication",
+      "2c237fa7d2f4d2fdf7029826599a164c69455f36 refs/heads/gen4-k-xg2-basis-holdout",
+      "6e5db0a69e05417938bd05038cf9dba1a39846bf refs/heads/gen4-k-xg2-xg4-local-jacobian",
+      "593199d8e849572fc77b1b0bc7475d3d19468d12 refs/heads/gen4-mamba1-five-scale-coordinate-free-geometry",
+      "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69 refs/heads/gen4-mamba1-five-scale-ladder-extension",
+      "ea03cdaa5394de03389d31aa1089b51e10340a57 refs/heads/gen4-mamba370m-core-replication",
+      "a738b4c169d30b0a7e21563c3aba2c29c481c456 refs/heads/gen4-phase-d-cache-validator-correction",
+      "9b931dd038cb3a563e2f430bed733ef6c70bf283 refs/heads/gen5-causal-role-state-ownership",
+      "b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7 refs/heads/iclr2027-mamba-five-scale-paper",
+      "5f5f4d6a80085ad8baf43445475d1c3049535c22 refs/heads/longterm-k-series-native-state-kinematics",
+      "75b56b5b9390c0d1dcbbc38330d5dfdba8f44d75 refs/heads/main",
+      "ca1419603f397aaf4e157504c15b58cb403377de refs/heads/main-readme-sync",
+      "ff2fb076f6e66a34a632515bb8502d8b1c90ad7f refs/heads/o0c-minimal-scientific-runner-implementation",
+      "b32d73dfa49b6b9dfabf3093802904323cf679cd refs/heads/p3w7-a0-seed180-normal-reference-freeze",
+      "fb4f0e2c2a8382a642f1272b66f29552adaecb0e refs/heads/p3w7-a0-seed181-replacement-result",
+      "82739bdfc8eee184de10ed8f55434f203a6d59a5 refs/heads/p3w7-a0-seed182-result",
+      "be6bf6477d6b97b3da9aea117ca49f970a186b21 refs/heads/p3w7-a1-a2-a3-factorial-execution-authority-n3",
+      "91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea refs/heads/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2",
+      "ba3fd1a82cba029dac05ba38a86d518252ab858f refs/heads/p3w7-current-lineage-calibration-authority",
+      "3d2691afcc8ec6c0f59ba304f73631b6bc903208 refs/migration/pre-migration-stash-0",
+      "7816ed12332bd5be3ec6e93214cefa7f728e8c6e refs/migration/pre-migration-stash-1",
+      "ca1419603f397aaf4e157504c15b58cb403377de refs/remotes/origin/HEAD",
+      "18a14e7cf07de24c5cb8b3ad3b421337324fcebd refs/remotes/origin/g4k-seed181-checkpoint-replication-prep",
+      "27ad8cd9a0962bf6e5e3c79c5a7e277e54a86317 refs/remotes/origin/gen4-behavioral-restoration-bridge",
+      "8496ece911e0d461f0abbdf1a0fa619f8a2f22ab refs/remotes/origin/gen4-k-directional-alignment-transport",
+      "88de940d1b24b4b02c670a9ae67a2046aa082b38 refs/remotes/origin/gen4-k-family-subspace-sensitivity",
+      "ad375c88385eef507e151f95717e951919a6a3fe refs/remotes/origin/gen4-k-fast-cuda-equivalence",
+      "a4d661a04b8547f4955c1ecf28e21698c53ec74e refs/remotes/origin/gen4-k-large-correction-prospective-validation",
+      "41f4678d09f7c779a8edc2eec6cc08a9effd9f41 refs/remotes/origin/gen4-k-transport-failure-static-decomposition",
+      "29e0cc6330b5e5270b6057a02c1b86fdeb45ca96 refs/remotes/origin/gen4-k-xg1-cross-generator-replication",
+      "2c237fa7d2f4d2fdf7029826599a164c69455f36 refs/remotes/origin/gen4-k-xg2-basis-holdout",
+      "6e5db0a69e05417938bd05038cf9dba1a39846bf refs/remotes/origin/gen4-k-xg2-xg4-local-jacobian",
+      "593199d8e849572fc77b1b0bc7475d3d19468d12 refs/remotes/origin/gen4-mamba1-five-scale-coordinate-free-geometry",
+      "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69 refs/remotes/origin/gen4-mamba1-five-scale-ladder-extension",
+      "ea03cdaa5394de03389d31aa1089b51e10340a57 refs/remotes/origin/gen4-mamba370m-core-replication",
+      "a738b4c169d30b0a7e21563c3aba2c29c481c456 refs/remotes/origin/gen4-phase-d-cache-validator-correction",
+      "9b931dd038cb3a563e2f430bed733ef6c70bf283 refs/remotes/origin/gen5-causal-role-state-ownership",
+      "b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7 refs/remotes/origin/iclr2027-mamba-five-scale-paper",
+      "5f5f4d6a80085ad8baf43445475d1c3049535c22 refs/remotes/origin/longterm-k-series-native-state-kinematics",
+      "ca1419603f397aaf4e157504c15b58cb403377de refs/remotes/origin/main",
+      "ff2fb076f6e66a34a632515bb8502d8b1c90ad7f refs/remotes/origin/o0c-minimal-scientific-runner-implementation",
+      "b32d73dfa49b6b9dfabf3093802904323cf679cd refs/remotes/origin/p3w7-a0-seed180-normal-reference-freeze",
+      "fb4f0e2c2a8382a642f1272b66f29552adaecb0e refs/remotes/origin/p3w7-a0-seed181-replacement-result",
+      "82739bdfc8eee184de10ed8f55434f203a6d59a5 refs/remotes/origin/p3w7-a0-seed182-result",
+      "be6bf6477d6b97b3da9aea117ca49f970a186b21 refs/remotes/origin/p3w7-a1-a2-a3-factorial-execution-authority-n3",
+      "91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea refs/remotes/origin/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2",
+      "ba3fd1a82cba029dac05ba38a86d518252ab858f refs/remotes/origin/p3w7-current-lineage-calibration-authority",
+      "3d2691afcc8ec6c0f59ba304f73631b6bc903208 refs/stash",
+      "60b430fccec9e51e4d1f12131eabf37d03a8be66 refs/tags/gen4-name-q1q3-states-60b430f",
+      "4a2ef821122a36c8e48ec261012519102b63d6c3 refs/tags/gen4-native-mamba-phase-d-states-4a2ef82",
+      "cf0826174c2ab1b2203f68afbdeed9da3ff64aa2 refs/tags/gen4-r5-evaluator-checkpoints-cf08261"
+    ],
+    "git_diff_check": {
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  },
+  "raw_ref_unchanged_check": {
+    "status": "FAIL_REFS_MOVED",
+    "movements": [
+      {
+        "ref": "refs/heads/gen5-causal-role-state-ownership",
+        "before": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+        "after": "9b931dd038cb3a563e2f430bed733ef6c70bf283",
+        "after_type": "commit",
+        "is_ancestor_exit": 0,
+        "net_changed_paths": [
+          "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+        ],
+        "all_range_changed_paths": [
+          "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+        ],
+        "range_commit_count": 1,
+        "pinned_dependency_overlap": [],
+        "non_destructive": true,
+        "unrelated_to_pinned_input_paths": true,
+        "raw_status": "FAIL_REFS_MOVED",
+        "actor_cause_time": "UNDETERMINED; this task executed no ref writes",
+        "full_changed_path_statuses": [
+          "A\tscripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+        ],
+        "qualification": "PASS_AUTHENTICATED_UNRELATED_FAST_FORWARD_PINNED_INPUT_INDEPENDENCE"
+      },
+      {
+        "ref": "refs/remotes/origin/gen5-causal-role-state-ownership",
+        "before": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+        "after": "9b931dd038cb3a563e2f430bed733ef6c70bf283",
+        "after_type": "commit",
+        "is_ancestor_exit": 0,
+        "net_changed_paths": [
+          "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+        ],
+        "all_range_changed_paths": [
+          "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+        ],
+        "range_commit_count": 1,
+        "pinned_dependency_overlap": [],
+        "non_destructive": true,
+        "unrelated_to_pinned_input_paths": true,
+        "raw_status": "FAIL_REFS_MOVED",
+        "actor_cause_time": "UNDETERMINED; this task executed no ref writes",
+        "full_changed_path_statuses": [
+          "A\tscripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+        ],
+        "qualification": "PASS_AUTHENTICATED_UNRELATED_FAST_FORWARD_PINNED_INPUT_INDEPENDENCE"
+      }
+    ],
+    "qualified_status": "PASS_AUTHENTICATED_UNRELATED_FAST_FORWARD_PINNED_INPUT_INDEPENDENCE"
+  },
+  "historical_failures_retained": {
+    "prior_failures": [
+      {
+        "evidence": {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/rs125_130m_parent_provenance/validation.json",
+          "file_sha256": "73fce08697f524a7a3fe80e8886cae9376cb77e965c850a91ebda3fe26b963b8",
+          "json_pointer": "/overall_static_validation"
+        },
+        "status": "FAIL_REQUIRED_REFS_UNCHANGED_CHECK",
+        "preserved_without_relabeling": true
+      },
+      {
+        "evidence": {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/rs125_130m_parent_provenance/validation.json",
+          "file_sha256": "73fce08697f524a7a3fe80e8886cae9376cb77e965c850a91ebda3fe26b963b8",
+          "json_pointer": "/overall_static_validation"
+        },
+        "status": "FAIL_REQUIRED_REFS_UNCHANGED_CHECK",
+        "preserved_without_relabeling": true
+      }
+    ],
+    "p01_raw_failure": [
+      {
+        "name": "ALL_GIT_REFS_UNCHANGED",
+        "status": "FAIL_REFS_MOVED",
+        "qualification": {
+          "raw_endpoint_unchanged": "FAIL_REFS_MOVED",
+          "historical_failures_unchanged": true,
+          "qualified_result": "PASS_AUTHENTICATED_UNRELATED_FAST_FORWARD_PINNED_INPUT_INDEPENDENCE",
+          "exact_movements": [
+            {
+              "ref": "refs/heads/gen5-causal-role-state-ownership",
+              "before": "bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b",
+              "after": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+              "after_object_type": "commit",
+              "classification": "NON_DESTRUCTIVE_FAST_FORWARD",
+              "non_destructive_authenticated": true,
+              "source": "External to this task: no ref-writing command was executed; actor/cause/time not certified"
+            },
+            {
+              "ref": "refs/remotes/origin/gen5-causal-role-state-ownership",
+              "before": "bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b",
+              "after": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+              "after_object_type": "commit",
+              "classification": "NON_DESTRUCTIVE_FAST_FORWARD",
+              "non_destructive_authenticated": true,
+              "source": "External to this task: no ref-writing command was executed; actor/cause/time not certified"
+            }
+          ],
+          "independence_checks": [
+            {
+              "ref": "refs/heads/gen5-causal-role-state-ownership",
+              "before": "bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b",
+              "after": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+              "full_changed_paths": [
+                "src/contramamba/gen5_shared_bypass_g2_loaded_parent_bridge.py",
+                "tests/test_gen5_shared_bypass_g2_loaded_parent_bridge_synthetic.py"
+              ],
+              "pinned_dependency_path_overlap": [],
+              "all_paths_in_gen5_namespace": true,
+              "history_status": "NON_DESTRUCTIVE_FAST_FORWARD",
+              "pinned_input_independence": "PASS_FIXED_COMMIT_BLOB_AND_SAVED_BYTE_BINDINGS_NO_MOVING_REF_INPUT"
+            },
+            {
+              "ref": "refs/remotes/origin/gen5-causal-role-state-ownership",
+              "before": "bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b",
+              "after": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+              "full_changed_paths": [
+                "src/contramamba/gen5_shared_bypass_g2_loaded_parent_bridge.py",
+                "tests/test_gen5_shared_bypass_g2_loaded_parent_bridge_synthetic.py"
+              ],
+              "pinned_dependency_path_overlap": [],
+              "all_paths_in_gen5_namespace": true,
+              "history_status": "NON_DESTRUCTIVE_FAST_FORWARD",
+              "pinned_input_independence": "PASS_FIXED_COMMIT_BLOB_AND_SAVED_BYTE_BINDINGS_NO_MOVING_REF_INPUT"
+            }
+          ],
+          "uncertified_intervals": [
+            "Before this task baseline; historical checks retained separately",
+            "Between endpoint observations, transient changes returning to identical endpoints are not certified"
+          ],
+          "actor_cause_wall_clock_time": "UNDETERMINED; no ref-writing command by this task"
+        }
+      }
+    ],
+    "p01_conditional_finding": "PASS_AUTHENTICATED_UNRELATED_FAST_FORWARD_PINNED_INPUT_INDEPENDENCE",
+    "historical_ref_authentication": [
+      {
+        "ref": "refs/heads/gen5-causal-role-state-ownership",
+        "before": "bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b",
+        "after": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+        "after_object_type": "commit",
+        "classification": "NON_DESTRUCTIVE_FAST_FORWARD",
+        "non_destructive_authenticated": true,
+        "source": "External to this task: no ref-writing command was executed; actor/cause/time not certified",
+        "independent_ancestry_exit": 0,
+        "independent_after_object_type": "commit",
+        "independent_net_changed_paths": [
+          "src/contramamba/gen5_shared_bypass_g2_loaded_parent_bridge.py",
+          "tests/test_gen5_shared_bypass_g2_loaded_parent_bridge_synthetic.py"
+        ],
+        "independent_all_range_changed_paths": [
+          "src/contramamba/gen5_shared_bypass_g2_loaded_parent_bridge.py",
+          "tests/test_gen5_shared_bypass_g2_loaded_parent_bridge_synthetic.py"
+        ],
+        "range_commit_count": 1,
+        "pinned_dependency_overlap": [],
+        "independently_nonblocking": true
+      },
+      {
+        "ref": "refs/remotes/origin/gen5-causal-role-state-ownership",
+        "before": "bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b",
+        "after": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+        "after_object_type": "commit",
+        "classification": "NON_DESTRUCTIVE_FAST_FORWARD",
+        "non_destructive_authenticated": true,
+        "source": "External to this task: no ref-writing command was executed; actor/cause/time not certified",
+        "independent_ancestry_exit": 0,
+        "independent_after_object_type": "commit",
+        "independent_net_changed_paths": [
+          "src/contramamba/gen5_shared_bypass_g2_loaded_parent_bridge.py",
+          "tests/test_gen5_shared_bypass_g2_loaded_parent_bridge_synthetic.py"
+        ],
+        "independent_all_range_changed_paths": [
+          "src/contramamba/gen5_shared_bypass_g2_loaded_parent_bridge.py",
+          "tests/test_gen5_shared_bypass_g2_loaded_parent_bridge_synthetic.py"
+        ],
+        "range_commit_count": 1,
+        "pinned_dependency_overlap": [],
+        "independently_nonblocking": true
+      }
+    ],
+    "p01_uncertified_intervals": [
+      "Before this task baseline; historical checks retained separately",
+      "Between endpoint observations, transient changes returning to identical endpoints are not certified"
+    ],
+    "current_uncertified_intervals": [
+      "Before the durable initial baseline, including the interval after the P01 final observation; endpoint equality cannot certify intervening history.",
+      "Between current endpoint observations, transient changes returning to the same endpoints are uncertified."
+    ],
+    "snapshot_limitation": "Existing tree snapshot chronology limitation; no new evidence",
+    "other_candidates": "HV000107 and HV000113 unchanged and pending separate independent verification.",
+    "prior_failures_actual_status": "FAIL_REQUIRED_REFS_UNCHANGED_CHECK",
+    "prebaseline_capture_ref_observation": {
+      "classification": "PRE_BASELINE_CAPTURE_REF_REPLACEMENT_OBSERVED",
+      "raw_endpoint_status": "FAIL_REFS_MOVED",
+      "movements": [
+        {
+          "ref": "refs/codex/turn-diffs/captures/1791955905036/cfe326cc-2a3a-4cf6-9ac2-5fa60681ca7e/base",
+          "before": "4a950cff26a485ef9e0077ecbc0f91daf57160f4",
+          "after": null
+        },
+        {
+          "ref": "refs/codex/turn-diffs/captures/1791958202329/a32568c7-13ce-4b40-a87b-b9ccdb07133a/base",
+          "before": null,
+          "after": "332726190bcf7e51efd2a65c1701f2d1341d4434"
+        }
+      ],
+      "objects": {
+        "old_type": "tree",
+        "new_type": "tree",
+        "old_bytes": "795",
+        "new_bytes": "795"
+      },
+      "old_tree_still_available": true,
+      "entire_old_tree_payload_preserved_in_new_tree": true,
+      "new_snapshot_additions": [
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/publication_semantic_batch_p01_20261014/checkpoint.json",
+          "blob": "d3ade775c7f77cf9d4eba32efe7b277bbeec1db9",
+          "sha256": "3198deacf7b67e04743cc87ae6667ca2d7d76e52fbab9d665e65bd137fc050d8",
+          "equals_frozen_packet": false
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/publication_semantic_batch_p01_20261014/evidence_manifest.json",
+          "blob": "73536740e992d4012a8af684ff235c7a912e833b",
+          "sha256": "f4bc5bca4ecb5010aebcc53046701da412f19f070c5ebbb2fe6e821a8ce75d69",
+          "equals_frozen_packet": false
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/publication_semantic_batch_p01_20261014/publication_assessments.jsonl",
+          "blob": "26df0ea9f6232e0ee97d96e83ae438a5266e5d13",
+          "sha256": "bc46d684d7000ad8f8aad57f2182b34200066d0931a6eb15d47787e7866ddf66",
+          "equals_frozen_packet": false
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/publication_semantic_batch_p01_20261014/report.md",
+          "blob": "a6bd593355f91f6afe18f71beadf7bd6c46313dc",
+          "sha256": "ea6ccd0e75f56a15fd650f96a5f1833531db1c294c142f60b8db73a49d525ebb",
+          "equals_frozen_packet": false
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/publication_semantic_batch_p01_20261014/validation.json",
+          "blob": "70e5f30f3d5c49cbf0f641e1f9d7987155fe46a5",
+          "sha256": "29be7fe7d4badb978e4d9056eb64a5ba2b5ab87b790bb23c33f4ead20efd0efc",
+          "equals_frozen_packet": false
+        }
+      ],
+      "source_or_original_input_changed": false,
+      "capture_refs_used_as_authority": false,
+      "qualification": "Pre-baseline snapshot coverage differs only by addition of the five byte-authenticated frozen P01 output files. No original pinned source, saved input or old tree payload is removed or changed. This is not an in-task start/end movement, a commit fast-forward, or a certification of the removed ref endpoint. P01 historical raw FAIL and current endpoint observation remain separate.",
+      "actor_cause_time": "UNDETERMINED; pre-baseline interval remains uncertified.",
+      "independence": {
+        "old_snapshot_payload_preserved": true,
+        "all_five_added_files_match_frozen_packet": false,
+        "pinned_authority_uses_no_capture_ref": true,
+        "original_source_or_saved_inputs_changed": false,
+        "qualified_finding": "NONBLOCKING_PREBASELINE_SNAPSHOT_EXTENSION_WITH_FIXED_INPUT_INDEPENDENCE",
+        "raw_endpoint_failure_retained": true,
+        "certifies_actor_cause_time": false,
+        "certifies_prebaseline_ref_stability": false
+      }
+    },
+    "current_new_ref_movements": [
+      {
+        "ref": "refs/heads/gen5-causal-role-state-ownership",
+        "before": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+        "after": "9b931dd038cb3a563e2f430bed733ef6c70bf283",
+        "after_type": "commit",
+        "is_ancestor_exit": 0,
+        "net_changed_paths": [
+          "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+        ],
+        "all_range_changed_paths": [
+          "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+        ],
+        "range_commit_count": 1,
+        "pinned_dependency_overlap": [],
+        "non_destructive": true,
+        "unrelated_to_pinned_input_paths": true,
+        "raw_status": "FAIL_REFS_MOVED",
+        "actor_cause_time": "UNDETERMINED; this task executed no ref writes",
+        "full_changed_path_statuses": [
+          "A\tscripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+        ],
+        "qualification": "PASS_AUTHENTICATED_UNRELATED_FAST_FORWARD_PINNED_INPUT_INDEPENDENCE"
+      },
+      {
+        "ref": "refs/remotes/origin/gen5-causal-role-state-ownership",
+        "before": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+        "after": "9b931dd038cb3a563e2f430bed733ef6c70bf283",
+        "after_type": "commit",
+        "is_ancestor_exit": 0,
+        "net_changed_paths": [
+          "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+        ],
+        "all_range_changed_paths": [
+          "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+        ],
+        "range_commit_count": 1,
+        "pinned_dependency_overlap": [],
+        "non_destructive": true,
+        "unrelated_to_pinned_input_paths": true,
+        "raw_status": "FAIL_REFS_MOVED",
+        "actor_cause_time": "UNDETERMINED; this task executed no ref writes",
+        "full_changed_path_statuses": [
+          "A\tscripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+        ],
+        "qualification": "PASS_AUTHENTICATED_UNRELATED_FAST_FORWARD_PINNED_INPUT_INDEPENDENCE"
+      }
+    ],
+    "current_ref_policy_qualification": {
+      "raw_endpoint_unchanged_status": "FAIL_REFS_MOVED",
+      "qualified_result": "PASS_AUTHENTICATED_UNRELATED_FAST_FORWARD_PINNED_INPUT_INDEPENDENCE",
+      "exact_movements": [
+        {
+          "ref": "refs/heads/gen5-causal-role-state-ownership",
+          "before": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+          "after": "9b931dd038cb3a563e2f430bed733ef6c70bf283",
+          "after_type": "commit",
+          "is_ancestor_exit": 0,
+          "net_changed_paths": [
+            "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+          ],
+          "all_range_changed_paths": [
+            "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+          ],
+          "range_commit_count": 1,
+          "pinned_dependency_overlap": [],
+          "non_destructive": true,
+          "unrelated_to_pinned_input_paths": true,
+          "raw_status": "FAIL_REFS_MOVED",
+          "actor_cause_time": "UNDETERMINED; this task executed no ref writes",
+          "full_changed_path_statuses": [
+            "A\tscripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+          ],
+          "qualification": "PASS_AUTHENTICATED_UNRELATED_FAST_FORWARD_PINNED_INPUT_INDEPENDENCE"
+        },
+        {
+          "ref": "refs/remotes/origin/gen5-causal-role-state-ownership",
+          "before": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+          "after": "9b931dd038cb3a563e2f430bed733ef6c70bf283",
+          "after_type": "commit",
+          "is_ancestor_exit": 0,
+          "net_changed_paths": [
+            "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+          ],
+          "all_range_changed_paths": [
+            "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+          ],
+          "range_commit_count": 1,
+          "pinned_dependency_overlap": [],
+          "non_destructive": true,
+          "unrelated_to_pinned_input_paths": true,
+          "raw_status": "FAIL_REFS_MOVED",
+          "actor_cause_time": "UNDETERMINED; this task executed no ref writes",
+          "full_changed_path_statuses": [
+            "A\tscripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+          ],
+          "qualification": "PASS_AUTHENTICATED_UNRELATED_FAST_FORWARD_PINNED_INPUT_INDEPENDENCE"
+        }
+      ],
+      "pinned_input_rechecks": [
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/census_exit_reconciliation_20261014/closure_readiness_matrix.jsonl",
+          "expected_sha256": "c1cebb13ae54df3e775d7818c949bf05e63365d02e6d3d72cdd06c6e00dd36bb",
+          "actual_sha256": "c1cebb13ae54df3e775d7818c949bf05e63365d02e6d3d72cdd06c6e00dd36bb",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/census_exit_reconciliation_20261014/debt_reconciliation.jsonl",
+          "expected_sha256": "6f7b5412dcdadfa26086a72197541a4389130306024c65373f94353e5bb99bca",
+          "actual_sha256": "6f7b5412dcdadfa26086a72197541a4389130306024c65373f94353e5bb99bca",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/census_exit_reconciliation_20261014/evidence_input_manifest.json",
+          "expected_sha256": "201384f3cefd2f40af1a146ad289e81d604aeb81aec57a549be51971929d4b62",
+          "actual_sha256": "201384f3cefd2f40af1a146ad289e81d604aeb81aec57a549be51971929d4b62",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/census_exit_reconciliation_20261014/report.md",
+          "expected_sha256": "fe7faab5374b22d8560085749c6714b1ca818f021c18e98058398a53e1b589a5",
+          "actual_sha256": "fe7faab5374b22d8560085749c6714b1ca818f021c18e98058398a53e1b589a5",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/census_exit_reconciliation_20261014/unresolved_critical_obligations.jsonl",
+          "expected_sha256": "be4317f903a0bfdf5d7250727275139617b8461fce48fcb5095c9f12d3ace01c",
+          "actual_sha256": "be4317f903a0bfdf5d7250727275139617b8461fce48fcb5095c9f12d3ace01c",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106.json",
+          "expected_sha256": "3c0ef4cf891e7cf33c33d911dc8861b627326f3768da6b988f7e6e2533c5e982",
+          "actual_sha256": "3c0ef4cf891e7cf33c33d911dc8861b627326f3768da6b988f7e6e2533c5e982",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/081.json",
+          "expected_sha256": "7b7d494e968ee48904c5e53d19f4c8fece4766b1620a34a1250f16e55c9d37e2",
+          "actual_sha256": "7b7d494e968ee48904c5e53d19f4c8fece4766b1620a34a1250f16e55c9d37e2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/042.json",
+          "expected_sha256": "94745360b6d342f52837fd609bde1a48df3f521c777c7d078fdbc9ab4684fb6f",
+          "actual_sha256": "94745360b6d342f52837fd609bde1a48df3f521c777c7d078fdbc9ab4684fb6f",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/071.json",
+          "expected_sha256": "91a6854155563beb4b24d979f2a8ba77be3fa9cff472a0e925b95c1c4724c602",
+          "actual_sha256": "91a6854155563beb4b24d979f2a8ba77be3fa9cff472a0e925b95c1c4724c602",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/093.json",
+          "expected_sha256": "0d250a5eb6b1b2c63ee393d7d34dfa114c78f45a8f3d29f74a9a57a12b037281",
+          "actual_sha256": "0d250a5eb6b1b2c63ee393d7d34dfa114c78f45a8f3d29f74a9a57a12b037281",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/031.json",
+          "expected_sha256": "5e713fde2f2de182ad2b35b93fe558fe854b8d58b52852a5a1b0bc7bfee4c335",
+          "actual_sha256": "5e713fde2f2de182ad2b35b93fe558fe854b8d58b52852a5a1b0bc7bfee4c335",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/060.json",
+          "expected_sha256": "1ed924bb64fd79b8bbf93f8b350f00b3d2752f5ed7c8914c2ae0967855564b66",
+          "actual_sha256": "1ed924bb64fd79b8bbf93f8b350f00b3d2752f5ed7c8914c2ae0967855564b66",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/047.json",
+          "expected_sha256": "7d60273b16778d24af96690a05e18cc6e63f1c8a1c665fcc118f706585208aa6",
+          "actual_sha256": "7d60273b16778d24af96690a05e18cc6e63f1c8a1c665fcc118f706585208aa6",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/014.json",
+          "expected_sha256": "cd36c146ea0ab41012065dc211502c3478c149ba2ec6ade4870847227c7b02c0",
+          "actual_sha256": "cd36c146ea0ab41012065dc211502c3478c149ba2ec6ade4870847227c7b02c0",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/064.json",
+          "expected_sha256": "b16bda7f26347504b69759b2ee09fcaa310a409b62517c181be8dea4c85a4b82",
+          "actual_sha256": "b16bda7f26347504b69759b2ee09fcaa310a409b62517c181be8dea4c85a4b82",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/048.json",
+          "expected_sha256": "480fda8ca57a9a5a68a934754648b5c3f4aeb25fae7947488b1486ff749a3f22",
+          "actual_sha256": "480fda8ca57a9a5a68a934754648b5c3f4aeb25fae7947488b1486ff749a3f22",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+          "expected_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "actual_sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidated_debt_accounting.jsonl",
+          "expected_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "actual_sha256": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+          "expected_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "actual_sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+          "expected_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "actual_sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/090.json",
+          "expected_sha256": "89c31e19fba6299e98d905cc4161d089199c5d62bf3c54f0bfb41240787ccf76",
+          "actual_sha256": "89c31e19fba6299e98d905cc4161d089199c5d62bf3c54f0bfb41240787ccf76",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/publication_semantic_batch_p01_20261014/checkpoint.json",
+          "expected_sha256": "ea62344740f2dd34c407a2e4b96766d539875b9d03559b0c0a47248ef3165838",
+          "actual_sha256": "ea62344740f2dd34c407a2e4b96766d539875b9d03559b0c0a47248ef3165838",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/publication_semantic_batch_p01_20261014/evidence_manifest.json",
+          "expected_sha256": "e164a60ccc25620413e1221bb6252ebfdeece9fd8ac7cf7a2cbec4286f8d74d8",
+          "actual_sha256": "e164a60ccc25620413e1221bb6252ebfdeece9fd8ac7cf7a2cbec4286f8d74d8",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/publication_semantic_batch_p01_20261014/publication_assessments.jsonl",
+          "expected_sha256": "45c83cac1e05bbc9f99bb76be4ca6f159823554170e94e97908fea4cbf275942",
+          "actual_sha256": "45c83cac1e05bbc9f99bb76be4ca6f159823554170e94e97908fea4cbf275942",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/publication_semantic_batch_p01_20261014/report.md",
+          "expected_sha256": "aa65fb26a19e84b90d929b930807b745484b987d37c882b3764261b4ab9b2f62",
+          "actual_sha256": "aa65fb26a19e84b90d929b930807b745484b987d37c882b3764261b4ab9b2f62",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/census_exit_reconciliation_20261014/closure_readiness_matrix.jsonl",
+          "expected_sha256": "c1cebb13ae54df3e775d7818c949bf05e63365d02e6d3d72cdd06c6e00dd36bb",
+          "actual_sha256": "c1cebb13ae54df3e775d7818c949bf05e63365d02e6d3d72cdd06c6e00dd36bb",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/census_exit_reconciliation_20261014/debt_reconciliation.jsonl",
+          "expected_sha256": "6f7b5412dcdadfa26086a72197541a4389130306024c65373f94353e5bb99bca",
+          "actual_sha256": "6f7b5412dcdadfa26086a72197541a4389130306024c65373f94353e5bb99bca",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/census_exit_reconciliation_20261014/evidence_input_manifest.json",
+          "expected_sha256": "201384f3cefd2f40af1a146ad289e81d604aeb81aec57a549be51971929d4b62",
+          "actual_sha256": "201384f3cefd2f40af1a146ad289e81d604aeb81aec57a549be51971929d4b62",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/census_exit_reconciliation_20261014/report.md",
+          "expected_sha256": "fe7faab5374b22d8560085749c6714b1ca818f021c18e98058398a53e1b589a5",
+          "actual_sha256": "fe7faab5374b22d8560085749c6714b1ca818f021c18e98058398a53e1b589a5",
+          "matches": true
+        },
+        {
+          "file": "audits/full_history_20261013/parallel_20261013/wave_04/census_exit_reconciliation_20261014/unresolved_critical_obligations.jsonl",
+          "expected_sha256": "be4317f903a0bfdf5d7250727275139617b8461fce48fcb5095c9f12d3ace01c",
+          "actual_sha256": "be4317f903a0bfdf5d7250727275139617b8461fce48fcb5095c9f12d3ace01c",
+          "matches": true
+        }
+      ],
+      "original_saved_object_rechecks": [
+        {
+          "side": "before",
+          "path": "paper/iclr2027/figures/fig1_study_overview.png",
+          "sha256": "a6db5d8e4d76539835490604a92da4406a128f940548a3c7f5ce0ab7800e392d",
+          "bytes_equal": true,
+          "matches": true
+        },
+        {
+          "side": "after",
+          "path": "paper/iclr2027/figures/fig1_study_overview.png",
+          "sha256": "a8871bf5664b3ac5c9cbb4f9b2760351e3bb6b4a04f98c6a5039a92465e4fcfc",
+          "bytes_equal": true,
+          "matches": true
+        },
+        {
+          "side": "before",
+          "path": "paper/iclr2027/figures/fig1_study_overview.pdf",
+          "sha256": "57822b65223b2b0ba3b2067dcf5e86ed8cda5430445475d43e9b7ad896a5f252",
+          "bytes_equal": true,
+          "matches": true
+        },
+        {
+          "side": "after",
+          "path": "paper/iclr2027/figures/fig1_study_overview.pdf",
+          "sha256": "d3e88e41a4dd3b5ec0da73eec7532bf7d7e4b202fbb4074e18365fbc3e215c3f",
+          "bytes_equal": true,
+          "matches": true
+        },
+        {
+          "side": "before",
+          "path": "paper/iclr2027/figures/figure_data_manifest.json",
+          "sha256": "c478fa4b1dbacb38bebe3be9aa8a14955b8fde30f5a5df3732a526f2866c4d25",
+          "bytes_equal": true,
+          "matches": true
+        },
+        {
+          "side": "after",
+          "path": "paper/iclr2027/figures/figure_data_manifest.json",
+          "sha256": "ba72e7185f71505c162431ba617414f372af363e8df4d2b45975445a54b2308c",
+          "bytes_equal": true,
+          "matches": true
+        },
+        {
+          "side": "before",
+          "path": "paper/iclr2027/figures/README.md",
+          "sha256": "6921ef531792442386b5a728d9488de89e597b702a1c1ee3adb459575516c653",
+          "bytes_equal": true,
+          "matches": true
+        },
+        {
+          "side": "after",
+          "path": "paper/iclr2027/figures/README.md",
+          "sha256": "92210260da911a5cb98433f768f6a60e622d50e04e68c75fcef50cf5dc2a5b26",
+          "bytes_equal": true,
+          "matches": true
+        }
+      ],
+      "no_ref_writing_command_executed": true,
+      "actor_cause_time": "UNDETERMINED",
+      "uncertified_intervals": [
+        "Before the durable initial baseline, including the interval after the P01 final observation; endpoint equality cannot certify intervening history.",
+        "Between current endpoint observations, transient changes returning to the same endpoints are uncertified."
+      ]
+    }
+  },
+  "git_initial": [
+    {
+      "ref": "refs/codex/turn-diffs/captures/1791958202329/a32568c7-13ce-4b40-a87b-b9ccdb07133a/base",
+      "object": "332726190bcf7e51efd2a65c1701f2d1341d4434",
+      "type": "tree",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/codex/turn-diffs/checkpoints/223e1b2ada891dccb924639f161a2a3f/0ba828004d8e7d49ba2b56f724de1a4d/1791823846684/8d45a963-b920-48ce-a5ed-5cb274d1ce7e",
+      "object": "303f2863736d4ecb723314dab8a7616c43e49207",
+      "type": "tree",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/codex/turn-diffs/checkpoints/7105d3700b4f3531e0883a54cf3062dc/8e71ee7397078937da7fe9a90a85ad61/1791938529851/4ac24cf8-6fc9-4112-ac57-d0be3adf252c",
+      "object": "549f185452112dba5732677ce795ede5425558e4",
+      "type": "tree",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/codex/turn-diffs/checkpoints/8ffd7ca6edb92ce8b1b25f8e3dcf896f/1254ddec5f4b1aa8e0a4a6fc223f391d/1791898161392/a8d9618a-42dc-4a98-a7b7-3259fcc382e8",
+      "object": "99597caddf0a24e5810e33654c45c4fa33f2b72a",
+      "type": "tree",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/codex/turn-diffs/checkpoints/9f1765da2bcafc78693789aef0d73a7d/8773496cdc31c140db02a853f36c31ee/1791822079155/9ba675fc-7f6e-4a8d-8e06-e2aa662f3777",
+      "object": "93b906efb2c2e96084f9cbd6bbd48cf89920cdba",
+      "type": "tree",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/g4k-seed181-checkpoint-replication-prep",
+      "object": "18a14e7cf07de24c5cb8b3ad3b421337324fcebd",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/gen-series",
+      "object": "ab80d9fbab103c73aaa459b10c5caeaa2f69dfd4",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/gen4-behavioral-restoration-bridge",
+      "object": "27ad8cd9a0962bf6e5e3c79c5a7e277e54a86317",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/gen4-k-directional-alignment-transport",
+      "object": "8496ece911e0d461f0abbdf1a0fa619f8a2f22ab",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/gen4-k-family-subspace-sensitivity",
+      "object": "88de940d1b24b4b02c670a9ae67a2046aa082b38",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/gen4-k-fast-cuda-equivalence",
+      "object": "ad375c88385eef507e151f95717e951919a6a3fe",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/gen4-k-large-correction-prospective-validation",
+      "object": "a4d661a04b8547f4955c1ecf28e21698c53ec74e",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/gen4-k-transport-failure-static-decomposition",
+      "object": "41f4678d09f7c779a8edc2eec6cc08a9effd9f41",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/gen4-k-xg1-cross-generator-replication",
+      "object": "29e0cc6330b5e5270b6057a02c1b86fdeb45ca96",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/gen4-k-xg2-basis-holdout",
+      "object": "2c237fa7d2f4d2fdf7029826599a164c69455f36",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/gen4-k-xg2-xg4-local-jacobian",
+      "object": "6e5db0a69e05417938bd05038cf9dba1a39846bf",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/gen4-mamba1-five-scale-coordinate-free-geometry",
+      "object": "593199d8e849572fc77b1b0bc7475d3d19468d12",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/gen4-mamba1-five-scale-ladder-extension",
+      "object": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/gen4-mamba370m-core-replication",
+      "object": "ea03cdaa5394de03389d31aa1089b51e10340a57",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/gen4-phase-d-cache-validator-correction",
+      "object": "a738b4c169d30b0a7e21563c3aba2c29c481c456",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/gen5-causal-role-state-ownership",
+      "object": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/iclr2027-mamba-five-scale-paper",
+      "object": "b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/longterm-k-series-native-state-kinematics",
+      "object": "5f5f4d6a80085ad8baf43445475d1c3049535c22",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/main",
+      "object": "75b56b5b9390c0d1dcbbc38330d5dfdba8f44d75",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/main-readme-sync",
+      "object": "ca1419603f397aaf4e157504c15b58cb403377de",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/o0c-minimal-scientific-runner-implementation",
+      "object": "ff2fb076f6e66a34a632515bb8502d8b1c90ad7f",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/p3w7-a0-seed180-normal-reference-freeze",
+      "object": "b32d73dfa49b6b9dfabf3093802904323cf679cd",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/p3w7-a0-seed181-replacement-result",
+      "object": "fb4f0e2c2a8382a642f1272b66f29552adaecb0e",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/p3w7-a0-seed182-result",
+      "object": "82739bdfc8eee184de10ed8f55434f203a6d59a5",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/p3w7-a1-a2-a3-factorial-execution-authority-n3",
+      "object": "be6bf6477d6b97b3da9aea117ca49f970a186b21",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2",
+      "object": "91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/heads/p3w7-current-lineage-calibration-authority",
+      "object": "ba3fd1a82cba029dac05ba38a86d518252ab858f",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/migration/pre-migration-stash-0",
+      "object": "3d2691afcc8ec6c0f59ba304f73631b6bc903208",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/migration/pre-migration-stash-1",
+      "object": "7816ed12332bd5be3ec6e93214cefa7f728e8c6e",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/HEAD",
+      "object": "ca1419603f397aaf4e157504c15b58cb403377de",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/g4k-seed181-checkpoint-replication-prep",
+      "object": "18a14e7cf07de24c5cb8b3ad3b421337324fcebd",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/gen4-behavioral-restoration-bridge",
+      "object": "27ad8cd9a0962bf6e5e3c79c5a7e277e54a86317",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/gen4-k-directional-alignment-transport",
+      "object": "8496ece911e0d461f0abbdf1a0fa619f8a2f22ab",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/gen4-k-family-subspace-sensitivity",
+      "object": "88de940d1b24b4b02c670a9ae67a2046aa082b38",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/gen4-k-fast-cuda-equivalence",
+      "object": "ad375c88385eef507e151f95717e951919a6a3fe",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/gen4-k-large-correction-prospective-validation",
+      "object": "a4d661a04b8547f4955c1ecf28e21698c53ec74e",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/gen4-k-transport-failure-static-decomposition",
+      "object": "41f4678d09f7c779a8edc2eec6cc08a9effd9f41",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/gen4-k-xg1-cross-generator-replication",
+      "object": "29e0cc6330b5e5270b6057a02c1b86fdeb45ca96",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/gen4-k-xg2-basis-holdout",
+      "object": "2c237fa7d2f4d2fdf7029826599a164c69455f36",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/gen4-k-xg2-xg4-local-jacobian",
+      "object": "6e5db0a69e05417938bd05038cf9dba1a39846bf",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/gen4-mamba1-five-scale-coordinate-free-geometry",
+      "object": "593199d8e849572fc77b1b0bc7475d3d19468d12",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/gen4-mamba1-five-scale-ladder-extension",
+      "object": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/gen4-mamba370m-core-replication",
+      "object": "ea03cdaa5394de03389d31aa1089b51e10340a57",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/gen4-phase-d-cache-validator-correction",
+      "object": "a738b4c169d30b0a7e21563c3aba2c29c481c456",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/gen5-causal-role-state-ownership",
+      "object": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/iclr2027-mamba-five-scale-paper",
+      "object": "b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/longterm-k-series-native-state-kinematics",
+      "object": "5f5f4d6a80085ad8baf43445475d1c3049535c22",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/main",
+      "object": "ca1419603f397aaf4e157504c15b58cb403377de",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/o0c-minimal-scientific-runner-implementation",
+      "object": "ff2fb076f6e66a34a632515bb8502d8b1c90ad7f",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/p3w7-a0-seed180-normal-reference-freeze",
+      "object": "b32d73dfa49b6b9dfabf3093802904323cf679cd",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/p3w7-a0-seed181-replacement-result",
+      "object": "fb4f0e2c2a8382a642f1272b66f29552adaecb0e",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/p3w7-a0-seed182-result",
+      "object": "82739bdfc8eee184de10ed8f55434f203a6d59a5",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/p3w7-a1-a2-a3-factorial-execution-authority-n3",
+      "object": "be6bf6477d6b97b3da9aea117ca49f970a186b21",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2",
+      "object": "91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/remotes/origin/p3w7-current-lineage-calibration-authority",
+      "object": "ba3fd1a82cba029dac05ba38a86d518252ab858f",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/stash",
+      "object": "3d2691afcc8ec6c0f59ba304f73631b6bc903208",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/tags/gen4-name-q1q3-states-60b430f",
+      "object": "60b430fccec9e51e4d1f12131eabf37d03a8be66",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/tags/gen4-native-mamba-phase-d-states-4a2ef82",
+      "object": "4a2ef821122a36c8e48ec261012519102b63d6c3",
+      "type": "commit",
+      "peeled": ""
+    },
+    {
+      "ref": "refs/tags/gen4-r5-evaluator-checkpoints-cf08261",
+      "object": "cf0826174c2ab1b2203f68afbdeed9da3ff64aa2",
+      "type": "commit",
+      "peeled": ""
+    }
+  ],
+  "accounting": {
+    "original": 222,
+    "satisfied": 17,
+    "strict_blockers": 195
+  },
+  "applied_closure_credit": 0,
+  "scientific_certification": false,
+  "training_evaluation_performed": false,
+  "commit_push_performed": false,
+  "commands_actually_executed": [
+    "git status --porcelain=v2; git branch --show-current; git rev-parse HEAD; git symbolic-ref -q HEAD",
+    "git ls-files --stage -z; git ls-files -z; git for-each-ref; git show-ref --head --dereference",
+    "git cat-file -t/-s/blob; git rev-parse commit:path; git merge-base --is-ancestor; git rev-list --parents/-n/--count; git log --format= --name-only",
+    "git diff --binary/--name-only/--name-status/--stat/--check; git diff --cached --binary/--stat",
+    "rg --files/rg -n; PowerShell Get-Location/Get-Content/Get-ChildItem",
+    "Inline bundled Python/Node JSON, SHA256/Git-blob hashes, exact-decimal CSV checks, full JSON/README comparison, serialized readback and preservation",
+    "Read-only Pillow/pypdf; pdftoppm -png -singlefile -scale-to 2800; full in-memory PNG/PDF render emission",
+    "Five output-file writes confined to the authorized output directory"
+  ],
+  "exact_required_output_names": [
+    "checkpoint.json",
+    "independent_evidence_check.json",
+    "obligation_verdict.json",
+    "validation.json",
+    "report.md"
+  ],
+  "validated_utc": "2026-10-14T06:35:19.117Z",
+  "final_preservation_scope_readback_checks": [
+    {
+      "name": "EXACT_FIVE_FILE_OUTPUT_SCOPE",
+      "status": "PASS",
+      "detail": [
+        "checkpoint.json",
+        "independent_evidence_check.json",
+        "obligation_verdict.json",
+        "report.md",
+        "validation.json"
+      ]
+    },
+    {
+      "name": "NO_NEW_AUDIT_FILES_OUTSIDE_SCOPE",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "ALL_788_EXISTING_AUDITS_BYTE_PRESERVED",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "ALL_3593_TRACKED_FILES_BYTE_PRESERVED",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "HEAD_INDEX_DETACHED_TRACKED_STAGED_STATE_PRESERVED",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "TRACKED_AND_STAGED_DIFF_STATS_EMPTY",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "GIT_DIFF_CHECK_ACTUALLY_PASSED",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "FULL_REF_ENDPOINTS_STABLE_SINCE_QUALIFIED_NEW_OBSERVATION",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "NEW_RAW_REF_MOVEMENT_FULLY_RECORDED_AND_QUALIFIED",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "JSON_OUTPUTS_SERIALIZED_READBACK",
+      "status": "PASS",
+      "detail": {
+        "evidence": true,
+        "verdict": true,
+        "checkpoint": true,
+        "validation": true,
+        "method": "Compare fresh parsed files with JSON wire representation; undefined optional properties are omitted by JSON serialization."
+      }
+    },
+    {
+      "name": "REPORT_UTF8_READBACK_AND_NO_UNRESOLVED_TEMPLATE",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "CHECKPOINT_SAVED_EVIDENCE_AND_VERDICT_HASHES_MATCH",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "ALL_FROZEN_INPUTS_REMAIN_HASH_AUTHENTICATED",
+      "status": "PASS",
+      "detail": null
+    }
+  ],
+  "checks_passed": 44,
+  "blocking_failed_checks": [],
+  "raw_failed_checks_retained": [
+    {
+      "name": "ALL_GIT_REFS_UNCHANGED_CURRENT_VERIFICATION",
+      "status": "FAIL_REFS_MOVED",
+      "qualification": "PASS_AUTHENTICATED_UNRELATED_FAST_FORWARD_PINNED_INPUT_INDEPENDENCE",
+      "movements": [
+        {
+          "ref": "refs/heads/gen5-causal-role-state-ownership",
+          "before": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+          "after": "9b931dd038cb3a563e2f430bed733ef6c70bf283",
+          "after_type": "commit",
+          "is_ancestor_exit": 0,
+          "net_changed_paths": [
+            "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+          ],
+          "all_range_changed_paths": [
+            "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+          ],
+          "range_commit_count": 1,
+          "pinned_dependency_overlap": [],
+          "non_destructive": true,
+          "unrelated_to_pinned_input_paths": true,
+          "raw_status": "FAIL_REFS_MOVED",
+          "actor_cause_time": "UNDETERMINED; this task executed no ref writes",
+          "full_changed_path_statuses": [
+            "A\tscripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+          ],
+          "qualification": "PASS_AUTHENTICATED_UNRELATED_FAST_FORWARD_PINNED_INPUT_INDEPENDENCE"
+        },
+        {
+          "ref": "refs/remotes/origin/gen5-causal-role-state-ownership",
+          "before": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+          "after": "9b931dd038cb3a563e2f430bed733ef6c70bf283",
+          "after_type": "commit",
+          "is_ancestor_exit": 0,
+          "net_changed_paths": [
+            "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+          ],
+          "all_range_changed_paths": [
+            "scripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+          ],
+          "range_commit_count": 1,
+          "pinned_dependency_overlap": [],
+          "non_destructive": true,
+          "unrelated_to_pinned_input_paths": true,
+          "raw_status": "FAIL_REFS_MOVED",
+          "actor_cause_time": "UNDETERMINED; this task executed no ref writes",
+          "full_changed_path_statuses": [
+            "A\tscripts/gen5_g2_historical_parent_strict_load_only_diagnostic_d11f355.py"
+          ],
+          "qualification": "PASS_AUTHENTICATED_UNRELATED_FAST_FORWARD_PINNED_INPUT_INDEPENDENCE"
+        }
+      ]
+    }
+  ],
+  "final_git_endpoint": {
+    "observed_utc": "2026-10-14T06:33:48.338903+00:00",
+    "head": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571",
+    "symbolic_head": null,
+    "head_preserved": true,
+    "status_porcelain_v2": "? audits/\n",
+    "status_preserved": true,
+    "index_sha256": "223983e5960be89db1bdfa3532706d4d1e7064f71ceeb37c99188703b22ff68f",
+    "index_preserved": true,
+    "tracked_stage_listing_preserved": true,
+    "unstaged_diff_preserved": true,
+    "staged_diff_preserved": true,
+    "mutated_existing_audit_files": [],
+    "mutated_tracked_files": [],
+    "baseline_audit_count": 788,
+    "baseline_tracked_count": 3593,
+    "new_audit_files": [
+      "audits/full_history_20261013/parallel_20261013/wave_04/publication_hv000103_independent_verification_20261014/checkpoint.json",
+      "audits/full_history_20261013/parallel_20261013/wave_04/publication_hv000103_independent_verification_20261014/independent_evidence_check.json",
+      "audits/full_history_20261013/parallel_20261013/wave_04/publication_hv000103_independent_verification_20261014/obligation_verdict.json",
+      "audits/full_history_20261013/parallel_20261013/wave_04/publication_hv000103_independent_verification_20261014/report.md",
+      "audits/full_history_20261013/parallel_20261013/wave_04/publication_hv000103_independent_verification_20261014/validation.json"
+    ],
+    "new_files_outside_scope": [],
+    "refs": [
+      {
+        "ref": "refs/codex/turn-diffs/captures/1791958202329/a32568c7-13ce-4b40-a87b-b9ccdb07133a/base",
+        "object": "332726190bcf7e51efd2a65c1701f2d1341d4434",
+        "type": "tree",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/codex/turn-diffs/checkpoints/223e1b2ada891dccb924639f161a2a3f/0ba828004d8e7d49ba2b56f724de1a4d/1791823846684/8d45a963-b920-48ce-a5ed-5cb274d1ce7e",
+        "object": "303f2863736d4ecb723314dab8a7616c43e49207",
+        "type": "tree",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/codex/turn-diffs/checkpoints/7105d3700b4f3531e0883a54cf3062dc/8e71ee7397078937da7fe9a90a85ad61/1791938529851/4ac24cf8-6fc9-4112-ac57-d0be3adf252c",
+        "object": "549f185452112dba5732677ce795ede5425558e4",
+        "type": "tree",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/codex/turn-diffs/checkpoints/8ffd7ca6edb92ce8b1b25f8e3dcf896f/1254ddec5f4b1aa8e0a4a6fc223f391d/1791898161392/a8d9618a-42dc-4a98-a7b7-3259fcc382e8",
+        "object": "99597caddf0a24e5810e33654c45c4fa33f2b72a",
+        "type": "tree",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/codex/turn-diffs/checkpoints/9f1765da2bcafc78693789aef0d73a7d/8773496cdc31c140db02a853f36c31ee/1791822079155/9ba675fc-7f6e-4a8d-8e06-e2aa662f3777",
+        "object": "93b906efb2c2e96084f9cbd6bbd48cf89920cdba",
+        "type": "tree",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/g4k-seed181-checkpoint-replication-prep",
+        "object": "18a14e7cf07de24c5cb8b3ad3b421337324fcebd",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen-series",
+        "object": "ab80d9fbab103c73aaa459b10c5caeaa2f69dfd4",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-behavioral-restoration-bridge",
+        "object": "27ad8cd9a0962bf6e5e3c79c5a7e277e54a86317",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-k-directional-alignment-transport",
+        "object": "8496ece911e0d461f0abbdf1a0fa619f8a2f22ab",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-k-family-subspace-sensitivity",
+        "object": "88de940d1b24b4b02c670a9ae67a2046aa082b38",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-k-fast-cuda-equivalence",
+        "object": "ad375c88385eef507e151f95717e951919a6a3fe",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-k-large-correction-prospective-validation",
+        "object": "a4d661a04b8547f4955c1ecf28e21698c53ec74e",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-k-transport-failure-static-decomposition",
+        "object": "41f4678d09f7c779a8edc2eec6cc08a9effd9f41",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-k-xg1-cross-generator-replication",
+        "object": "29e0cc6330b5e5270b6057a02c1b86fdeb45ca96",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-k-xg2-basis-holdout",
+        "object": "2c237fa7d2f4d2fdf7029826599a164c69455f36",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-k-xg2-xg4-local-jacobian",
+        "object": "6e5db0a69e05417938bd05038cf9dba1a39846bf",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-mamba1-five-scale-coordinate-free-geometry",
+        "object": "593199d8e849572fc77b1b0bc7475d3d19468d12",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-mamba1-five-scale-ladder-extension",
+        "object": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-mamba370m-core-replication",
+        "object": "ea03cdaa5394de03389d31aa1089b51e10340a57",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen4-phase-d-cache-validator-correction",
+        "object": "a738b4c169d30b0a7e21563c3aba2c29c481c456",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/gen5-causal-role-state-ownership",
+        "object": "9b931dd038cb3a563e2f430bed733ef6c70bf283",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/iclr2027-mamba-five-scale-paper",
+        "object": "b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/longterm-k-series-native-state-kinematics",
+        "object": "5f5f4d6a80085ad8baf43445475d1c3049535c22",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/main",
+        "object": "75b56b5b9390c0d1dcbbc38330d5dfdba8f44d75",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/main-readme-sync",
+        "object": "ca1419603f397aaf4e157504c15b58cb403377de",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/o0c-minimal-scientific-runner-implementation",
+        "object": "ff2fb076f6e66a34a632515bb8502d8b1c90ad7f",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/p3w7-a0-seed180-normal-reference-freeze",
+        "object": "b32d73dfa49b6b9dfabf3093802904323cf679cd",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/p3w7-a0-seed181-replacement-result",
+        "object": "fb4f0e2c2a8382a642f1272b66f29552adaecb0e",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/p3w7-a0-seed182-result",
+        "object": "82739bdfc8eee184de10ed8f55434f203a6d59a5",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/p3w7-a1-a2-a3-factorial-execution-authority-n3",
+        "object": "be6bf6477d6b97b3da9aea117ca49f970a186b21",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2",
+        "object": "91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/heads/p3w7-current-lineage-calibration-authority",
+        "object": "ba3fd1a82cba029dac05ba38a86d518252ab858f",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/migration/pre-migration-stash-0",
+        "object": "3d2691afcc8ec6c0f59ba304f73631b6bc903208",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/migration/pre-migration-stash-1",
+        "object": "7816ed12332bd5be3ec6e93214cefa7f728e8c6e",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/HEAD",
+        "object": "ca1419603f397aaf4e157504c15b58cb403377de",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/g4k-seed181-checkpoint-replication-prep",
+        "object": "18a14e7cf07de24c5cb8b3ad3b421337324fcebd",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-behavioral-restoration-bridge",
+        "object": "27ad8cd9a0962bf6e5e3c79c5a7e277e54a86317",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-k-directional-alignment-transport",
+        "object": "8496ece911e0d461f0abbdf1a0fa619f8a2f22ab",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-k-family-subspace-sensitivity",
+        "object": "88de940d1b24b4b02c670a9ae67a2046aa082b38",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-k-fast-cuda-equivalence",
+        "object": "ad375c88385eef507e151f95717e951919a6a3fe",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-k-large-correction-prospective-validation",
+        "object": "a4d661a04b8547f4955c1ecf28e21698c53ec74e",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-k-transport-failure-static-decomposition",
+        "object": "41f4678d09f7c779a8edc2eec6cc08a9effd9f41",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-k-xg1-cross-generator-replication",
+        "object": "29e0cc6330b5e5270b6057a02c1b86fdeb45ca96",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-k-xg2-basis-holdout",
+        "object": "2c237fa7d2f4d2fdf7029826599a164c69455f36",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-k-xg2-xg4-local-jacobian",
+        "object": "6e5db0a69e05417938bd05038cf9dba1a39846bf",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-mamba1-five-scale-coordinate-free-geometry",
+        "object": "593199d8e849572fc77b1b0bc7475d3d19468d12",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-mamba1-five-scale-ladder-extension",
+        "object": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-mamba370m-core-replication",
+        "object": "ea03cdaa5394de03389d31aa1089b51e10340a57",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen4-phase-d-cache-validator-correction",
+        "object": "a738b4c169d30b0a7e21563c3aba2c29c481c456",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/gen5-causal-role-state-ownership",
+        "object": "9b931dd038cb3a563e2f430bed733ef6c70bf283",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/iclr2027-mamba-five-scale-paper",
+        "object": "b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/longterm-k-series-native-state-kinematics",
+        "object": "5f5f4d6a80085ad8baf43445475d1c3049535c22",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/main",
+        "object": "ca1419603f397aaf4e157504c15b58cb403377de",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/o0c-minimal-scientific-runner-implementation",
+        "object": "ff2fb076f6e66a34a632515bb8502d8b1c90ad7f",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/p3w7-a0-seed180-normal-reference-freeze",
+        "object": "b32d73dfa49b6b9dfabf3093802904323cf679cd",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/p3w7-a0-seed181-replacement-result",
+        "object": "fb4f0e2c2a8382a642f1272b66f29552adaecb0e",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/p3w7-a0-seed182-result",
+        "object": "82739bdfc8eee184de10ed8f55434f203a6d59a5",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/p3w7-a1-a2-a3-factorial-execution-authority-n3",
+        "object": "be6bf6477d6b97b3da9aea117ca49f970a186b21",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2",
+        "object": "91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/remotes/origin/p3w7-current-lineage-calibration-authority",
+        "object": "ba3fd1a82cba029dac05ba38a86d518252ab858f",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/stash",
+        "object": "3d2691afcc8ec6c0f59ba304f73631b6bc903208",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/tags/gen4-name-q1q3-states-60b430f",
+        "object": "60b430fccec9e51e4d1f12131eabf37d03a8be66",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/tags/gen4-native-mamba-phase-d-states-4a2ef82",
+        "object": "4a2ef821122a36c8e48ec261012519102b63d6c3",
+        "type": "commit",
+        "peeled": ""
+      },
+      {
+        "ref": "refs/tags/gen4-r5-evaluator-checkpoints-cf08261",
+        "object": "cf0826174c2ab1b2203f68afbdeed9da3ff64aa2",
+        "type": "commit",
+        "peeled": ""
+      }
+    ],
+    "refs_raw_sha256": "8beab25b472eb74864f9591aeb1cbdf094ca672abd28417dc3c5155df00959b5",
+    "ref_movements": [
+      {
+        "ref": "refs/heads/gen5-causal-role-state-ownership",
+        "before": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+        "after": "9b931dd038cb3a563e2f430bed733ef6c70bf283"
+      },
+      {
+        "ref": "refs/remotes/origin/gen5-causal-role-state-ownership",
+        "before": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+        "after": "9b931dd038cb3a563e2f430bed733ef6c70bf283"
+      }
+    ],
+    "show_ref_head_dereference": [
+      "ff806bd5bd8efc62fcf6420cf8b097a63ed70571 HEAD",
+      "332726190bcf7e51efd2a65c1701f2d1341d4434 refs/codex/turn-diffs/captures/1791958202329/a32568c7-13ce-4b40-a87b-b9ccdb07133a/base",
+      "303f2863736d4ecb723314dab8a7616c43e49207 refs/codex/turn-diffs/checkpoints/223e1b2ada891dccb924639f161a2a3f/0ba828004d8e7d49ba2b56f724de1a4d/1791823846684/8d45a963-b920-48ce-a5ed-5cb274d1ce7e",
+      "549f185452112dba5732677ce795ede5425558e4 refs/codex/turn-diffs/checkpoints/7105d3700b4f3531e0883a54cf3062dc/8e71ee7397078937da7fe9a90a85ad61/1791938529851/4ac24cf8-6fc9-4112-ac57-d0be3adf252c",
+      "99597caddf0a24e5810e33654c45c4fa33f2b72a refs/codex/turn-diffs/checkpoints/8ffd7ca6edb92ce8b1b25f8e3dcf896f/1254ddec5f4b1aa8e0a4a6fc223f391d/1791898161392/a8d9618a-42dc-4a98-a7b7-3259fcc382e8",
+      "93b906efb2c2e96084f9cbd6bbd48cf89920cdba refs/codex/turn-diffs/checkpoints/9f1765da2bcafc78693789aef0d73a7d/8773496cdc31c140db02a853f36c31ee/1791822079155/9ba675fc-7f6e-4a8d-8e06-e2aa662f3777",
+      "18a14e7cf07de24c5cb8b3ad3b421337324fcebd refs/heads/g4k-seed181-checkpoint-replication-prep",
+      "ab80d9fbab103c73aaa459b10c5caeaa2f69dfd4 refs/heads/gen-series",
+      "27ad8cd9a0962bf6e5e3c79c5a7e277e54a86317 refs/heads/gen4-behavioral-restoration-bridge",
+      "8496ece911e0d461f0abbdf1a0fa619f8a2f22ab refs/heads/gen4-k-directional-alignment-transport",
+      "88de940d1b24b4b02c670a9ae67a2046aa082b38 refs/heads/gen4-k-family-subspace-sensitivity",
+      "ad375c88385eef507e151f95717e951919a6a3fe refs/heads/gen4-k-fast-cuda-equivalence",
+      "a4d661a04b8547f4955c1ecf28e21698c53ec74e refs/heads/gen4-k-large-correction-prospective-validation",
+      "41f4678d09f7c779a8edc2eec6cc08a9effd9f41 refs/heads/gen4-k-transport-failure-static-decomposition",
+      "29e0cc6330b5e5270b6057a02c1b86fdeb45ca96 refs/heads/gen4-k-xg1-cross-generator-replication",
+      "2c237fa7d2f4d2fdf7029826599a164c69455f36 refs/heads/gen4-k-xg2-basis-holdout",
+      "6e5db0a69e05417938bd05038cf9dba1a39846bf refs/heads/gen4-k-xg2-xg4-local-jacobian",
+      "593199d8e849572fc77b1b0bc7475d3d19468d12 refs/heads/gen4-mamba1-five-scale-coordinate-free-geometry",
+      "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69 refs/heads/gen4-mamba1-five-scale-ladder-extension",
+      "ea03cdaa5394de03389d31aa1089b51e10340a57 refs/heads/gen4-mamba370m-core-replication",
+      "a738b4c169d30b0a7e21563c3aba2c29c481c456 refs/heads/gen4-phase-d-cache-validator-correction",
+      "9b931dd038cb3a563e2f430bed733ef6c70bf283 refs/heads/gen5-causal-role-state-ownership",
+      "b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7 refs/heads/iclr2027-mamba-five-scale-paper",
+      "5f5f4d6a80085ad8baf43445475d1c3049535c22 refs/heads/longterm-k-series-native-state-kinematics",
+      "75b56b5b9390c0d1dcbbc38330d5dfdba8f44d75 refs/heads/main",
+      "ca1419603f397aaf4e157504c15b58cb403377de refs/heads/main-readme-sync",
+      "ff2fb076f6e66a34a632515bb8502d8b1c90ad7f refs/heads/o0c-minimal-scientific-runner-implementation",
+      "b32d73dfa49b6b9dfabf3093802904323cf679cd refs/heads/p3w7-a0-seed180-normal-reference-freeze",
+      "fb4f0e2c2a8382a642f1272b66f29552adaecb0e refs/heads/p3w7-a0-seed181-replacement-result",
+      "82739bdfc8eee184de10ed8f55434f203a6d59a5 refs/heads/p3w7-a0-seed182-result",
+      "be6bf6477d6b97b3da9aea117ca49f970a186b21 refs/heads/p3w7-a1-a2-a3-factorial-execution-authority-n3",
+      "91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea refs/heads/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2",
+      "ba3fd1a82cba029dac05ba38a86d518252ab858f refs/heads/p3w7-current-lineage-calibration-authority",
+      "3d2691afcc8ec6c0f59ba304f73631b6bc903208 refs/migration/pre-migration-stash-0",
+      "7816ed12332bd5be3ec6e93214cefa7f728e8c6e refs/migration/pre-migration-stash-1",
+      "ca1419603f397aaf4e157504c15b58cb403377de refs/remotes/origin/HEAD",
+      "18a14e7cf07de24c5cb8b3ad3b421337324fcebd refs/remotes/origin/g4k-seed181-checkpoint-replication-prep",
+      "27ad8cd9a0962bf6e5e3c79c5a7e277e54a86317 refs/remotes/origin/gen4-behavioral-restoration-bridge",
+      "8496ece911e0d461f0abbdf1a0fa619f8a2f22ab refs/remotes/origin/gen4-k-directional-alignment-transport",
+      "88de940d1b24b4b02c670a9ae67a2046aa082b38 refs/remotes/origin/gen4-k-family-subspace-sensitivity",
+      "ad375c88385eef507e151f95717e951919a6a3fe refs/remotes/origin/gen4-k-fast-cuda-equivalence",
+      "a4d661a04b8547f4955c1ecf28e21698c53ec74e refs/remotes/origin/gen4-k-large-correction-prospective-validation",
+      "41f4678d09f7c779a8edc2eec6cc08a9effd9f41 refs/remotes/origin/gen4-k-transport-failure-static-decomposition",
+      "29e0cc6330b5e5270b6057a02c1b86fdeb45ca96 refs/remotes/origin/gen4-k-xg1-cross-generator-replication",
+      "2c237fa7d2f4d2fdf7029826599a164c69455f36 refs/remotes/origin/gen4-k-xg2-basis-holdout",
+      "6e5db0a69e05417938bd05038cf9dba1a39846bf refs/remotes/origin/gen4-k-xg2-xg4-local-jacobian",
+      "593199d8e849572fc77b1b0bc7475d3d19468d12 refs/remotes/origin/gen4-mamba1-five-scale-coordinate-free-geometry",
+      "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69 refs/remotes/origin/gen4-mamba1-five-scale-ladder-extension",
+      "ea03cdaa5394de03389d31aa1089b51e10340a57 refs/remotes/origin/gen4-mamba370m-core-replication",
+      "a738b4c169d30b0a7e21563c3aba2c29c481c456 refs/remotes/origin/gen4-phase-d-cache-validator-correction",
+      "9b931dd038cb3a563e2f430bed733ef6c70bf283 refs/remotes/origin/gen5-causal-role-state-ownership",
+      "b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7 refs/remotes/origin/iclr2027-mamba-five-scale-paper",
+      "5f5f4d6a80085ad8baf43445475d1c3049535c22 refs/remotes/origin/longterm-k-series-native-state-kinematics",
+      "ca1419603f397aaf4e157504c15b58cb403377de refs/remotes/origin/main",
+      "ff2fb076f6e66a34a632515bb8502d8b1c90ad7f refs/remotes/origin/o0c-minimal-scientific-runner-implementation",
+      "b32d73dfa49b6b9dfabf3093802904323cf679cd refs/remotes/origin/p3w7-a0-seed180-normal-reference-freeze",
+      "fb4f0e2c2a8382a642f1272b66f29552adaecb0e refs/remotes/origin/p3w7-a0-seed181-replacement-result",
+      "82739bdfc8eee184de10ed8f55434f203a6d59a5 refs/remotes/origin/p3w7-a0-seed182-result",
+      "be6bf6477d6b97b3da9aea117ca49f970a186b21 refs/remotes/origin/p3w7-a1-a2-a3-factorial-execution-authority-n3",
+      "91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea refs/remotes/origin/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2",
+      "ba3fd1a82cba029dac05ba38a86d518252ab858f refs/remotes/origin/p3w7-current-lineage-calibration-authority",
+      "3d2691afcc8ec6c0f59ba304f73631b6bc903208 refs/stash",
+      "60b430fccec9e51e4d1f12131eabf37d03a8be66 refs/tags/gen4-name-q1q3-states-60b430f",
+      "4a2ef821122a36c8e48ec261012519102b63d6c3 refs/tags/gen4-native-mamba-phase-d-states-4a2ef82",
+      "cf0826174c2ab1b2203f68afbdeed9da3ff64aa2 refs/tags/gen4-r5-evaluator-checkpoints-cf08261"
+    ],
+    "tracked_diff_stat": "",
+    "staged_diff_stat": "",
+    "diff_check": {
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "output_names": [
+      "checkpoint.json",
+      "independent_evidence_check.json",
+      "obligation_verdict.json",
+      "report.md",
+      "validation.json"
+    ]
+  },
+  "probe_issue": {
+    "name": "IN_MEMORY_UNDEFINED_PROPERTY_COMPARISON_PROBE",
+    "initial_status": "FAILED_PROBE",
+    "cause": "Direct comparison included optional undefined JavaScript properties, which are absent on the JSON wire. Exact canonical JSON roundtrip comparisons independently pass for all four JSON outputs.",
+    "artifact_or_research_failure": false
+  },
+  "output_scope_and_readback": "PASS",
+  "output_sha256_excluding_self": {
+    "checkpoint.json": "45b9d88ae2e17edac133e60de38e8861c1d8a4c772cb1112d40952d665b055e3",
+    "independent_evidence_check.json": "aa714ee664ae51aecee15f93b2cc408d134c1f42cbbb8f042930f269362b5650",
+    "obligation_verdict.json": "bec9f1e043ed7ad27ba9da684949ac335df46df494da9eac3e0881667fa5fd70",
+    "report.md": "4faa82536442b00c331a4d3a7ea4842d262b56bf3e4925ac97a34b324d8cf65d"
+  },
+  "final_postwrite_readback": {
+    "observed_utc": "2026-10-14T06:35:19.291Z",
+    "all_json_readback_exact": true,
+    "excluding_self_hashes_match": true,
+    "head_still_expected": true,
+    "refs_still_at_qualified_endpoint": true,
+    "exact_five_names": true
+  }
+}

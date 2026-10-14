@@ -1,0 +1,230 @@
+{
+  "shard_ordinal": 24,
+  "original_queue_id": "WORK-40c4bae128df8c30db1d",
+  "original_source_ids": [
+    "HV000797"
+  ],
+  "original_source_identity": {
+    "commit": "21c733533317a5d5aff447a98cb4efeeaec4ee49",
+    "path": "scripts/export_stage189c_posthoc_margin_reference.py",
+    "blob": "e616bb4db72e24a4e6c9161e5f7699029ee9bd9b",
+    "object_type": "commit",
+    "bytes": 28764,
+    "sha256": "82347c17d817ae0ae006b733f3d430715758ec726fcabbe3b288d17ea1525acf"
+  },
+  "before": {
+    "commit": "d84d28000cd4b9a80e04dc596f7fda532af527c2",
+    "path": "scripts/export_stage189c_posthoc_margin_reference.py",
+    "blob": "37234690a48b48525d951c8ad5497ae7fd649d47",
+    "object_type": "commit",
+    "bytes": 27635,
+    "sha256": "58bdabbeb4410e6e449e43577f84e0d66c4e716df6d6c0d69163fe94037c003d"
+  },
+  "after": {
+    "commit": "21c733533317a5d5aff447a98cb4efeeaec4ee49",
+    "path": "scripts/export_stage189c_posthoc_margin_reference.py",
+    "blob": "e616bb4db72e24a4e6c9161e5f7699029ee9bd9b",
+    "object_type": "commit",
+    "bytes": 28764,
+    "sha256": "82347c17d817ae0ae006b733f3d430715758ec726fcabbe3b288d17ea1525acf"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0103"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "execute",
+      "is_train_compatible"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 4 removed/replaced lines and 35 added/replaced lines in 5 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "26e328d31f15c004faf7cdebc70d6f6be88a600b",
+      "blob": "37234690a48b48525d951c8ad5497ae7fd649d47"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 84,
+      "before_end_exclusive": 84,
+      "after_start": 84,
+      "after_end_exclusive": 89,
+      "before": [],
+      "after": [
+        "",
+        "",
+        "def is_train_compatible(row: dict[str, Any]) -> bool:",
+        "    value = row.get(\"frame_compatible_label\")",
+        "    return row.get(\"split\") == \"train\" and type(value) is int and value == 1"
+      ],
+      "before_context": [
+        "def row_id(row: dict[str, Any]) -> str | None:",
+        "    value = row.get(\"id\", row.get(\"row_id\"))",
+        "    return str(value) if value is not None else None",
+        "",
+        "",
+        "def unique_index(rows: list[dict[str, Any]], name: str) -> dict[str, dict[str, Any]]:"
+      ],
+      "after_context": [
+        "def row_id(row: dict[str, Any]) -> str | None:",
+        "    value = row.get(\"id\", row.get(\"row_id\"))",
+        "    return str(value) if value is not None else None",
+        "",
+        "",
+        "def unique_index(rows: list[dict[str, Any]], name: str) -> dict[str, dict[str, Any]]:"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 402,
+      "before_end_exclusive": 403,
+      "after_start": 407,
+      "after_end_exclusive": 419,
+      "before": [
+        "    train_sidecar = {identifier: row for identifier, row in sidecar_index.items() if row.get(\"split\") == \"train\"}"
+      ],
+      "after": [
+        "    full_train_sidecar = {",
+        "        identifier: row for identifier, row in sidecar_index.items()",
+        "        if row.get(\"split\") == \"train\"",
+        "    }",
+        "    train_sidecar = {",
+        "        identifier: row for identifier, row in sidecar_index.items()",
+        "        if is_train_compatible(row)",
+        "    }",
+        "    train_incompatible_sidecar = {",
+        "        identifier: row for identifier, row in full_train_sidecar.items()",
+        "        if not is_train_compatible(row)",
+        "    }"
+      ],
+      "before_context": [
+        "    sidecar_index = unique_index(sidecar_rows, \"sidecar\")",
+        "    gate(identity_gates, \"sidecar_exact_dataset_row_ids\", len(data_index), len(sidecar_index),",
+        "         set(data_index) == set(sidecar_index), \"sidecar has missing or extra source row IDs\")",
+        "    counts = Counter(row.get(\"integrity_status\") for row in train_sidecar.values())",
+        "    eligible = [row for row in train_sidecar.values() if row.get(\"integrity_status\") == \"ELIGIBLE\"]",
+        "    topology = {"
+      ],
+      "after_context": [
+        "    sidecar_index = unique_index(sidecar_rows, \"sidecar\")",
+        "    gate(identity_gates, \"sidecar_exact_dataset_row_ids\", len(data_index), len(sidecar_index),",
+        "         set(data_index) == set(sidecar_index), \"sidecar has missing or extra source row IDs\")",
+        "    counts = Counter(row.get(\"integrity_status\") for row in train_sidecar.values())",
+        "    eligible = [row for row in train_sidecar.values() if row.get(\"integrity_status\") == \"ELIGIBLE\"]",
+        "    full_topology = {"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 405,
+      "before_end_exclusive": 405,
+      "after_start": 421,
+      "after_end_exclusive": 426,
+      "before": [],
+      "after": [
+        "    full_topology = {",
+        "        \"sidecar_rows\": len(sidecar_index),",
+        "        \"train_rows\": len(full_train_sidecar),",
+        "        \"dev_rows\": sum(row.get(\"split\") == \"dev\" for row in sidecar_index.values()),",
+        "    }"
+      ],
+      "before_context": [
+        "    train_sidecar = {identifier: row for identifier, row in sidecar_index.items() if row.get(\"split\") == \"train\"}",
+        "    counts = Counter(row.get(\"integrity_status\") for row in train_sidecar.values())",
+        "    eligible = [row for row in train_sidecar.values() if row.get(\"integrity_status\") == \"ELIGIBLE\"]",
+        "    topology = {",
+        "        \"total\": len(train_sidecar),",
+        "        **{key: counts.get(key, 0) for key in STATUS_COUNTS},"
+      ],
+      "after_context": [
+        "    }",
+        "    counts = Counter(row.get(\"integrity_status\") for row in train_sidecar.values())",
+        "    eligible = [row for row in train_sidecar.values() if row.get(\"integrity_status\") == \"ELIGIBLE\"]",
+        "    topology = {",
+        "        \"total\": len(train_sidecar),",
+        "        \"train_incompatible\": len(train_incompatible_sidecar),"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 407,
+      "before_end_exclusive": 407,
+      "after_start": 428,
+      "after_end_exclusive": 429,
+      "before": [],
+      "after": [
+        "        \"train_incompatible\": len(train_incompatible_sidecar),"
+      ],
+      "before_context": [
+        "    eligible = [row for row in train_sidecar.values() if row.get(\"integrity_status\") == \"ELIGIBLE\"]",
+        "    topology = {",
+        "        \"total\": len(train_sidecar),",
+        "        **{key: counts.get(key, 0) for key in STATUS_COUNTS},",
+        "        \"eligible_pairs\": len({row.get(\"pair_id\") for row in eligible}),",
+        "        \"eligible_families\": len({row.get(\"family_contract_id\") for row in eligible}),"
+      ],
+      "after_context": [
+        "    }",
+        "    topology = {",
+        "        \"total\": len(train_sidecar),",
+        "        **{key: counts.get(key, 0) for key in STATUS_COUNTS},",
+        "        \"eligible_pairs\": len({row.get(\"pair_id\") for row in eligible}),",
+        "        \"eligible_families\": len({row.get(\"family_contract_id\") for row in eligible}),"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 411,
+      "before_end_exclusive": 414,
+      "after_start": 433,
+      "after_end_exclusive": 445,
+      "before": [
+        "    required_topology = {\"total\": 1440, **STATUS_COUNTS, \"eligible_pairs\": 121, \"eligible_families\": 5}",
+        "    gate(topology_gates, \"authoritative_train_topology\", required_topology, topology,",
+        "         topology == required_topology, \"posthoc train topology mismatch\")"
+      ],
+      "after": [
+        "    gate(topology_gates, \"full_sidecar_topology\",",
+        "         {\"sidecar_rows\": 3600, \"train_rows\": 2880, \"dev_rows\": 720},",
+        "         full_topology,",
+        "         full_topology == {\"sidecar_rows\": 3600, \"train_rows\": 2880, \"dev_rows\": 720},",
+        "         \"full Stage185-A sidecar topology mismatch\")",
+        "    required_topology = {",
+        "        \"total\": 1440, \"train_incompatible\": 1440, **STATUS_COUNTS,",
+        "        \"eligible_pairs\": 121, \"eligible_families\": 5,",
+        "    }",
+        "    gate(topology_gates, \"authoritative_train_compatible_topology\", required_topology, topology,",
+        "         topology == required_topology,",
+        "         \"posthoc train-compatible topology mismatch\")"
+      ],
+      "before_context": [
+        "        \"eligible_pairs\": len({row.get(\"pair_id\") for row in eligible}),",
+        "        \"eligible_families\": len({row.get(\"family_contract_id\") for row in eligible}),",
+        "    }",
+        "    report.update({",
+        "        \"seed\": metadata.get(\"seed\"), \"arm\": arm, \"selected_epoch\": selected_epoch,",
+        "        \"checkpoint_sha256\": checkpoint_sha, \"dataset_sha256\": data_sha,"
+      ],
+      "after_context": [
+        "        \"eligible_pairs\": len({row.get(\"pair_id\") for row in eligible}),",
+        "        \"eligible_families\": len({row.get(\"family_contract_id\") for row in eligible}),",
+        "    }",
+        "    report.update({",
+        "        \"seed\": metadata.get(\"seed\"), \"arm\": arm, \"selected_epoch\": selected_epoch,",
+        "        \"checkpoint_sha256\": checkpoint_sha, \"dataset_sha256\": data_sha,"
+      ]
+    }
+  ]
+}

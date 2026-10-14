@@ -1,0 +1,785 @@
+{
+  "shard_ordinal": 73,
+  "original_queue_id": "WORK-a91a78bc71d457585be7",
+  "original_source_ids": [
+    "HV001122"
+  ],
+  "original_source_identity": {
+    "commit": "4bd73946edd1284c4b116b17fea6ab29194548a6",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "1c6d9f20aa7e6f3aa3d8e4cde301a6507f461e80",
+    "object_type": "commit",
+    "bytes": 331145,
+    "sha256": "e7ffb5446fb7300e23a3223b9bed1f9f4a3b1694e567bfa27b04fdd8b882cca3"
+  },
+  "before": {
+    "commit": "81793d3f24631026a7a916ab639888d624eae2d9",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "767eadb189a99033d1bc8c25f346e2a0b72e904b",
+    "object_type": "commit",
+    "bytes": 319223,
+    "sha256": "33b4f1316a1c63b0259da47679146c1f73fa8a5254da35d8f358a29cc0674686"
+  },
+  "after": {
+    "commit": "4bd73946edd1284c4b116b17fea6ab29194548a6",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "1c6d9f20aa7e6f3aa3d8e4cde301a6507f461e80",
+    "object_type": "commit",
+    "bytes": 331145,
+    "sha256": "e7ffb5446fb7300e23a3223b9bed1f9f4a3b1694e567bfa27b04fdd8b882cca3"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0163"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "_v7_make_logit_summary",
+      "build_parser",
+      "build_v7_mamba_model",
+      "build_v7_model",
+      "main",
+      "run_training_v6b"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate trainer objectives, gradient ownership, data/evaluation selection, ablation defaults and historical authority from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 0 removed/replaced lines and 228 added/replaced lines in 19 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "12150c5a320dbb7aa1ec3c8ebf20174800857129",
+      "blob": "767eadb189a99033d1bc8c25f346e2a0b72e904b"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 160,
+      "before_end_exclusive": 160,
+      "after_start": 160,
+      "after_end_exclusive": 164,
+      "before": [],
+      "after": [
+        "    v7_use_location_boundary_head: bool = False,",
+        "    v7_location_boundary_cap_mode: str = \"none\",",
+        "    v7_location_boundary_cap_gamma: float = 1.0,",
+        "    v7_location_boundary_cap_detach: bool = False,"
+      ],
+      "before_context": [
+        "    v7_h1_entitlement_decision_signal: str = \"learned\",",
+        "    v7_h1_entitlement_product_power: float = 1.0,",
+        "    v7_h1_hybrid_residual_beta: float = 0.25,",
+        ") -> \"ContraMambaV7Hierarchical\":",
+        "    \"\"\"Build a ContraMambaV7Hierarchical with dummy backbone for plumbing validation.\"\"\"",
+        "    from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical"
+      ],
+      "after_context": [
+        "    v7_h1_entitlement_decision_signal: str = \"learned\",",
+        "    v7_h1_entitlement_product_power: float = 1.0,",
+        "    v7_h1_hybrid_residual_beta: float = 0.25,",
+        ") -> \"ContraMambaV7Hierarchical\":",
+        "    \"\"\"Build a ContraMambaV7Hierarchical with dummy backbone for plumbing validation.\"\"\"",
+        "    from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 185,
+      "before_end_exclusive": 185,
+      "after_start": 189,
+      "after_end_exclusive": 193,
+      "before": [],
+      "after": [
+        "        v7_use_location_boundary_head=v7_use_location_boundary_head,",
+        "        v7_location_boundary_cap_mode=v7_location_boundary_cap_mode,",
+        "        v7_location_boundary_cap_gamma=v7_location_boundary_cap_gamma,",
+        "        v7_location_boundary_cap_detach=v7_location_boundary_cap_detach,"
+      ],
+      "before_context": [
+        "        v7_h1_entitlement_decision_signal=v7_h1_entitlement_decision_signal,",
+        "        v7_h1_entitlement_product_power=v7_h1_entitlement_product_power,",
+        "        v7_h1_hybrid_residual_beta=v7_h1_hybrid_residual_beta,",
+        "    )",
+        "",
+        ""
+      ],
+      "after_context": [
+        "        v7_h1_entitlement_decision_signal=v7_h1_entitlement_decision_signal,",
+        "        v7_h1_entitlement_product_power=v7_h1_entitlement_product_power,",
+        "        v7_h1_hybrid_residual_beta=v7_h1_hybrid_residual_beta,",
+        "    )",
+        "",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 206,
+      "before_end_exclusive": 206,
+      "after_start": 214,
+      "after_end_exclusive": 218,
+      "before": [],
+      "after": [
+        "    v7_use_location_boundary_head: bool = False,",
+        "    v7_location_boundary_cap_mode: str = \"none\",",
+        "    v7_location_boundary_cap_gamma: float = 1.0,",
+        "    v7_location_boundary_cap_detach: bool = False,"
+      ],
+      "before_context": [
+        "    v7_h1_entitlement_decision_signal: str = \"learned\",",
+        "    v7_h1_entitlement_product_power: float = 1.0,",
+        "    v7_h1_hybrid_residual_beta: float = 0.25,",
+        ") -> \"ContraMambaV7Hierarchical\":",
+        "    \"\"\"Build a ContraMambaV7Hierarchical with real Mamba backbone.\"\"\"",
+        "    from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical"
+      ],
+      "after_context": [
+        "    v7_h1_entitlement_decision_signal: str = \"learned\",",
+        "    v7_h1_entitlement_product_power: float = 1.0,",
+        "    v7_h1_hybrid_residual_beta: float = 0.25,",
+        ") -> \"ContraMambaV7Hierarchical\":",
+        "    \"\"\"Build a ContraMambaV7Hierarchical with real Mamba backbone.\"\"\"",
+        "    from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 231,
+      "before_end_exclusive": 231,
+      "after_start": 243,
+      "after_end_exclusive": 247,
+      "before": [],
+      "after": [
+        "        v7_use_location_boundary_head=v7_use_location_boundary_head,",
+        "        v7_location_boundary_cap_mode=v7_location_boundary_cap_mode,",
+        "        v7_location_boundary_cap_gamma=v7_location_boundary_cap_gamma,",
+        "        v7_location_boundary_cap_detach=v7_location_boundary_cap_detach,"
+      ],
+      "before_context": [
+        "        v7_h1_entitlement_decision_signal=v7_h1_entitlement_decision_signal,",
+        "        v7_h1_entitlement_product_power=v7_h1_entitlement_product_power,",
+        "        v7_h1_hybrid_residual_beta=v7_h1_hybrid_residual_beta,",
+        "    )",
+        "    for parameter in model.mamba.parameters():",
+        "        parameter.requires_grad = not freeze_encoder"
+      ],
+      "after_context": [
+        "        v7_h1_entitlement_decision_signal=v7_h1_entitlement_decision_signal,",
+        "        v7_h1_entitlement_product_power=v7_h1_entitlement_product_power,",
+        "        v7_h1_hybrid_residual_beta=v7_h1_hybrid_residual_beta,",
+        "    )",
+        "    for parameter in model.mamba.parameters():",
+        "        parameter.requires_grad = not freeze_encoder"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 1410,
+      "before_end_exclusive": 1410,
+      "after_start": 1426,
+      "after_end_exclusive": 1433,
+      "before": [],
+      "after": [
+        "    # Stage28-I-A: location boundary head scalars (absent when head is disabled)",
+        "    \"location_boundary_logit\",",
+        "    \"location_boundary_prob\",",
+        "    \"v7_location_boundary_logit\",",
+        "    \"v7_location_boundary_prob\",",
+        "    \"v7_h1_entitlement_before_location_cap\",",
+        "    \"v7_h1_entitlement_after_location_cap\","
+      ],
+      "before_context": [
+        "    \"v7_polarity_positive_energy\",",
+        "    \"v7_polarity_negative_energy\",",
+        "    \"v7_polarity_energy_margin\",",
+        ")",
+        "",
+        "_S28E_AUX_LABEL_KEYS: tuple[str, ...] = ("
+      ],
+      "after_context": [
+        "    \"v7_polarity_positive_energy\",",
+        "    \"v7_polarity_negative_energy\",",
+        "    \"v7_polarity_energy_margin\",",
+        ")",
+        "",
+        "_S28E_AUX_LABEL_KEYS: tuple[str, ...] = ("
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 2546,
+      "before_end_exclusive": 2546,
+      "after_start": 2569,
+      "after_end_exclusive": 2635,
+      "before": [],
+      "after": [
+        "",
+        "    # ── Stage28-I-A: independent location-boundary cap/head ──────────────────────────────────",
+        "    # All off by default. Preserves all current Stage27/Stage28 behavior when disabled.",
+        "    # Only meaningful for --architecture v7_hierarchical.",
+        "    parser.add_argument(",
+        "        \"--v7-use-location-boundary-head\",",
+        "        action=\"store_true\",",
+        "        default=False,",
+        "        help=(",
+        "            \"Stage28-I-A: Enable independent location-boundary head for v7_hierarchical. \"",
+        "            \"Adds a small MLP over [frame_pair_repr, predicate_pair_repr, sufficiency_repr] \"",
+        "            \"producing location_boundary_prob in [0,1]. \"",
+        "            \"High prob = location-safe; low prob = potential location mismatch. \"",
+        "            \"Disabled by default; no effect on existing behavior when off.\"",
+        "        ),",
+        "    )",
+        "    parser.add_argument(",
+        "        \"--v7-use-location-boundary-loss\",",
+        "        action=\"store_true\",",
+        "        default=False,",
+        "        help=(",
+        "            \"Stage28-I-A: Enable auxiliary BCE training for the location boundary head. \"",
+        "            \"Target: 0 for location_swap, 1 for none/paraphrase/polarity_flip records. \"",
+        "            \"All other intervention types are excluded from this loss. \"",
+        "            \"Requires --v7-use-location-boundary-head. \"",
+        "            \"Stage15/OOD is not used for this loss. Default off.\"",
+        "        ),",
+        "    )",
+        "    parser.add_argument(",
+        "        \"--v7-location-boundary-loss-weight\",",
+        "        type=float,",
+        "        default=0.0,",
+        "        help=\"Stage28-I-A: Weight for location boundary BCE loss. Default 0.0.\",",
+        "    )",
+        "    parser.add_argument(",
+        "        \"--v7-location-boundary-cap-mode\",",
+        "        choices=(\"none\", \"hard\", \"soft\"),",
+        "        default=\"none\",",
+        "        help=(",
+        "            \"Stage28-I-A: Final-decision cap mode for the location boundary head. \"",
+        "            \"'none' (default): no cap applied; existing behavior is unchanged. \"",
+        "            \"'hard': entitlement_for_decision = min(entitlement, location_boundary_prob). \"",
+        "            \"'soft': entitlement_for_decision = entitlement * location_boundary_prob^gamma. \"",
+        "            \"Requires --v7-use-location-boundary-head when not 'none'.\"",
+        "        ),",
+        "    )",
+        "    parser.add_argument(",
+        "        \"--v7-location-boundary-cap-gamma\",",
+        "        type=float,",
+        "        default=1.0,",
+        "        help=(",
+        "            \"Stage28-I-A: Gamma exponent for soft location boundary cap. \"",
+        "            \"Used only when --v7-location-boundary-cap-mode soft. \"",
+        "            \"Must be > 0. Default 1.0.\"",
+        "        ),",
+        "    )",
+        "    parser.add_argument(",
+        "        \"--v7-location-boundary-cap-detach\",",
+        "        action=\"store_true\",",
+        "        default=False,",
+        "        help=(",
+        "            \"Stage28-I-A: Detach location_boundary_prob before applying the cap. \"",
+        "            \"Isolates cap effect from CE gradients. Default off.\"",
+        "        ),",
+        "    )",
+        ""
+      ],
+      "before_context": [
+        "            \"beta=0 recovers pure product. Suggested sweep: 0.1,0.2,0.3,0.5.\"",
+        "        ),",
+        "    )",
+        "    parser.add_argument(",
+        "        \"--v7-no-aux-losses\",",
+        "        action=\"store_true\","
+      ],
+      "after_context": [
+        "            \"beta=0 recovers pure product. Suggested sweep: 0.1,0.2,0.3,0.5.\"",
+        "        ),",
+        "    )",
+        "    parser.add_argument(",
+        "        \"--v7-no-aux-losses\",",
+        "        action=\"store_true\","
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 2722,
+      "before_end_exclusive": 2722,
+      "after_start": 2811,
+      "after_end_exclusive": 2816,
+      "before": [],
+      "after": [
+        "    # Stage28-I-A: location boundary head (None when head is disabled)",
+        "    \"v7_location_boundary_logit\",",
+        "    \"v7_location_boundary_prob\",",
+        "    \"v7_h1_entitlement_before_location_cap\",",
+        "    \"v7_h1_entitlement_after_location_cap\","
+      ],
+      "before_context": [
+        "    \"v7_polarity_energy_margin\",",
+        "    # Stage27-H2A: actual entitlement_for_decision used in H1 (None when H1 is inactive)",
+        "    \"v7_h1_entitlement_for_decision\",",
+        ")",
+        "",
+        ""
+      ],
+      "after_context": [
+        "    \"v7_polarity_energy_margin\",",
+        "    # Stage27-H2A: actual entitlement_for_decision used in H1 (None when H1 is inactive)",
+        "    \"v7_h1_entitlement_for_decision\",",
+        ")",
+        "",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 2768,
+      "before_end_exclusive": 2768,
+      "after_start": 2862,
+      "after_end_exclusive": 2867,
+      "before": [],
+      "after": [
+        "        # Stage28-I-A: location boundary head (None when head is disabled)",
+        "        \"v7_location_boundary_logit\",",
+        "        \"v7_location_boundary_prob\",",
+        "        \"v7_h1_entitlement_before_location_cap\",",
+        "        \"v7_h1_entitlement_after_location_cap\","
+      ],
+      "before_context": [
+        "        \"v7_sufficiency_prob\",",
+        "        # Stage27-H2A: actual H1 decision signal (None when H1 inactive)",
+        "        \"v7_h1_entitlement_for_decision\",",
+        "    ):",
+        "        val = out.get(key)",
+        "        if val is not None and hasattr(val, \"mean\"):"
+      ],
+      "after_context": [
+        "        \"v7_sufficiency_prob\",",
+        "        # Stage27-H2A: actual H1 decision signal (None when H1 inactive)",
+        "        \"v7_h1_entitlement_for_decision\",",
+        "    ):",
+        "        val = out.get(key)",
+        "        if val is not None and hasattr(val, \"mean\"):"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 2912,
+      "before_end_exclusive": 2912,
+      "after_start": 3011,
+      "after_end_exclusive": 3018,
+      "before": [],
+      "after": [
+        "    # Stage28-I-A: location boundary head / cap configuration",
+        "    \"v7_use_location_boundary_head\",",
+        "    \"v7_use_location_boundary_loss\",",
+        "    \"v7_location_boundary_loss_weight\",",
+        "    \"v7_location_boundary_cap_mode\",",
+        "    \"v7_location_boundary_cap_gamma\",",
+        "    \"v7_location_boundary_cap_detach\","
+      ],
+      "before_context": [
+        "    \"v7_h1_entitlement_for_decision_source\",",
+        "    \"v7_h1_entitlement_product_power\",",
+        "    \"v7_h1_hybrid_residual_beta\",",
+        ")",
+        "",
+        ""
+      ],
+      "after_context": [
+        "    \"v7_h1_entitlement_for_decision_source\",",
+        "    \"v7_h1_entitlement_product_power\",",
+        "    \"v7_h1_hybrid_residual_beta\",",
+        ")",
+        "",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 2950,
+      "before_end_exclusive": 2950,
+      "after_start": 3056,
+      "after_end_exclusive": 3077,
+      "before": [],
+      "after": [
+        "    # ── Stage28-I-A: location boundary flag validation ────────────────────────────────────────",
+        "    _use_lb_head = getattr(args, \"v7_use_location_boundary_head\", False)",
+        "    _use_lb_loss = getattr(args, \"v7_use_location_boundary_loss\", False)",
+        "    _lb_cap_mode = getattr(args, \"v7_location_boundary_cap_mode\", \"none\")",
+        "    _lb_cap_gamma = getattr(args, \"v7_location_boundary_cap_gamma\", 1.0)",
+        "    if _use_lb_loss and not _use_lb_head:",
+        "        raise ValueError(",
+        "            \"--v7-use-location-boundary-loss requires --v7-use-location-boundary-head. \"",
+        "            \"The location boundary head must be enabled to compute the auxiliary loss.\"",
+        "        )",
+        "    if _lb_cap_mode != \"none\" and not _use_lb_head:",
+        "        raise ValueError(",
+        "            f\"--v7-location-boundary-cap-mode {_lb_cap_mode!r} requires \"",
+        "            \"--v7-use-location-boundary-head. \"",
+        "            \"The location boundary head must be enabled to apply the cap.\"",
+        "        )",
+        "    if _lb_cap_gamma <= 0:",
+        "        raise ValueError(",
+        "            f\"--v7-location-boundary-cap-gamma must be > 0, got {_lb_cap_gamma!r}.\"",
+        "        )",
+        ""
+      ],
+      "before_context": [
+        "    # It has no text comprehension capacity; metrics it produces are not",
+        "    # claim-worthy. Require --allow-dummy-backbone to proceed.",
+        "    # ---------------------------------------------------------------------------",
+        "    if args.backbone == \"dummy\" and not args.allow_dummy_backbone:",
+        "        raise ValueError(",
+        "            \"[DUMMY BACKBONE BLOCKED] backbone=dummy is permitted only for explicit \""
+      ],
+      "after_context": [
+        "    # It has no text comprehension capacity; metrics it produces are not",
+        "    # claim-worthy. Require --allow-dummy-backbone to proceed.",
+        "    # ---------------------------------------------------------------------------",
+        "    if args.backbone == \"dummy\" and not args.allow_dummy_backbone:",
+        "        raise ValueError(",
+        "            \"[DUMMY BACKBONE BLOCKED] backbone=dummy is permitted only for explicit \""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3027,
+      "before_end_exclusive": 3027,
+      "after_start": 3154,
+      "after_end_exclusive": 3158,
+      "before": [],
+      "after": [
+        "                v7_use_location_boundary_head=getattr(args, \"v7_use_location_boundary_head\", False),",
+        "                v7_location_boundary_cap_mode=getattr(args, \"v7_location_boundary_cap_mode\", \"none\"),",
+        "                v7_location_boundary_cap_gamma=getattr(args, \"v7_location_boundary_cap_gamma\", 1.0),",
+        "                v7_location_boundary_cap_detach=getattr(args, \"v7_location_boundary_cap_detach\", False),"
+      ],
+      "before_context": [
+        "                v7_h1_entitlement_decision_signal=args.v7_h1_entitlement_decision_signal,",
+        "                v7_h1_entitlement_product_power=args.v7_h1_entitlement_product_power,",
+        "                v7_h1_hybrid_residual_beta=args.v7_h1_hybrid_residual_beta,",
+        "            )",
+        "        else:",
+        "            model = build_mamba_model("
+      ],
+      "after_context": [
+        "                v7_h1_entitlement_decision_signal=args.v7_h1_entitlement_decision_signal,",
+        "                v7_h1_entitlement_product_power=args.v7_h1_entitlement_product_power,",
+        "                v7_h1_hybrid_residual_beta=args.v7_h1_hybrid_residual_beta,",
+        "            )",
+        "        else:",
+        "            model = build_mamba_model("
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3084,
+      "before_end_exclusive": 3084,
+      "after_start": 3215,
+      "after_end_exclusive": 3219,
+      "before": [],
+      "after": [
+        "                v7_use_location_boundary_head=getattr(args, \"v7_use_location_boundary_head\", False),",
+        "                v7_location_boundary_cap_mode=getattr(args, \"v7_location_boundary_cap_mode\", \"none\"),",
+        "                v7_location_boundary_cap_gamma=getattr(args, \"v7_location_boundary_cap_gamma\", 1.0),",
+        "                v7_location_boundary_cap_detach=getattr(args, \"v7_location_boundary_cap_detach\", False),"
+      ],
+      "before_context": [
+        "                v7_h1_entitlement_decision_signal=args.v7_h1_entitlement_decision_signal,",
+        "                v7_h1_entitlement_product_power=args.v7_h1_entitlement_product_power,",
+        "                v7_h1_hybrid_residual_beta=args.v7_h1_hybrid_residual_beta,",
+        "            )",
+        "        else:",
+        "            model = build_model("
+      ],
+      "after_context": [
+        "                v7_h1_entitlement_decision_signal=args.v7_h1_entitlement_decision_signal,",
+        "                v7_h1_entitlement_product_power=args.v7_h1_entitlement_product_power,",
+        "                v7_h1_hybrid_residual_beta=args.v7_h1_hybrid_residual_beta,",
+        "            )",
+        "        else:",
+        "            model = build_model("
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3953,
+      "before_end_exclusive": 3953,
+      "after_start": 4088,
+      "after_end_exclusive": 4127,
+      "before": [],
+      "after": [
+        "            # ── Stage28-I-A: v7 location boundary BCE auxiliary loss ──────────────────────────",
+        "            # Target: 0 for location_swap; 1 for none/paraphrase/polarity_flip.",
+        "            # All other intervention types are excluded from this loss.",
+        "            # Stage15/OOD is not used for this loss or target selection.",
+        "            # Zero masked records → loss is zero; no crash.",
+        "            _v7_lb_loss = torch.tensor(0.0, device=device)",
+        "            if (",
+        "                args.architecture == \"v7_hierarchical\"",
+        "                and getattr(args, \"v7_use_location_boundary_head\", False)",
+        "                and getattr(args, \"v7_use_location_boundary_loss\", False)",
+        "                and getattr(args, \"v7_location_boundary_loss_weight\", 0.0) > 0.0",
+        "                and not args.v7_no_aux_losses",
+        "            ):",
+        "                _lb_logit = output.get(\"location_boundary_logit\")",
+        "                if _lb_logit is not None:",
+        "                    _lb_indices: list[int] = []",
+        "                    _lb_targets: list[float] = []",
+        "                    for _lb_i, _lb_rec in enumerate(train_records):",
+        "                        _lb_itype = _s28e_normalize_intervention(_lb_rec)",
+        "                        if _lb_itype == \"location_swap\":",
+        "                            _lb_indices.append(_lb_i)",
+        "                            _lb_targets.append(0.0)",
+        "                        elif _lb_itype in (\"none\", \"paraphrase\", \"polarity_flip\"):",
+        "                            _lb_indices.append(_lb_i)",
+        "                            _lb_targets.append(1.0)",
+        "                    if _lb_indices:",
+        "                        _lb_idx_t = torch.tensor(_lb_indices, dtype=torch.long, device=device)",
+        "                        _lb_tgt_t = torch.tensor(",
+        "                            _lb_targets, dtype=_lb_logit.dtype, device=device",
+        "                        )",
+        "                        _lb_logit_sub = _lb_logit[_lb_idx_t]",
+        "                        _v7_lb_loss = F.binary_cross_entropy_with_logits(",
+        "                            _lb_logit_sub, _lb_tgt_t",
+        "                        )",
+        "                        total_loss = (",
+        "                            total_loss",
+        "                            + args.v7_location_boundary_loss_weight * _v7_lb_loss",
+        "                        )",
+        ""
+      ],
+      "before_context": [
+        "                        _v7_ecb_loss = F.cross_entropy(_ecb_pol_sub, _ecb_local_labels)",
+        "                        total_loss = total_loss + args.v7_entitled_class_balanced_ce_weight * _v7_ecb_loss",
+        "",
+        "            # ── Audit ledger accumulation (reporting only; does not affect gradients) ─────────",
+        "            # raw = loss value before weight multiplication; weighted = actual total_loss contribution",
+        "            _ep_ce_raw = float(losses[\"label\"].item())"
+      ],
+      "after_context": [
+        "                        _v7_ecb_loss = F.cross_entropy(_ecb_pol_sub, _ecb_local_labels)",
+        "                        total_loss = total_loss + args.v7_entitled_class_balanced_ce_weight * _v7_ecb_loss",
+        "",
+        "            # ── Audit ledger accumulation (reporting only; does not affect gradients) ─────────",
+        "            # raw = loss value before weight multiplication; weighted = actual total_loss contribution",
+        "            _ep_ce_raw = float(losses[\"label\"].item())"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3972,
+      "before_end_exclusive": 3972,
+      "after_start": 4146,
+      "after_end_exclusive": 4147,
+      "before": [],
+      "after": [
+        "            _ep_v7_lb_raw = float(_v7_lb_loss.item()) if hasattr(_v7_lb_loss, \"item\") else 0.0"
+      ],
+      "before_context": [
+        "            _ep_v7_pm_raw = float(_v7_pm_loss.item()) if hasattr(_v7_pm_loss, \"item\") else 0.0",
+        "            _ep_v7_ent_bce_raw = float(_v7_ent_bce_loss.item()) if hasattr(_v7_ent_bce_loss, \"item\") else 0.0",
+        "            _ep_v7_ecb_raw = float(_v7_ecb_loss.item()) if hasattr(_v7_ecb_loss, \"item\") else 0.0",
+        "            _ep_total = float(total_loss.item())",
+        "            # For ranking path: active_intervention_loss = ranking_weight * raw_ranking.",
+        "            # Recover raw by dividing. For intervention path: pairwise_losses[\"total\"] is"
+      ],
+      "after_context": [
+        "            _ep_v7_pm_raw = float(_v7_pm_loss.item()) if hasattr(_v7_pm_loss, \"item\") else 0.0",
+        "            _ep_v7_ent_bce_raw = float(_v7_ent_bce_loss.item()) if hasattr(_v7_ent_bce_loss, \"item\") else 0.0",
+        "            _ep_v7_ecb_raw = float(_v7_ecb_loss.item()) if hasattr(_v7_ecb_loss, \"item\") else 0.0",
+        "            _ep_total = float(total_loss.item())",
+        "            # For ranking path: active_intervention_loss = ranking_weight * raw_ranking.",
+        "            # Recover raw by dividing. For intervention path: pairwise_losses[\"total\"] is"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 4000,
+      "before_end_exclusive": 4000,
+      "after_start": 4175,
+      "after_end_exclusive": 4177,
+      "before": [],
+      "after": [
+        "                # Stage28-I-A: location boundary loss (0.0 when disabled)",
+        "                \"v7_location_boundary_loss\": _ep_v7_lb_raw,"
+      ],
+      "before_context": [
+        "                \"v7_polarity_margin_loss\": _ep_v7_pm_raw,",
+        "                \"v7_entitlement_bce_loss\": _ep_v7_ent_bce_raw,",
+        "                \"v7_entitled_class_balanced_ce_loss\": _ep_v7_ecb_raw,",
+        "                \"total_loss\": _ep_total,",
+        "            })",
+        "            _audit_per_epoch_weighted.append({"
+      ],
+      "after_context": [
+        "                \"v7_polarity_margin_loss\": _ep_v7_pm_raw,",
+        "                \"v7_entitlement_bce_loss\": _ep_v7_ent_bce_raw,",
+        "                \"v7_entitled_class_balanced_ce_loss\": _ep_v7_ecb_raw,",
+        "                \"total_loss\": _ep_total,",
+        "            })",
+        "            _audit_per_epoch_weighted.append({"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 4019,
+      "before_end_exclusive": 4019,
+      "after_start": 4196,
+      "after_end_exclusive": 4200,
+      "before": [],
+      "after": [
+        "                ),",
+        "                # Stage28-I-A: location boundary loss weighted contribution",
+        "                \"v7_location_boundary_loss\": (",
+        "                    getattr(args, \"v7_location_boundary_loss_weight\", 0.0) * _ep_v7_lb_raw"
+      ],
+      "before_context": [
+        "                \"v7_entitlement_bce_loss\": args.v7_entitlement_bce_loss_weight * _ep_v7_ent_bce_raw,",
+        "                \"v7_entitled_class_balanced_ce_loss\": (",
+        "                    args.v7_entitled_class_balanced_ce_weight * _ep_v7_ecb_raw",
+        "                ),",
+        "                \"total_loss\": _ep_total,",
+        "            })"
+      ],
+      "after_context": [
+        "                \"v7_entitlement_bce_loss\": args.v7_entitlement_bce_loss_weight * _ep_v7_ent_bce_raw,",
+        "                \"v7_entitled_class_balanced_ce_loss\": (",
+        "                    args.v7_entitled_class_balanced_ce_weight * _ep_v7_ecb_raw",
+        "                ),",
+        "                \"total_loss\": _ep_total,",
+        "            })"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 5491,
+      "before_end_exclusive": 5491,
+      "after_start": 5672,
+      "after_end_exclusive": 5675,
+      "before": [],
+      "after": [
+        "                    or (getattr(args, \"v7_use_location_boundary_head\", False)",
+        "                        and getattr(args, \"v7_use_location_boundary_loss\", False)",
+        "                        and getattr(args, \"v7_location_boundary_loss_weight\", 0.0) > 0.0)"
+      ],
+      "before_context": [
+        "                        and getattr(args, \"v7_entitlement_bce_loss_weight\", 0.0) > 0.0)",
+        "                    or (getattr(args, \"v7_use_entitled_class_balanced_ce\", False)",
+        "                        and getattr(args, \"v7_entitled_class_balanced_ce_weight\", 0.0) > 0.0)",
+        "                )",
+        "            ),",
+        "            # Stage26-G: v7 stabilization options"
+      ],
+      "after_context": [
+        "                        and getattr(args, \"v7_entitlement_bce_loss_weight\", 0.0) > 0.0)",
+        "                    or (getattr(args, \"v7_use_entitled_class_balanced_ce\", False)",
+        "                        and getattr(args, \"v7_entitled_class_balanced_ce_weight\", 0.0) > 0.0)",
+        "                )",
+        "            ),",
+        "            # Stage26-G: v7 stabilization options"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 5523,
+      "before_end_exclusive": 5523,
+      "after_start": 5707,
+      "after_end_exclusive": 5732,
+      "before": [],
+      "after": [
+        "            # Stage28-I-A: location boundary head / cap configuration",
+        "            \"v7_use_location_boundary_head\": getattr(",
+        "                args, \"v7_use_location_boundary_head\", False",
+        "            ),",
+        "            \"v7_use_location_boundary_loss\": getattr(",
+        "                args, \"v7_use_location_boundary_loss\", False",
+        "            ),",
+        "            \"v7_location_boundary_loss_weight\": getattr(",
+        "                args, \"v7_location_boundary_loss_weight\", 0.0",
+        "            ),",
+        "            \"v7_location_boundary_cap_mode\": getattr(",
+        "                args, \"v7_location_boundary_cap_mode\", \"none\"",
+        "            ),",
+        "            \"v7_location_boundary_cap_gamma\": getattr(",
+        "                args, \"v7_location_boundary_cap_gamma\", 1.0",
+        "            ),",
+        "            \"v7_location_boundary_cap_detach\": getattr(",
+        "                args, \"v7_location_boundary_cap_detach\", False",
+        "            ),",
+        "            \"v7_location_boundary_target_mapping\": (",
+        "                {\"location_swap\": 0, \"none\": 1, \"paraphrase\": 1, \"polarity_flip\": 1}",
+        "                if getattr(args, \"v7_use_location_boundary_loss\", False) else None",
+        "            ),",
+        "            \"stage15_used_for_v7_location_boundary_loss\": False,",
+        "            \"ood_used_for_v7_location_boundary_loss\": False,"
+      ],
+      "before_context": [
+        "            \"v7_h1_hybrid_residual_beta\": getattr(",
+        "                args, \"v7_h1_hybrid_residual_beta\", 0.25",
+        "            ),",
+        "            \"v7_h1_entitlement_for_decision_source\": (",
+        "                _V7_H1_DECISION_SIGNAL_SOURCE.get(",
+        "                    getattr(args, \"v7_h1_entitlement_decision_signal\", \"learned\"),"
+      ],
+      "after_context": [
+        "            \"v7_h1_hybrid_residual_beta\": getattr(",
+        "                args, \"v7_h1_hybrid_residual_beta\", 0.25",
+        "            ),",
+        "            \"v7_h1_entitlement_for_decision_source\": (",
+        "                _V7_H1_DECISION_SIGNAL_SOURCE.get(",
+        "                    getattr(args, \"v7_h1_entitlement_decision_signal\", \"learned\"),"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 5658,
+      "before_end_exclusive": 5658,
+      "after_start": 5867,
+      "after_end_exclusive": 5886,
+      "before": [],
+      "after": [
+        "                # Stage28-I-A: location boundary head / cap config",
+        "                \"v7_use_location_boundary_head\": getattr(",
+        "                    args, \"v7_use_location_boundary_head\", False",
+        "                ),",
+        "                \"v7_use_location_boundary_loss\": getattr(",
+        "                    args, \"v7_use_location_boundary_loss\", False",
+        "                ),",
+        "                \"v7_location_boundary_loss_weight\": getattr(",
+        "                    args, \"v7_location_boundary_loss_weight\", 0.0",
+        "                ),",
+        "                \"v7_location_boundary_cap_mode\": getattr(",
+        "                    args, \"v7_location_boundary_cap_mode\", \"none\"",
+        "                ),",
+        "                \"v7_location_boundary_cap_gamma\": getattr(",
+        "                    args, \"v7_location_boundary_cap_gamma\", 1.0",
+        "                ),",
+        "                \"v7_location_boundary_cap_detach\": getattr(",
+        "                    args, \"v7_location_boundary_cap_detach\", False",
+        "                ),"
+      ],
+      "before_context": [
+        "                \"freeze_encoder\": getattr(args, \"freeze_encoder\", None),",
+        "                \"freeze_a_log\": getattr(args, \"freeze_a_log\", None),",
+        "                \"max_length\": getattr(args, \"max_length\", None),",
+        "            }",
+        "        v5.write_predictions_json(",
+        "            args.output_predictions_json,"
+      ],
+      "after_context": [
+        "                \"freeze_encoder\": getattr(args, \"freeze_encoder\", None),",
+        "                \"freeze_a_log\": getattr(args, \"freeze_a_log\", None),",
+        "                \"max_length\": getattr(args, \"max_length\", None),",
+        "            }",
+        "        v5.write_predictions_json(",
+        "            args.output_predictions_json,"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,549 @@
+{
+  "shard_ordinal": 37,
+  "original_queue_id": "WORK-5c169f70d94d194b0af9",
+  "original_source_ids": [
+    "HV001127"
+  ],
+  "original_source_identity": {
+    "commit": "ebcec2566b1449b34e09fe6f36b95c74a73df034",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "7e71cce5dd4d6f6265551e5ea358bccbb22a5dc7",
+    "object_type": "commit",
+    "bytes": 304442,
+    "sha256": "8ef848ea3d8a795065ee8381219628ed9118dbc4e730c3309d6f3414819ba548"
+  },
+  "before": {
+    "commit": "b38b66fa2c4e5cf413be43c5dada00175bc5dee7",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "508af4cd882e84c19582762156ff468fb7f6c2d4",
+    "object_type": "commit",
+    "bytes": 298575,
+    "sha256": "04568713d58d7c83d097ba6504085673e73bb4172db12007c70295b25ef6361b"
+  },
+  "after": {
+    "commit": "ebcec2566b1449b34e09fe6f36b95c74a73df034",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "7e71cce5dd4d6f6265551e5ea358bccbb22a5dc7",
+    "object_type": "commit",
+    "bytes": 304442,
+    "sha256": "8ef848ea3d8a795065ee8381219628ed9118dbc4e730c3309d6f3414819ba548"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0174"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "_logit_mean",
+      "_resolve_v7_final_logit_composition",
+      "_v7_make_logit_summary",
+      "build_parser",
+      "build_v7_mamba_model",
+      "build_v7_model",
+      "main",
+      "run_training_v6b"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate trainer objectives, gradient ownership, data/evaluation selection, ablation defaults and historical authority from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 5 removed/replaced lines and 114 added/replaced lines in 14 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "5232771e29270c23d51c28891181c1c8f81485e2",
+      "blob": "508af4cd882e84c19582762156ff468fb7f6c2d4"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 157,
+      "before_end_exclusive": 157,
+      "after_start": 157,
+      "after_end_exclusive": 158,
+      "before": [],
+      "after": [
+        "    v7_h1_entitlement_decision_signal: str = \"learned\","
+      ],
+      "before_context": [
+        "    v7_use_v6b_style_final_decision: bool = False,",
+        "    v7_use_learnable_ne_alpha: bool = False,",
+        "    v7_ne_alpha_init: float = 1.0,",
+        ") -> \"ContraMambaV7Hierarchical\":",
+        "    \"\"\"Build a ContraMambaV7Hierarchical with dummy backbone for plumbing validation.\"\"\"",
+        "    from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical"
+      ],
+      "after_context": [
+        "    v7_use_v6b_style_final_decision: bool = False,",
+        "    v7_use_learnable_ne_alpha: bool = False,",
+        "    v7_ne_alpha_init: float = 1.0,",
+        ") -> \"ContraMambaV7Hierarchical\":",
+        "    \"\"\"Build a ContraMambaV7Hierarchical with dummy backbone for plumbing validation.\"\"\"",
+        "    from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 179,
+      "before_end_exclusive": 179,
+      "after_start": 180,
+      "after_end_exclusive": 181,
+      "before": [],
+      "after": [
+        "        v7_h1_entitlement_decision_signal=v7_h1_entitlement_decision_signal,"
+      ],
+      "before_context": [
+        "        v7_use_v6b_style_final_decision=v7_use_v6b_style_final_decision,",
+        "        v7_use_learnable_ne_alpha=v7_use_learnable_ne_alpha,",
+        "        v7_ne_alpha_init=v7_ne_alpha_init,",
+        "    )",
+        "",
+        ""
+      ],
+      "after_context": [
+        "        v7_use_v6b_style_final_decision=v7_use_v6b_style_final_decision,",
+        "        v7_use_learnable_ne_alpha=v7_use_learnable_ne_alpha,",
+        "        v7_ne_alpha_init=v7_ne_alpha_init,",
+        "    )",
+        "",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 197,
+      "before_end_exclusive": 197,
+      "after_start": 199,
+      "after_end_exclusive": 200,
+      "before": [],
+      "after": [
+        "    v7_h1_entitlement_decision_signal: str = \"learned\","
+      ],
+      "before_context": [
+        "    v7_use_v6b_style_final_decision: bool = False,",
+        "    v7_use_learnable_ne_alpha: bool = False,",
+        "    v7_ne_alpha_init: float = 1.0,",
+        ") -> \"ContraMambaV7Hierarchical\":",
+        "    \"\"\"Build a ContraMambaV7Hierarchical with real Mamba backbone.\"\"\"",
+        "    from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical"
+      ],
+      "after_context": [
+        "    v7_use_v6b_style_final_decision: bool = False,",
+        "    v7_use_learnable_ne_alpha: bool = False,",
+        "    v7_ne_alpha_init: float = 1.0,",
+        ") -> \"ContraMambaV7Hierarchical\":",
+        "    \"\"\"Build a ContraMambaV7Hierarchical with real Mamba backbone.\"\"\"",
+        "    from contramamba.modeling_v7_hierarchical import ContraMambaV7Hierarchical"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 219,
+      "before_end_exclusive": 219,
+      "after_start": 222,
+      "after_end_exclusive": 223,
+      "before": [],
+      "after": [
+        "        v7_h1_entitlement_decision_signal=v7_h1_entitlement_decision_signal,"
+      ],
+      "before_context": [
+        "        v7_use_v6b_style_final_decision=v7_use_v6b_style_final_decision,",
+        "        v7_use_learnable_ne_alpha=v7_use_learnable_ne_alpha,",
+        "        v7_ne_alpha_init=v7_ne_alpha_init,",
+        "    )",
+        "    for parameter in model.mamba.parameters():",
+        "        parameter.requires_grad = not freeze_encoder"
+      ],
+      "after_context": [
+        "        v7_use_v6b_style_final_decision=v7_use_v6b_style_final_decision,",
+        "        v7_use_learnable_ne_alpha=v7_use_learnable_ne_alpha,",
+        "        v7_ne_alpha_init=v7_ne_alpha_init,",
+        "    )",
+        "    for parameter in model.mamba.parameters():",
+        "        parameter.requires_grad = not freeze_encoder"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 1396,
+      "before_end_exclusive": 1396,
+      "after_start": 1400,
+      "after_end_exclusive": 1429,
+      "before": [],
+      "after": [
+        "# ---------------------------------------------------------------------------",
+        "# Stage27-H2A helpers",
+        "# ---------------------------------------------------------------------------",
+        "",
+        "#: Human-readable formula descriptions for each H1 entitlement decision signal.",
+        "_V7_H1_DECISION_SIGNAL_SOURCE: dict[str, str] = {",
+        "    \"learned\":               \"v7_entitlement_prob (EntitlementGate)\",",
+        "    \"product\":               \"frame_prob * predicate_coverage_prob * sufficiency_prob\",",
+        "    \"min\":                   \"min(frame_prob, predicate_coverage_prob, sufficiency_prob)\",",
+        "    \"frame_predicate_product\": \"frame_prob * predicate_coverage_prob\",",
+        "    \"frame_predicate_min\":   \"min(frame_prob, predicate_coverage_prob)\",",
+        "}",
+        "",
+        "",
+        "def _resolve_v7_final_logit_composition(args: \"argparse.Namespace\") -> \"str | None\":",
+        "    \"\"\"Return the actual v7 final-logit composition mode string for reporting.",
+        "",
+        "    This fixes the Stage26 reporting bug where H1 runs incorrectly reported",
+        "    'hierarchical_additive' even though v6b_style_softplus_multiplicative was active.",
+        "    \"\"\"",
+        "    if args.architecture != \"v7_hierarchical\":",
+        "        return None",
+        "    if getattr(args, \"v7_use_v6b_style_final_decision\", False):",
+        "        return \"v6b_style_softplus_multiplicative\"",
+        "    if getattr(args, \"v7_no_entitlement_polarity_conditioning\", False):",
+        "        return \"flat\"",
+        "    return \"hierarchical_additive\"",
+        "",
+        ""
+      ],
+      "before_context": [
+        "    return result",
+        "",
+        "",
+        "def build_parser() -> argparse.ArgumentParser:",
+        "    parser = v5.build_parser()",
+        "    parser.add_argument("
+      ],
+      "after_context": [
+        "    return result",
+        "",
+        "",
+        "def build_parser() -> argparse.ArgumentParser:",
+        "    parser = v5.build_parser()",
+        "    parser.add_argument("
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 2199,
+      "before_end_exclusive": 2199,
+      "after_start": 2232,
+      "after_end_exclusive": 2246,
+      "before": [],
+      "after": [
+        "        \"--v7-h1-entitlement-decision-signal\",",
+        "        choices=(\"learned\", \"product\", \"min\", \"frame_predicate_product\", \"frame_predicate_min\"),",
+        "        default=\"learned\",",
+        "        help=(",
+        "            \"Stage27-H2A: Decision-time entitlement signal used in the H1 final-decision path \"",
+        "            \"(--v7-use-v6b-style-final-decision). Only consulted when H1 is active. \"",
+        "            \"Default 'learned' preserves existing H1 behavior (v7_entitlement_prob). \"",
+        "            \"'product' = frame_prob * predicate_coverage_prob * sufficiency_prob. \"",
+        "            \"'min' = min(frame_prob, predicate_coverage_prob, sufficiency_prob). \"",
+        "            \"'frame_predicate_product' = frame_prob * predicate_coverage_prob. \"",
+        "            \"'frame_predicate_min' = min(frame_prob, predicate_coverage_prob).\"",
+        "        ),",
+        "    )",
+        "    parser.add_argument("
+      ],
+      "before_context": [
+        "        help=\"Stage26-H1: Initial value for learnable NE alpha. Default 1.0.\",",
+        "    )",
+        "    parser.add_argument(",
+        "        \"--v7-no-aux-losses\",",
+        "        action=\"store_true\",",
+        "        default=False,"
+      ],
+      "after_context": [
+        "        help=\"Stage26-H1: Initial value for learnable NE alpha. Default 1.0.\",",
+        "    )",
+        "    parser.add_argument(",
+        "        \"--v7-no-aux-losses\",",
+        "        action=\"store_true\",",
+        "        default=False,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 2358,
+      "before_end_exclusive": 2358,
+      "after_start": 2405,
+      "after_end_exclusive": 2407,
+      "before": [],
+      "after": [
+        "    # Stage27-H2A: actual entitlement_for_decision used in H1 (None when H1 is inactive)",
+        "    \"v7_h1_entitlement_for_decision\","
+      ],
+      "before_context": [
+        "    \"v7_polarity_positive_energy\",",
+        "    \"v7_polarity_negative_energy\",",
+        "    \"v7_polarity_energy_margin\",",
+        ")",
+        "",
+        ""
+      ],
+      "after_context": [
+        "    \"v7_polarity_positive_energy\",",
+        "    \"v7_polarity_negative_energy\",",
+        "    \"v7_polarity_energy_margin\",",
+        ")",
+        "",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 2402,
+      "before_end_exclusive": 2402,
+      "after_start": 2451,
+      "after_end_exclusive": 2453,
+      "before": [],
+      "after": [
+        "        # Stage27-H2A: actual H1 decision signal (None when H1 inactive)",
+        "        \"v7_h1_entitlement_for_decision\","
+      ],
+      "before_context": [
+        "        \"v7_frame_prob\",",
+        "        \"v7_predicate_prob\",",
+        "        \"v7_sufficiency_prob\",",
+        "    ):",
+        "        val = out.get(key)",
+        "        if val is not None and hasattr(val, \"mean\"):"
+      ],
+      "after_context": [
+        "        \"v7_frame_prob\",",
+        "        \"v7_predicate_prob\",",
+        "        \"v7_sufficiency_prob\",",
+        "    ):",
+        "        val = out.get(key)",
+        "        if val is not None and hasattr(val, \"mean\"):"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 2541,
+      "before_end_exclusive": 2541,
+      "after_start": 2592,
+      "after_end_exclusive": 2595,
+      "before": [],
+      "after": [
+        "    # Stage27-H2A: H1-path entitlement decision signal",
+        "    \"v7_h1_entitlement_decision_signal\",",
+        "    \"v7_h1_entitlement_for_decision_source\","
+      ],
+      "before_context": [
+        "    \"v7_use_v6b_style_final_decision\",",
+        "    \"v7_use_learnable_ne_alpha\",",
+        "    \"v7_ne_alpha_init\",",
+        ")",
+        "",
+        ""
+      ],
+      "after_context": [
+        "    \"v7_use_v6b_style_final_decision\",",
+        "    \"v7_use_learnable_ne_alpha\",",
+        "    \"v7_ne_alpha_init\",",
+        ")",
+        "",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 2653,
+      "before_end_exclusive": 2653,
+      "after_start": 2707,
+      "after_end_exclusive": 2708,
+      "before": [],
+      "after": [
+        "                v7_h1_entitlement_decision_signal=args.v7_h1_entitlement_decision_signal,"
+      ],
+      "before_context": [
+        "                v7_use_v6b_style_final_decision=args.v7_use_v6b_style_final_decision,",
+        "                v7_use_learnable_ne_alpha=args.v7_use_learnable_ne_alpha,",
+        "                v7_ne_alpha_init=args.v7_ne_alpha_init,",
+        "            )",
+        "        else:",
+        "            model = build_mamba_model("
+      ],
+      "after_context": [
+        "                v7_use_v6b_style_final_decision=args.v7_use_v6b_style_final_decision,",
+        "                v7_use_learnable_ne_alpha=args.v7_use_learnable_ne_alpha,",
+        "                v7_ne_alpha_init=args.v7_ne_alpha_init,",
+        "            )",
+        "        else:",
+        "            model = build_mamba_model("
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 2704,
+      "before_end_exclusive": 2704,
+      "after_start": 2759,
+      "after_end_exclusive": 2760,
+      "before": [],
+      "after": [
+        "                v7_h1_entitlement_decision_signal=args.v7_h1_entitlement_decision_signal,"
+      ],
+      "before_context": [
+        "                v7_no_entitlement_polarity_conditioning=args.v7_no_entitlement_polarity_conditioning,",
+        "                v7_no_aux_losses=args.v7_no_aux_losses,",
+        "                v7_initial_ne_bias=args.v7_initial_ne_bias,",
+        "            )",
+        "        else:",
+        "            model = build_model("
+      ],
+      "after_context": [
+        "                v7_no_entitlement_polarity_conditioning=args.v7_no_entitlement_polarity_conditioning,",
+        "                v7_no_aux_losses=args.v7_no_aux_losses,",
+        "                v7_initial_ne_bias=args.v7_initial_ne_bias,",
+        "            )",
+        "        else:",
+        "            model = build_model("
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 4653,
+      "before_end_exclusive": 4653,
+      "after_start": 4709,
+      "after_end_exclusive": 4725,
+      "before": [],
+      "after": [
+        "            # Stage27-H2A: H1-path entitlement_for_decision stats (from best-dev epoch)",
+        "            _h1_efd_stats: \"dict[str, float] | None\" = None",
+        "            if (",
+        "                getattr(args, \"v7_use_v6b_style_final_decision\", False)",
+        "                and _v7_best_logit_summary is not None",
+        "                and \"v7_h1_entitlement_for_decision\" in _v7_best_logit_summary",
+        "            ):",
+        "                _h1_efd_stats = _v7_best_logit_summary[\"v7_h1_entitlement_for_decision\"]",
+        "",
+        "            # Component prob means from best-dev logit summary",
+        "            def _logit_mean(key: str) -> \"float | None\":",
+        "                if _v7_best_logit_summary is None:",
+        "                    return None",
+        "                sub = _v7_best_logit_summary.get(key)",
+        "                return sub[\"mean\"] if isinstance(sub, dict) else None",
+        ""
+      ],
+      "before_context": [
+        "            if _pred_dist and _total_preds > 0:",
+        "                _maj_class = max(_pred_dist, key=lambda _k: _pred_dist[_k])",
+        "",
+        "            _v7_ext_diagnostics = {",
+        "                \"v7_best_dev_logit_summary\": _v7_best_logit_summary,",
+        "                \"v7_final_epoch_logit_summary\": _v7_final_logit_summary,"
+      ],
+      "after_context": [
+        "            if _pred_dist and _total_preds > 0:",
+        "                _maj_class = max(_pred_dist, key=lambda _k: _pred_dist[_k])",
+        "",
+        "            _v7_ext_diagnostics = {",
+        "                \"v7_best_dev_logit_summary\": _v7_best_logit_summary,",
+        "                \"v7_final_epoch_logit_summary\": _v7_final_logit_summary,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 4657,
+      "before_end_exclusive": 4657,
+      "after_start": 4729,
+      "after_end_exclusive": 4747,
+      "before": [],
+      "after": [
+        "                # Stage27-H2A: H1 entitlement_for_decision stats (None when H1 inactive)",
+        "                \"v7_h1_entitlement_for_decision_mean\": (",
+        "                    _h1_efd_stats[\"mean\"] if _h1_efd_stats else None",
+        "                ),",
+        "                \"v7_h1_entitlement_for_decision_std\": (",
+        "                    _h1_efd_stats[\"std\"] if _h1_efd_stats else None",
+        "                ),",
+        "                \"v7_h1_entitlement_for_decision_min\": (",
+        "                    _h1_efd_stats[\"min\"] if _h1_efd_stats else None",
+        "                ),",
+        "                \"v7_h1_entitlement_for_decision_max\": (",
+        "                    _h1_efd_stats[\"max\"] if _h1_efd_stats else None",
+        "                ),",
+        "                # Component probability means (from best-dev epoch; None when not v7)",
+        "                \"frame_prob_mean\": _logit_mean(\"v7_frame_prob\"),",
+        "                \"predicate_coverage_prob_mean\": _logit_mean(\"v7_predicate_prob\"),",
+        "                \"sufficiency_prob_mean\": _logit_mean(\"v7_sufficiency_prob\"),",
+        "                \"v7_entitlement_prob_mean\": _logit_mean(\"v7_entitlement_prob\"),"
+      ],
+      "before_context": [
+        "                \"v7_best_dev_logit_summary\": _v7_best_logit_summary,",
+        "                \"v7_final_epoch_logit_summary\": _v7_final_logit_summary,",
+        "                \"v7_best_dev_per_gold_label_summary\": _v7_per_gold_summary,",
+        "                \"v7_predicted_single_class\": (",
+        "                    (len(_pred_dist) == 1) if _maj_class is not None else None",
+        "                ),"
+      ],
+      "after_context": [
+        "                \"v7_best_dev_logit_summary\": _v7_best_logit_summary,",
+        "                \"v7_final_epoch_logit_summary\": _v7_final_logit_summary,",
+        "                \"v7_best_dev_per_gold_label_summary\": _v7_per_gold_summary,",
+        "                \"v7_predicted_single_class\": (",
+        "                    (len(_pred_dist) == 1) if _maj_class is not None else None",
+        "                ),"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 5093,
+      "before_end_exclusive": 5098,
+      "after_start": 5183,
+      "after_end_exclusive": 5207,
+      "before": [
+        "            \"v7_final_logit_composition\": (",
+        "                \"flat\"",
+        "                if getattr(args, \"v7_no_entitlement_polarity_conditioning\", False)",
+        "                else \"hierarchical_additive\"",
+        "            ) if args.architecture == \"v7_hierarchical\" else None,"
+      ],
+      "after": [
+        "            # Stage26-H1 / Stage27-H2A: H1 bridge flags",
+        "            \"v7_use_v6b_style_final_decision\": getattr(",
+        "                args, \"v7_use_v6b_style_final_decision\", False",
+        "            ),",
+        "            \"v7_use_learnable_ne_alpha\": getattr(args, \"v7_use_learnable_ne_alpha\", False),",
+        "            \"v7_ne_alpha_init\": getattr(args, \"v7_ne_alpha_init\", 1.0),",
+        "            # Stage27-H2A: H1-path entitlement decision signal",
+        "            \"v7_h1_entitlement_decision_signal\": getattr(",
+        "                args, \"v7_h1_entitlement_decision_signal\", \"learned\"",
+        "            ),",
+        "            \"v7_h1_entitlement_for_decision_source\": (",
+        "                _V7_H1_DECISION_SIGNAL_SOURCE.get(",
+        "                    getattr(args, \"v7_h1_entitlement_decision_signal\", \"learned\"),",
+        "                    \"learned\",",
+        "                )",
+        "                if (",
+        "                    args.architecture == \"v7_hierarchical\"",
+        "                    and getattr(args, \"v7_use_v6b_style_final_decision\", False)",
+        "                )",
+        "                else None",
+        "            ),",
+        "            # Stage27-H2A reporting bug fix: v7_final_logit_composition now correctly",
+        "            # reports \"v6b_style_softplus_multiplicative\" when H1 is active.",
+        "            \"v7_final_logit_composition\": _resolve_v7_final_logit_composition(args),"
+      ],
+      "before_context": [
+        "                args, \"v7_entitled_class_balanced_ce_weight\", 0.0",
+        "            ),",
+        "            \"v7_initial_ne_bias\": getattr(args, \"v7_initial_ne_bias\", -0.5),",
+        "            # Stage26-B: emit the v7 output contract key list for traceability.",
+        "            # See V7_REQUIRED_OUTPUT_KEYS in modeling_v7_hierarchical.py for definition.",
+        "            \"v7_channel_output_keys\": ("
+      ],
+      "after_context": [
+        "                args, \"v7_entitled_class_balanced_ce_weight\", 0.0",
+        "            ),",
+        "            \"v7_initial_ne_bias\": getattr(args, \"v7_initial_ne_bias\", -0.5),",
+        "            # Stage26-B: emit the v7 output contract key list for traceability.",
+        "            # See V7_REQUIRED_OUTPUT_KEYS in modeling_v7_hierarchical.py for definition.",
+        "            \"v7_channel_output_keys\": ("
+      ]
+    }
+  ]
+}

@@ -1,0 +1,508 @@
+{
+  "shard_ordinal": 46,
+  "original_queue_id": "WORK-796af6a39b10011b8237",
+  "original_source_ids": [
+    "HV001559"
+  ],
+  "original_source_identity": {
+    "commit": "ad12291e0ed65203f4fb6ae8be606c4d08091bcf",
+    "path": "tools/run_stage13_ood_v5_vs_v6a.py",
+    "blob": "f3ee48cbf3e4ac0c9d489dd8398b2c8086d26d2c",
+    "object_type": "commit",
+    "bytes": 35506,
+    "sha256": "fd627c0c6f92add7675d75a24bb1776a1de98ff3437aa6d41d743560b16e1d1a"
+  },
+  "before": {
+    "commit": "ae9c022ea096450af3fd607fb7da259404880b13",
+    "path": "tools/run_stage13_ood_v5_vs_v6a.py",
+    "blob": "3e30b55f92327a3a6b4d5b01e6e9920d3b22abdc",
+    "object_type": "commit",
+    "bytes": 34047,
+    "sha256": "c5bc80549ec23cb46de76031a5801da085c3d0154afa68065d0c7bd47ce167f6"
+  },
+  "after": {
+    "commit": "ad12291e0ed65203f4fb6ae8be606c4d08091bcf",
+    "path": "tools/run_stage13_ood_v5_vs_v6a.py",
+    "blob": "f3ee48cbf3e4ac0c9d489dd8398b2c8086d26d2c",
+    "object_type": "commit",
+    "bytes": 35506,
+    "sha256": "fd627c0c6f92add7675d75a24bb1776a1de98ff3437aa6d41d743560b16e1d1a"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0298"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "build_stage13_model",
+      "main",
+      "parse_args",
+      "train_and_eval_system",
+      "v6a_logit_diagnostics"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 0 removed/replaced lines and 30 added/replaced lines in 16 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "ae9c022ea096450af3fd607fb7da259404880b13",
+      "blob": "3e30b55f92327a3a6b4d5b01e6e9920d3b22abdc"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 236,
+      "before_end_exclusive": 236,
+      "after_start": 236,
+      "after_end_exclusive": 242,
+      "before": [],
+      "after": [
+        "    raw_correction = output.get(\"composer_raw_correction_logits\")",
+        "    raw_correction = (",
+        "        raw_correction.index_select(0, index_tensor)",
+        "        if raw_correction is not None",
+        "        else correction",
+        "    )"
+      ],
+      "before_context": [
+        "    index_tensor = torch.tensor(indices, device=output[\"logits\"].device)",
+        "    product = output[\"product_logits\"].index_select(0, index_tensor)",
+        "    correction = output[\"composer_correction_logits\"].index_select(0, index_tensor)",
+        "    calibrated = output[\"logits\"].index_select(0, index_tensor)",
+        "    product_norm = product.detach().float().norm().item()",
+        "    correction_norm = correction.detach().float().norm().item()"
+      ],
+      "after_context": [
+        "    index_tensor = torch.tensor(indices, device=output[\"logits\"].device)",
+        "    product = output[\"product_logits\"].index_select(0, index_tensor)",
+        "    correction = output[\"composer_correction_logits\"].index_select(0, index_tensor)",
+        "    calibrated = output[\"logits\"].index_select(0, index_tensor)",
+        "    product_norm = product.detach().float().norm().item()",
+        "    correction_norm = correction.detach().float().norm().item()"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 239,
+      "before_end_exclusive": 239,
+      "after_start": 245,
+      "after_end_exclusive": 246,
+      "before": [],
+      "after": [
+        "    raw_correction_norm = raw_correction.detach().float().norm().item()"
+      ],
+      "before_context": [
+        "    calibrated = output[\"logits\"].index_select(0, index_tensor)",
+        "    product_norm = product.detach().float().norm().item()",
+        "    correction_norm = correction.detach().float().norm().item()",
+        "    ratio = correction_norm / product_norm if product_norm else 0.0",
+        "    per_class_mean = correction.detach().float().cpu().mean(dim=0).tolist()",
+        "    return {"
+      ],
+      "after_context": [
+        "    calibrated = output[\"logits\"].index_select(0, index_tensor)",
+        "    product_norm = product.detach().float().norm().item()",
+        "    correction_norm = correction.detach().float().norm().item()",
+        "    ratio = correction_norm / product_norm if product_norm else 0.0",
+        "    raw_ratio = raw_correction_norm / product_norm if product_norm else 0.0",
+        "    per_class_mean = correction.detach().float().cpu().mean(dim=0).tolist()"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 240,
+      "before_end_exclusive": 240,
+      "after_start": 247,
+      "after_end_exclusive": 248,
+      "before": [],
+      "after": [
+        "    raw_ratio = raw_correction_norm / product_norm if product_norm else 0.0"
+      ],
+      "before_context": [
+        "    product_norm = product.detach().float().norm().item()",
+        "    correction_norm = correction.detach().float().norm().item()",
+        "    ratio = correction_norm / product_norm if product_norm else 0.0",
+        "    per_class_mean = correction.detach().float().cpu().mean(dim=0).tolist()",
+        "    return {",
+        "        \"subset\": subset_name,"
+      ],
+      "after_context": [
+        "    correction_norm = correction.detach().float().norm().item()",
+        "    raw_correction_norm = raw_correction.detach().float().norm().item()",
+        "    ratio = correction_norm / product_norm if product_norm else 0.0",
+        "    per_class_mean = correction.detach().float().cpu().mean(dim=0).tolist()",
+        "    raw_per_class_mean = raw_correction.detach().float().cpu().mean(dim=0).tolist()",
+        "    correction_scale = output.get(\"composer_correction_scale\")"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 241,
+      "before_end_exclusive": 241,
+      "after_start": 249,
+      "after_end_exclusive": 256,
+      "before": [],
+      "after": [
+        "    raw_per_class_mean = raw_correction.detach().float().cpu().mean(dim=0).tolist()",
+        "    correction_scale = output.get(\"composer_correction_scale\")",
+        "    scale_value = (",
+        "        float(correction_scale.detach().float().cpu().item())",
+        "        if isinstance(correction_scale, torch.Tensor)",
+        "        else None",
+        "    )"
+      ],
+      "before_context": [
+        "    correction_norm = correction.detach().float().norm().item()",
+        "    ratio = correction_norm / product_norm if product_norm else 0.0",
+        "    per_class_mean = correction.detach().float().cpu().mean(dim=0).tolist()",
+        "    return {",
+        "        \"subset\": subset_name,",
+        "        \"intervention_type\": intervention_type or \"__all__\","
+      ],
+      "after_context": [
+        "    ratio = correction_norm / product_norm if product_norm else 0.0",
+        "    raw_ratio = raw_correction_norm / product_norm if product_norm else 0.0",
+        "    per_class_mean = correction.detach().float().cpu().mean(dim=0).tolist()",
+        "    return {",
+        "        \"subset\": subset_name,",
+        "        \"intervention_type\": intervention_type or \"__all__\","
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 245,
+      "before_end_exclusive": 245,
+      "after_start": 260,
+      "after_end_exclusive": 261,
+      "before": [],
+      "after": [
+        "        \"correction_scale\": scale_value,"
+      ],
+      "before_context": [
+        "        \"subset\": subset_name,",
+        "        \"intervention_type\": intervention_type or \"__all__\",",
+        "        \"n\": len(indices),",
+        "        \"product_logits\": _tensor_stats(product),",
+        "        \"composer_correction_logits\": _tensor_stats(correction),",
+        "        \"calibrated_logits\": _tensor_stats(calibrated),"
+      ],
+      "after_context": [
+        "        \"subset\": subset_name,",
+        "        \"intervention_type\": intervention_type or \"__all__\",",
+        "        \"n\": len(indices),",
+        "        \"product_logits\": _tensor_stats(product),",
+        "        \"composer_raw_correction_logits\": _tensor_stats(raw_correction),",
+        "        \"composer_correction_logits\": _tensor_stats(correction),"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 246,
+      "before_end_exclusive": 246,
+      "after_start": 262,
+      "after_end_exclusive": 263,
+      "before": [],
+      "after": [
+        "        \"composer_raw_correction_logits\": _tensor_stats(raw_correction),"
+      ],
+      "before_context": [
+        "        \"intervention_type\": intervention_type or \"__all__\",",
+        "        \"n\": len(indices),",
+        "        \"product_logits\": _tensor_stats(product),",
+        "        \"composer_correction_logits\": _tensor_stats(correction),",
+        "        \"calibrated_logits\": _tensor_stats(calibrated),",
+        "        \"per_class_mean_correction\": {"
+      ],
+      "after_context": [
+        "        \"n\": len(indices),",
+        "        \"correction_scale\": scale_value,",
+        "        \"product_logits\": _tensor_stats(product),",
+        "        \"composer_correction_logits\": _tensor_stats(correction),",
+        "        \"calibrated_logits\": _tensor_stats(calibrated),",
+        "        \"per_class_mean_raw_correction\": {"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 248,
+      "before_end_exclusive": 248,
+      "after_start": 265,
+      "after_end_exclusive": 269,
+      "before": [],
+      "after": [
+        "        \"per_class_mean_raw_correction\": {",
+        "            label: float(value)",
+        "            for label, value in zip(LABELS, raw_per_class_mean, strict=True)",
+        "        },"
+      ],
+      "before_context": [
+        "        \"product_logits\": _tensor_stats(product),",
+        "        \"composer_correction_logits\": _tensor_stats(correction),",
+        "        \"calibrated_logits\": _tensor_stats(calibrated),",
+        "        \"per_class_mean_correction\": {",
+        "            label: float(value)",
+        "            for label, value in zip(LABELS, per_class_mean, strict=True)"
+      ],
+      "after_context": [
+        "        \"composer_raw_correction_logits\": _tensor_stats(raw_correction),",
+        "        \"composer_correction_logits\": _tensor_stats(correction),",
+        "        \"calibrated_logits\": _tensor_stats(calibrated),",
+        "        \"per_class_mean_correction\": {",
+        "            label: float(value)",
+        "            for label, value in zip(LABELS, per_class_mean, strict=True)"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 252,
+      "before_end_exclusive": 252,
+      "after_start": 273,
+      "after_end_exclusive": 274,
+      "before": [],
+      "after": [
+        "        \"raw_correction_product_norm_ratio\": float(raw_ratio),"
+      ],
+      "before_context": [
+        "            label: float(value)",
+        "            for label, value in zip(LABELS, per_class_mean, strict=True)",
+        "        },",
+        "        \"correction_product_norm_ratio\": float(ratio),",
+        "    }",
+        ""
+      ],
+      "after_context": [
+        "            label: float(value)",
+        "            for label, value in zip(LABELS, per_class_mean, strict=True)",
+        "        },",
+        "        \"correction_product_norm_ratio\": float(ratio),",
+        "    }",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 373,
+      "before_end_exclusive": 373,
+      "after_start": 395,
+      "after_end_exclusive": 396,
+      "before": [],
+      "after": [
+        "    v6a_correction_scale: float,"
+      ],
+      "before_context": [
+        "    vocab: Any,",
+        "    train_inputs: dict[str, torch.Tensor],",
+        "    dev_inputs: dict[str, torch.Tensor],",
+        ") -> torch.nn.Module:",
+        "    if system == \"v5\":",
+        "        if backbone == \"mamba\":"
+      ],
+      "after_context": [
+        "    vocab: Any,",
+        "    train_inputs: dict[str, torch.Tensor],",
+        "    dev_inputs: dict[str, torch.Tensor],",
+        ") -> torch.nn.Module:",
+        "    if system == \"v5\":",
+        "        if backbone == \"mamba\":"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 386,
+      "before_end_exclusive": 386,
+      "after_start": 409,
+      "after_end_exclusive": 410,
+      "before": [],
+      "after": [
+        "        model.correction_scale = v6a_correction_scale"
+      ],
+      "before_context": [
+        "        else:",
+        "            max_length = max(train_inputs[\"input_ids\"].shape[1], dev_inputs[\"input_ids\"].shape[1])",
+        "            model = v6a.build_model(len(vocab), max_length)",
+        "    else:",
+        "        raise ValueError(f\"unknown system: {system}\")",
+        "    return model"
+      ],
+      "after_context": [
+        "        else:",
+        "            max_length = max(train_inputs[\"input_ids\"].shape[1], dev_inputs[\"input_ids\"].shape[1])",
+        "            model = v6a.build_model(len(vocab), max_length)",
+        "    else:",
+        "        raise ValueError(f\"unknown system: {system}\")",
+        "    return model"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 419,
+      "before_end_exclusive": 419,
+      "after_start": 443,
+      "after_end_exclusive": 444,
+      "before": [],
+      "after": [
+        "    v6a_correction_scale: float,"
+      ],
+      "before_context": [
+        "    freeze_a_log: bool,",
+        "    output_prefix: Path,",
+        "    log_v6a_diagnostics: bool,",
+        ") -> tuple[dict[str, Any], list[dict[str, Any]]]:",
+        "    random.seed(seed)",
+        "    torch.manual_seed(seed)"
+      ],
+      "after_context": [
+        "    freeze_a_log: bool,",
+        "    output_prefix: Path,",
+        "    log_v6a_diagnostics: bool,",
+        ") -> tuple[dict[str, Any], list[dict[str, Any]]]:",
+        "    random.seed(seed)",
+        "    torch.manual_seed(seed)"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 449,
+      "before_end_exclusive": 449,
+      "after_start": 474,
+      "after_end_exclusive": 475,
+      "before": [],
+      "after": [
+        "        v6a_correction_scale=v6a_correction_scale,"
+      ],
+      "before_context": [
+        "        vocab=vocab,",
+        "        train_inputs=train_inputs,",
+        "        dev_inputs=dev_inputs,",
+        "    ).to(device)",
+        "    cache_if_needed(model, inputs, backbone)",
+        ""
+      ],
+      "after_context": [
+        "        vocab=vocab,",
+        "        train_inputs=train_inputs,",
+        "        dev_inputs=dev_inputs,",
+        "    ).to(device)",
+        "    cache_if_needed(model, inputs, backbone)",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 536,
+      "before_end_exclusive": 536,
+      "after_start": 562,
+      "after_end_exclusive": 563,
+      "before": [],
+      "after": [
+        "        \"v6a_correction_scale\": v6a_correction_scale if system == \"v6a\" else None,"
+      ],
+      "before_context": [
+        "        \"weighted_label_loss\": True,",
+        "        \"balanced_sampler\": True,",
+        "        \"use_intervention_loss\": True,",
+        "        \"best_epoch\": report[\"best_epoch\"],",
+        "        \"train_data\": \"data/controlled_v5_v3.jsonl with time_swap excluded before split\",",
+        "        \"ood_group_field\": group_field,"
+      ],
+      "after_context": [
+        "        \"weighted_label_loss\": True,",
+        "        \"balanced_sampler\": True,",
+        "        \"use_intervention_loss\": True,",
+        "        \"best_epoch\": report[\"best_epoch\"],",
+        "        \"train_data\": \"data/controlled_v5_v3.jsonl with time_swap excluded before split\",",
+        "        \"ood_group_field\": group_field,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 799,
+      "before_end_exclusive": 799,
+      "after_start": 826,
+      "after_end_exclusive": 827,
+      "before": [],
+      "after": [
+        "    parser.add_argument(\"--v6a-correction-scale\", type=float, default=1.0)"
+      ],
+      "before_context": [
+        "    parser.add_argument(\"--smoke\", action=\"store_true\")",
+        "    parser.add_argument(\"--smoke-pairs\", type=int, default=8)",
+        "    parser.add_argument(\"--smoke-ood-pairs\", type=int, default=12)",
+        "    parser.add_argument(\"--log-v6a-logit-diagnostics\", action=\"store_true\")",
+        "    parser.add_argument(\"--output-prefix\", type=Path, default=REPO_ROOT / \"results\" / \"stage13_ood\")",
+        "    return parser.parse_args()"
+      ],
+      "after_context": [
+        "    parser.add_argument(\"--smoke\", action=\"store_true\")",
+        "    parser.add_argument(\"--smoke-pairs\", type=int, default=8)",
+        "    parser.add_argument(\"--smoke-ood-pairs\", type=int, default=12)",
+        "    parser.add_argument(\"--log-v6a-logit-diagnostics\", action=\"store_true\")",
+        "    parser.add_argument(\"--output-prefix\", type=Path, default=REPO_ROOT / \"results\" / \"stage13_ood\")",
+        "    return parser.parse_args()"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 830,
+      "before_end_exclusive": 830,
+      "after_start": 858,
+      "after_end_exclusive": 859,
+      "before": [],
+      "after": [
+        "        f\"v6a_correction_scale={args.v6a_correction_scale} \""
+      ],
+      "before_context": [
+        "        \"Stage13 accepted-config defaults: \"",
+        "        f\"lr={args.lr} head_lr={args.head_lr} encoder_lr={args.encoder_lr} \"",
+        "        f\"ranking_weight={args.ranking_weight} max_length={args.max_length} \"",
+        "        \"weighted_label_loss=True balanced_sampler=True use_intervention_loss=True\"",
+        "    )",
+        ""
+      ],
+      "after_context": [
+        "        \"Stage13 accepted-config defaults: \"",
+        "        f\"lr={args.lr} head_lr={args.head_lr} encoder_lr={args.encoder_lr} \"",
+        "        f\"ranking_weight={args.ranking_weight} max_length={args.max_length} \"",
+        "        \"weighted_label_loss=True balanced_sampler=True use_intervention_loss=True\"",
+        "    )",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 863,
+      "before_end_exclusive": 863,
+      "after_start": 892,
+      "after_end_exclusive": 893,
+      "before": [],
+      "after": [
+        "                v6a_correction_scale=args.v6a_correction_scale,"
+      ],
+      "before_context": [
+        "                freeze_a_log=args.freeze_a_log,",
+        "                output_prefix=output_prefix,",
+        "                log_v6a_diagnostics=args.log_v6a_logit_diagnostics,",
+        "            )",
+        "            all_metrics.append(payload)",
+        "            seed_predictions[system] = predictions"
+      ],
+      "after_context": [
+        "                freeze_a_log=args.freeze_a_log,",
+        "                output_prefix=output_prefix,",
+        "                log_v6a_diagnostics=args.log_v6a_logit_diagnostics,",
+        "            )",
+        "            all_metrics.append(payload)",
+        "            seed_predictions[system] = predictions"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "does_not_establish": [
+    "Experiments absent or failed",
+    "Artifacts never produced",
+    "Global destruction of all originals",
+    "Run/cohort identity or scientific validity"
+  ],
+  "effect": "Do not depend on retained historical Kaggle Outputs as an available recovery route; retain local original, command/log/manifest and provenance obligations.",
+  "evidence_type": "USER_TESTIMONY",
+  "independently_verified_archive_inventory": false,
+  "scope": "Runs referenced by the current bounded historical recovery task; exact run enumeration and timing not supplied by testimony.",
+  "source": "CURRENT_USER_TASK_REQUIREMENT_4",
+  "statement": "Historical Kaggle Outputs were not retained for these runs."
+}

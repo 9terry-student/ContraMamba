@@ -1,0 +1,259 @@
+CELL 0 code
+# 1. 설치
+!pip install causal-conv1d --no-build-isolation -q
+!pip install mamba-ssm --no-build-isolation -q
+!pip install transformers==4.45.0 -q
+OUTPUTS []
+CELL 1 code
+# 2. 임포트
+import torch
+import torch.nn as nn
+import numpy as np
+from transformers import MambaModel, MambaConfig, AutoTokenizer
+from datasets import load_dataset
+from torch.utils.data import DataLoader
+from torch.amp import autocast, GradScaler
+from torch.optim import AdamW
+from tqdm.auto import tqdm
+import random
+import gc
+import os
+
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ["MAMBA_FORCE_BUILD"] = "FALSE"
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"디바이스: {device}")
+OUTPUTS []
+CELL 2 code
+# 3. 모델 정의
+def get_dct_matrix(n):
+    dct = np.zeros((n, n))
+    for k in range(n):
+        for i in range(n):
+            if k == 0:
+                dct[k, i] = np.sqrt(1/n)
+            else:
+                dct[k, i] = np.sqrt(2/n) * np.cos(np.pi * k * (2*i + 1) / (2*n))
+    return torch.tensor(dct, dtype=torch.float32)
+
+class AttentionPooling(nn.Module):
+    def __init__(self, hidden_size):
+        super().__init__()
+        self.attention = nn.Linear(hidden_size, 1)
+    
+    def forward(self, hidden_states):
+        weights = torch.softmax(self.attention(hidden_states), dim=1)
+        return (hidden_states * weights).sum(dim=1)
+
+class OrthogonalSubspace(nn.Module):
+    def __init__(self, hidden_size, subspace_dim):
+        super().__init__()
+        self.subspace_dim = subspace_dim
+        half = hidden_size // 2
+        self.half = half
+        
+        self.S_pos = nn.Linear(half, subspace_dim, bias=False)
+        self.S_neg = nn.Linear(half, subspace_dim, bias=False)
+        
+        dct = get_dct_matrix(min(half, subspace_dim))
+        self.S_pos.weight.data[:, :min(half, subspace_dim)] = dct[:subspace_dim, :min(half, subspace_dim)]
+        self.S_neg.weight.data[:, :min(half, subspace_dim)] = dct[:subspace_dim, :min(half, subspace_dim)].flip(0)
+        
+        self.S_pos.weight.requires_grad = True
+        self.S_neg.weight.requires_grad = True
+    
+    def forward(self, x):
+        x_pos = x[:, :self.half]
+        x_neg = x[:, self.half:]
+        e_pos = torch.clamp(torch.norm(self.S_pos(x_pos), dim=-1) / np.sqrt(self.subspace_dim),max=10.0)
+        e_neg = torch.clamp(torch.norm(self.S_neg(x_neg), dim=-1) / np.sqrt(self.subspace_dim),max=10.0)
+        return e_pos, e_neg
+
+class ContraMamba(nn.Module):
+    def __init__(self, model_name, subspace_dim=256):
+        super().__init__()
+        config = MambaConfig.from_pretrained(model_name)
+        config.use_mamba_kernels = True
+        self.mamba = MambaModel.from_pretrained(model_name, config=config)
+        hidden_size = self.mamba.config.hidden_size
+        
+        for name, param in self.mamba.named_parameters():
+            if 'A_log' in name:
+                param.requires_grad = False
+        
+        self.pool = AttentionPooling(hidden_size)
+        self.subspace = OrthogonalSubspace(hidden_size, subspace_dim)
+        self.classifier = nn.Sequential(
+            nn.Linear(3, 16),  # 2 → 3
+            nn.Dropout(0.3),
+            nn.ReLU(),
+            nn.Linear(16, 3)
+        )
+    
+    def forward(self, input_ids, labels=None):
+        outputs = self.mamba(input_ids=input_ids)
+        pooled = self.pool(outputs.last_hidden_state)
+        e_pos, e_neg = self.subspace(pooled)
+        energy = torch.stack([e_pos, e_neg, e_pos - e_neg], dim=-1)
+        logits = self.classifier(energy)
+        
+        loss = None
+        if labels is not None:
+            loss_fn = nn.CrossEntropyLoss()
+            base_loss = loss_fn(logits, labels)
+            pos_mask = (labels == 2).float()
+            neg_mask = (labels == 0).float()
+            gap_loss = torch.mean(
+                pos_mask * torch.relu(1.0 - (e_pos - e_neg)) * 0.5 +
+                neg_mask * torch.relu(1.0 - (e_neg - e_pos)) * 2.0
+            ) * 0.5
+            loss = base_loss + gap_loss
+        
+        return {"loss": loss, "logits": logits, "e_pos": e_pos, "e_neg": e_neg}
+
+model_v2 = ContraMamba("state-spaces/mamba-130m-hf").to(device)
+print(f"✅ ContraMamba + AttentionPooling 로드 완료!")
+print(f"학습 파라미터: {sum(p.numel() for p in model_v2.parameters() if p.requires_grad):,}")
+OUTPUTS []
+CELL 3 code
+# 4. 데이터
+dataset = load_dataset("boolq")
+tokenizer = AutoTokenizer.from_pretrained("state-spaces/mamba-130m-hf")
+
+def preprocess(example):
+    if random.random() > 0.5:
+        text = example['question'] + " " + example['passage']
+    else:
+        text = example['passage'] + " " + example['question']
+    encoding = tokenizer(
+        text,
+        max_length=128,
+        truncation=True,
+        padding='max_length',
+        return_tensors='pt'
+    )
+    label = 2 if example['answer'] else 0
+    return {
+        'input_ids': encoding['input_ids'].squeeze(),
+        'label': label
+    }
+
+train_data = dataset['train'].map(preprocess)
+val_data = dataset['validation'].map(preprocess)
+train_data.set_format(type='torch', columns=['input_ids', 'label'])
+val_data.set_format(type='torch', columns=['input_ids', 'label'])
+print("데이터 준비 완료")
+OUTPUTS []
+CELL 4 code
+model_v2.load_state_dict(torch.load('/kaggle/working/contramamba_epoch12.pt'))
+print("epoch 12 로드 완료")
+OUTPUTS []
+CELL 5 code
+### 5. 학습
+train_loader = DataLoader(train_data, batch_size=8, shuffle=True, num_workers=2, pin_memory=True)
+val_loader = DataLoader(val_data, batch_size=4, num_workers=2, pin_memory=True)
+
+optimizer_v2 = AdamW(model_v2.parameters(), lr=2e-5, weight_decay=0.1)
+scaler = GradScaler('cuda')
+
+def run_experiment(epochs=10, start_epoch=0):
+    true_gap = 0.0
+    false_gap = 0.0
+    frozen_pos = True  # 원래는 false
+    frozen_neg = True  # 원래는 false
+    
+    for epoch in range(epochs):
+        actual_epoch = start_epoch + epoch + 1
+        
+        if true_gap > 1.0 and not frozen_pos:
+            model_v2.subspace.S_pos.weight.requires_grad = False
+            frozen_pos = True
+            # lr 낮추기
+            for g in optimizer_v2.param_groups:
+                g['lr'] = 1e-5
+            print("✅ S_pos frozen! lr → 1e-5")
+        
+        if false_gap > 1.0 and not frozen_neg:
+            model_v2.subspace.S_neg.weight.requires_grad = False
+            frozen_neg = True
+            for g in optimizer_v2.param_groups:
+                g['lr'] = 5e-6
+            print("✅ S_neg frozen! lr → 5e-6")
+        
+        model_v2.train()
+        pbar = tqdm(train_loader, desc=f"Epoch {actual_epoch} [Train]")
+        
+        for batch in pbar:
+            input_ids = batch['input_ids'].to(device)
+            labels = batch['label'].to(device)
+            optimizer_v2.zero_grad()
+            
+            with autocast('cuda'):
+                output = model_v2(input_ids=input_ids, labels=labels)
+                loss = output['loss']
+            
+            if torch.isnan(loss):
+                optimizer_v2.zero_grad()
+                continue
+            
+            scaler.scale(loss).backward()
+            scaler.unscale_(optimizer_v2)
+            torch.nn.utils.clip_grad_norm_(model_v2.parameters(), max_norm=1.0)
+            scaler.step(optimizer_v2)
+            scaler.update()
+            pbar.set_postfix({'loss': f"{loss.item():.4f}"})
+        
+        gc.collect()
+        torch.cuda.empty_cache()
+        model_v2.eval()
+        
+        correct, total = 0, 0
+        pos_e_true, neg_e_true = [], []
+        pos_e_false, neg_e_false = [], []
+        
+        with torch.no_grad():
+            for batch in tqdm(val_loader, desc=f"Epoch {actual_epoch} [Eval]"):
+                input_ids = batch['input_ids'].to(device)
+                labels = batch['label'].to(device)
+                output = model_v2(input_ids=input_ids)
+                preds = output['logits'].argmax(dim=-1)
+                correct += (preds == labels).sum().item()
+                total += len(labels)
+                
+                e_pos = output['e_pos'].detach().cpu()
+                e_neg = output['e_neg'].detach().cpu()
+                labels_cpu = labels.cpu()
+                
+                true_mask = (labels_cpu == 2)
+                false_mask = (labels_cpu == 0)
+                if true_mask.any():
+                    pos_e_true.append(e_pos[true_mask])
+                    neg_e_true.append(e_neg[true_mask])
+                if false_mask.any():
+                    pos_e_false.append(e_pos[false_mask])
+                    neg_e_false.append(e_neg[false_mask])
+        
+        mean_pos_true = torch.cat(pos_e_true).mean().item()
+        mean_neg_true = torch.cat(neg_e_true).mean().item()
+        mean_pos_false = torch.cat(pos_e_false).mean().item()
+        mean_neg_false = torch.cat(neg_e_false).mean().item()
+        
+        true_gap = mean_pos_true - mean_neg_true
+        false_gap = mean_neg_false - mean_pos_false
+        
+        gc.collect()
+        torch.cuda.empty_cache()
+        
+        print(f"\n--- Epoch {actual_epoch} Summary ---")
+        print(f"Val Accuracy: {correct/total:.4f}")
+        print(f"True샘플  → S+: {mean_pos_true:.4f} | S-: {mean_neg_true:.4f} | 갭: {true_gap:.4f}")
+        print(f"False샘플 → S+: {mean_pos_false:.4f} | S-: {mean_neg_false:.4f} | 갭: {false_gap:.4f}")
+        print(f"Frozen: S_pos={frozen_pos} | S_neg={frozen_neg}")
+        print("="*40)
+        
+        torch.save(model_v2.state_dict(), f'/kaggle/working/contramamba_epoch{actual_epoch}.pt')
+        print(f"체크포인트 저장: contramamba_epoch{actual_epoch}.pt")
+
+
+run_experiment(epochs=5, start_epoch=12)
+OUTPUTS []

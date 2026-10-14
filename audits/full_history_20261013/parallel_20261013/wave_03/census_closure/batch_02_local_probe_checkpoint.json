@@ -1,0 +1,2952 @@
+{
+  "literal_probes": {
+    "DEBT-0d1d0a7ad7523f000d85": {
+      "exact_path_worktree_probes": [
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/c3",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/cm-full-audit-20261013",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/g3-grouped-r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/g3p",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/g3r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/g4d",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/g4fexec",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/g4fix",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/g4k-370",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/g4k-370-train",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/g4k-beh",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/g4k-bridge",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/g4k-collect-e951584",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/g4k-cudaeq",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/g4k-m1ladder",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/g4k-seed181-rep",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/g4k-xg2h",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/g5-state",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/g5cfgeo",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/main-readme-sync",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/o0c-minimal-runner-impl",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-n3-validated-evidence-analysis",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-seed180-recovery-exec-c34a80e",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/p3w7-calibration-authority",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/r181-replacement",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/r182",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/train.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba-K",
+          "worktree_accessible": true
+        }
+      ],
+      "exact_saved_historical_version_matches": [],
+      "exact_saved_inventory_matches": [],
+      "global_absence_established": false,
+      "lfs_probe": "NO_ORIGINAL_POINTER_OR_OID_FOR_THIS_LITERAL; content-addressed LFS cannot identify a missing pathname. Prior known LFS recovery reused, not repeated.",
+      "literal": {
+        "commit_or_tree": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571",
+        "not_proof_of_global_absence": true,
+        "path": "data/train.json",
+        "status": "NOT_PRESENT_AT_INSPECTED_SOURCE_OBJECT"
+      },
+      "renamed_substitution_authorized": false
+    },
+    "DEBT-147516d2245e65ef7877": {
+      "exact_path_worktree_probes": [
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/c3",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/cm-full-audit-20261013",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/g3-grouped-r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/g3p",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/g3r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/g4d",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/g4fexec",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/g4fix",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/g4k-370",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/g4k-370-train",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/g4k-beh",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/g4k-bridge",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/g4k-collect-e951584",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/g4k-cudaeq",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/g4k-m1ladder",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/g4k-seed181-rep",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/g4k-xg2h",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/g5-state",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/g5cfgeo",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/main-readme-sync",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/o0c-minimal-runner-impl",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-n3-validated-evidence-analysis",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-seed180-recovery-exec-c34a80e",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/p3w7-calibration-authority",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/r181-replacement",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/r182",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba-K",
+          "worktree_accessible": true
+        }
+      ],
+      "exact_saved_historical_version_matches": [],
+      "exact_saved_inventory_matches": [],
+      "global_absence_established": false,
+      "lfs_probe": "NO_ORIGINAL_POINTER_OR_OID_FOR_THIS_LITERAL; content-addressed LFS cannot identify a missing pathname. Prior known LFS recovery reused, not repeated.",
+      "literal": {
+        "commit_or_tree": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571",
+        "not_proof_of_global_absence": true,
+        "path": "reports/stage196b2b3_exact_component_recomposition_analysis_20260722_100245/stage196b2b3_analysis.json",
+        "status": "NOT_PRESENT_AT_INSPECTED_SOURCE_OBJECT"
+      },
+      "renamed_substitution_authorized": false
+    },
+    "DEBT-1480092155660ecc4b94": {
+      "exact_path_worktree_probes": [
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/c3",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/cm-full-audit-20261013",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/g3-grouped-r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/g3p",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/g3r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/g4d",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/g4fexec",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/g4fix",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/g4k-370",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/g4k-370-train",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/g4k-beh",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/g4k-bridge",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/g4k-collect-e951584",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/g4k-cudaeq",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/g4k-m1ladder",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/g4k-seed181-rep",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/g4k-xg2h",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/g5-state",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/g5cfgeo",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/main-readme-sync",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/o0c-minimal-runner-impl",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/p3w7-a0-n3-validated-evidence-analysis",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/p3w7-a0-seed180-recovery-exec-c34a80e",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/p3w7-calibration-authority",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/r181-replacement",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/r182",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba-K",
+          "worktree_accessible": true
+        }
+      ],
+      "exact_saved_historical_version_matches": [],
+      "exact_saved_inventory_matches": [],
+      "global_absence_established": false,
+      "lfs_probe": "NO_ORIGINAL_POINTER_OR_OID_FOR_THIS_LITERAL; content-addressed LFS cannot identify a missing pathname. Prior known LFS recovery reused, not repeated.",
+      "literal": {
+        "commit_or_tree": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571",
+        "not_proof_of_global_absence": true,
+        "path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.md",
+        "status": "NOT_PRESENT_AT_INSPECTED_SOURCE_OBJECT"
+      },
+      "renamed_substitution_authorized": false
+    },
+    "DEBT-1cf50c30919cd0b245ba": {
+      "exact_path_worktree_probes": [
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/c3",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/cm-full-audit-20261013",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g3-grouped-r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g3p",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g3r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4d",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4fexec",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4fix",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-370",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-370-train",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-beh",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-bridge",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-collect-e951584",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-cudaeq",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-m1ladder",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-seed181-rep",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-xg2h",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g5-state",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g5cfgeo",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/main-readme-sync",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/o0c-minimal-runner-impl",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-n3-validated-evidence-analysis",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-seed180-recovery-exec-c34a80e",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/p3w7-calibration-authority",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/r181-replacement",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/r182",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage35a_adversarial_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba-K",
+          "worktree_accessible": true
+        }
+      ],
+      "exact_saved_historical_version_matches": [],
+      "exact_saved_inventory_matches": [],
+      "global_absence_established": false,
+      "lfs_probe": "NO_ORIGINAL_POINTER_OR_OID_FOR_THIS_LITERAL; content-addressed LFS cannot identify a missing pathname. Prior known LFS recovery reused, not repeated.",
+      "literal": {
+        "commit_or_tree": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571",
+        "not_proof_of_global_absence": true,
+        "path": "data/stage35a_adversarial_coverage_probe.json",
+        "status": "NOT_PRESENT_AT_INSPECTED_SOURCE_OBJECT"
+      },
+      "renamed_substitution_authorized": false
+    },
+    "DEBT-32f22d34f2c93d589cb2": {
+      "exact_path_worktree_probes": [
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/c3",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/cm-full-audit-20261013",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/g3-grouped-r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/g3p",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/g3r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/g4d",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/g4fexec",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/g4fix",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/g4k-370",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/g4k-370-train",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/g4k-beh",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/g4k-bridge",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/g4k-collect-e951584",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/g4k-cudaeq",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/g4k-m1ladder",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/g4k-seed181-rep",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/g4k-xg2h",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/g5-state",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/g5cfgeo",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/main-readme-sync",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/o0c-minimal-runner-impl",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-n3-validated-evidence-analysis",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-seed180-recovery-exec-c34a80e",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/p3w7-calibration-authority",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/r181-replacement",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/r182",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba-K",
+          "worktree_accessible": true
+        }
+      ],
+      "exact_saved_historical_version_matches": [],
+      "exact_saved_inventory_matches": [],
+      "global_absence_established": false,
+      "lfs_probe": "NO_ORIGINAL_POINTER_OR_OID_FOR_THIS_LITERAL; content-addressed LFS cannot identify a missing pathname. Prior known LFS recovery reused, not repeated.",
+      "literal": {
+        "commit_or_tree": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571",
+        "not_proof_of_global_absence": true,
+        "path": "reports/stage163a_stage63_equivalent_config_recovery_20260711_051651/stage163a_stage63_equivalent_config_recovery_report.json",
+        "status": "NOT_PRESENT_AT_INSPECTED_SOURCE_OBJECT"
+      },
+      "renamed_substitution_authorized": false
+    },
+    "DEBT-387884db8795c1eac6d9": {
+      "exact_path_worktree_probes": [
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/c3",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/cm-full-audit-20261013",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/g3-grouped-r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/g3p",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/g3r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/g4d",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/g4fexec",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/g4fix",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/g4k-370",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/g4k-370-train",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/g4k-beh",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/g4k-bridge",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/g4k-collect-e951584",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/g4k-cudaeq",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/g4k-m1ladder",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/g4k-seed181-rep",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/g4k-xg2h",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/g5-state",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/g5cfgeo",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/main-readme-sync",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/o0c-minimal-runner-impl",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-n3-validated-evidence-analysis",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-seed180-recovery-exec-c34a80e",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/p3w7-calibration-authority",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/r181-replacement",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/r182",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/controlled_v5_v3_without_time_swap.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba-K",
+          "worktree_accessible": true
+        }
+      ],
+      "exact_saved_historical_version_matches": [],
+      "exact_saved_inventory_matches": [],
+      "global_absence_established": false,
+      "lfs_probe": "NO_ORIGINAL_POINTER_OR_OID_FOR_THIS_LITERAL; content-addressed LFS cannot identify a missing pathname. Prior known LFS recovery reused, not repeated.",
+      "literal": {
+        "commit_or_tree": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571",
+        "not_proof_of_global_absence": true,
+        "path": "data/controlled_v5_v3_without_time_swap.json",
+        "status": "NOT_PRESENT_AT_INSPECTED_SOURCE_OBJECT"
+      },
+      "renamed_substitution_authorized": false
+    },
+    "DEBT-47b36522bccf8d604114": {
+      "exact_path_worktree_probes": [
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/c3",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/cm-full-audit-20261013",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g3-grouped-r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g3p",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g3r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4d",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4fexec",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4fix",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-370",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-370-train",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-beh",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-bridge",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-collect-e951584",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-cudaeq",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-m1ladder",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-seed181-rep",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-xg2h",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g5-state",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g5cfgeo",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/main-readme-sync",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/o0c-minimal-runner-impl",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-n3-validated-evidence-analysis",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-seed180-recovery-exec-c34a80e",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/p3w7-calibration-authority",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/r181-replacement",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/r182",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage75_targeted_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba-K",
+          "worktree_accessible": true
+        }
+      ],
+      "exact_saved_historical_version_matches": [],
+      "exact_saved_inventory_matches": [],
+      "global_absence_established": false,
+      "lfs_probe": "NO_ORIGINAL_POINTER_OR_OID_FOR_THIS_LITERAL; content-addressed LFS cannot identify a missing pathname. Prior known LFS recovery reused, not repeated.",
+      "literal": {
+        "commit_or_tree": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571",
+        "not_proof_of_global_absence": true,
+        "path": "data/stage75_targeted_residual_bridge.json",
+        "status": "NOT_PRESENT_AT_INSPECTED_SOURCE_OBJECT"
+      },
+      "renamed_substitution_authorized": false
+    },
+    "DEBT-51e7432f4b224b836902": {
+      "exact_path_worktree_probes": [
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/c3",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/cm-full-audit-20261013",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g3-grouped-r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g3p",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g3r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4d",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4fexec",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4fix",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-370",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-370-train",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-beh",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-bridge",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-collect-e951584",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-cudaeq",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-m1ladder",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-seed181-rep",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-xg2h",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g5-state",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/g5cfgeo",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/main-readme-sync",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/o0c-minimal-runner-impl",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-n3-validated-evidence-analysis",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-seed180-recovery-exec-c34a80e",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/p3w7-calibration-authority",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/r181-replacement",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/r182",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage66_residual_bridge.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba-K",
+          "worktree_accessible": true
+        }
+      ],
+      "exact_saved_historical_version_matches": [],
+      "exact_saved_inventory_matches": [],
+      "global_absence_established": false,
+      "lfs_probe": "NO_ORIGINAL_POINTER_OR_OID_FOR_THIS_LITERAL; content-addressed LFS cannot identify a missing pathname. Prior known LFS recovery reused, not repeated.",
+      "literal": {
+        "commit_or_tree": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571",
+        "not_proof_of_global_absence": true,
+        "path": "data/stage66_residual_bridge.json",
+        "status": "NOT_PRESENT_AT_INSPECTED_SOURCE_OBJECT"
+      },
+      "renamed_substitution_authorized": false
+    },
+    "DEBT-5a7b2e16bc74b4cb21ff": {
+      "exact_path_worktree_probes": [
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/c3",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/cm-full-audit-20261013",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/g3-grouped-r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/g3p",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/g3r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/g4d",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/g4fexec",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/g4fix",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-370",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-370-train",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-beh",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-bridge",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-collect-e951584",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-cudaeq",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-m1ladder",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-seed181-rep",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-xg2h",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/g5-state",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/g5cfgeo",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/main-readme-sync",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/o0c-minimal-runner-impl",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-n3-validated-evidence-analysis",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-seed180-recovery-exec-c34a80e",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/p3w7-calibration-authority",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/r181-replacement",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/r182",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage80a_conservative_stage75v2_bridge.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba-K",
+          "worktree_accessible": true
+        }
+      ],
+      "exact_saved_historical_version_matches": [],
+      "exact_saved_inventory_matches": [],
+      "global_absence_established": false,
+      "lfs_probe": "NO_ORIGINAL_POINTER_OR_OID_FOR_THIS_LITERAL; content-addressed LFS cannot identify a missing pathname. Prior known LFS recovery reused, not repeated.",
+      "literal": {
+        "commit_or_tree": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571",
+        "not_proof_of_global_absence": true,
+        "path": "data/stage80a_conservative_stage75v2_bridge.json",
+        "status": "NOT_PRESENT_AT_INSPECTED_SOURCE_OBJECT"
+      },
+      "renamed_substitution_authorized": false
+    },
+    "DEBT-5cc5383dc4a18340fead": {
+      "exact_path_worktree_probes": [
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/c3",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/cm-full-audit-20261013",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/g3-grouped-r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/g3p",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/g3r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4d",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4fexec",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4fix",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4k-370",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4k-370-train",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4k-beh",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4k-bridge",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4k-collect-e951584",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4k-cudaeq",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4k-m1ladder",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4k-seed181-rep",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4k-xg2h",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/g5-state",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/g5cfgeo",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/main-readme-sync",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/o0c-minimal-runner-impl",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-n3-validated-evidence-analysis",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-seed180-recovery-exec-c34a80e",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/p3w7-calibration-authority",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/r181-replacement",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/r182",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba-K",
+          "worktree_accessible": true
+        }
+      ],
+      "exact_saved_historical_version_matches": [],
+      "exact_saved_inventory_matches": [],
+      "global_absence_established": false,
+      "lfs_probe": "NO_ORIGINAL_POINTER_OR_OID_FOR_THIS_LITERAL; content-addressed LFS cannot identify a missing pathname. Prior known LFS recovery reused, not repeated.",
+      "literal": {
+        "commit_or_tree": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571",
+        "not_proof_of_global_absence": true,
+        "path": "reports/stage148a_route_order_broader_summary/stage148a_route_order_broader_summary_report.json",
+        "status": "NOT_PRESENT_AT_INSPECTED_SOURCE_OBJECT"
+      },
+      "renamed_substitution_authorized": false
+    },
+    "DEBT-7d78449e860b0e6c721c": {
+      "exact_path_worktree_probes": [
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/c3",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/cm-full-audit-20261013",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/g3-grouped-r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/g3p",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/g3r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4d",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4fexec",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4fix",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4k-370",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4k-370-train",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4k-beh",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4k-bridge",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4k-collect-e951584",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4k-cudaeq",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4k-m1ladder",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4k-seed181-rep",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/g4k-xg2h",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/g5-state",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/g5cfgeo",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/main-readme-sync",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/o0c-minimal-runner-impl",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-n3-validated-evidence-analysis",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-seed180-recovery-exec-c34a80e",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/p3w7-calibration-authority",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/r181-replacement",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/r182",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba-K",
+          "worktree_accessible": true
+        }
+      ],
+      "exact_saved_historical_version_matches": [],
+      "exact_saved_inventory_matches": [],
+      "global_absence_established": false,
+      "lfs_probe": "NO_ORIGINAL_POINTER_OR_OID_FOR_THIS_LITERAL; content-addressed LFS cannot identify a missing pathname. Prior known LFS recovery reused, not repeated.",
+      "literal": {
+        "commit_or_tree": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571",
+        "not_proof_of_global_absence": true,
+        "path": "reports/stage146a_v2_external_generalization_summary/stage146a_v2_external_generalization_summary_report.json",
+        "status": "NOT_PRESENT_AT_INSPECTED_SOURCE_OBJECT"
+      },
+      "renamed_substitution_authorized": false
+    },
+    "DEBT-a320ca5be694655d8686": {
+      "exact_path_worktree_probes": [
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/c3",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/cm-full-audit-20261013",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/g3-grouped-r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/g3p",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/g3r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/g4d",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/g4fexec",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/g4fix",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-370",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-370-train",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-beh",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-bridge",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-collect-e951584",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-cudaeq",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-m1ladder",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-seed181-rep",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-xg2h",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/g5-state",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/g5cfgeo",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/main-readme-sync",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/o0c-minimal-runner-impl",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-n3-validated-evidence-analysis",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-seed180-recovery-exec-c34a80e",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/p3w7-calibration-authority",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/r181-replacement",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/r182",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage31_coverage_entailment_probe.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba-K",
+          "worktree_accessible": true
+        }
+      ],
+      "exact_saved_historical_version_matches": [],
+      "exact_saved_inventory_matches": [],
+      "global_absence_established": false,
+      "lfs_probe": "NO_ORIGINAL_POINTER_OR_OID_FOR_THIS_LITERAL; content-addressed LFS cannot identify a missing pathname. Prior known LFS recovery reused, not repeated.",
+      "literal": {
+        "commit_or_tree": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571",
+        "not_proof_of_global_absence": true,
+        "path": "data/stage31_coverage_entailment_probe.json",
+        "status": "NOT_PRESENT_AT_INSPECTED_SOURCE_OBJECT"
+      },
+      "renamed_substitution_authorized": false
+    },
+    "DEBT-ba055f67b9646c4c5898": {
+      "exact_path_worktree_probes": [
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/c3",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/cm-full-audit-20261013",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g3-grouped-r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g3p",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g3r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4d",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4fexec",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4fix",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-370",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-370-train",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-beh",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-bridge",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-collect-e951584",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-cudaeq",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-m1ladder",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-seed181-rep",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g4k-xg2h",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g5-state",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/g5cfgeo",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/main-readme-sync",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/o0c-minimal-runner-impl",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-n3-validated-evidence-analysis",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-seed180-recovery-exec-c34a80e",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/p3w7-calibration-authority",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/r181-replacement",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/r182",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage34a_heldout_coverage_probe.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba-K",
+          "worktree_accessible": true
+        }
+      ],
+      "exact_saved_historical_version_matches": [],
+      "exact_saved_inventory_matches": [],
+      "global_absence_established": false,
+      "lfs_probe": "NO_ORIGINAL_POINTER_OR_OID_FOR_THIS_LITERAL; content-addressed LFS cannot identify a missing pathname. Prior known LFS recovery reused, not repeated.",
+      "literal": {
+        "commit_or_tree": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571",
+        "not_proof_of_global_absence": true,
+        "path": "data/stage34a_heldout_coverage_probe.json",
+        "status": "NOT_PRESENT_AT_INSPECTED_SOURCE_OBJECT"
+      },
+      "renamed_substitution_authorized": false
+    },
+    "DEBT-d119d59547e8fb42b4c0": {
+      "exact_path_worktree_probes": [
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/c3",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/cm-full-audit-20261013",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/g3-grouped-r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/g3p",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/g3r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/g4d",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/g4fexec",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/g4fix",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-370",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-370-train",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-beh",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-bridge",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-collect-e951584",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-cudaeq",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-m1ladder",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-seed181-rep",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/g4k-xg2h",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/g5-state",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/g5cfgeo",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/main-readme-sync",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/o0c-minimal-runner-impl",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-n3-validated-evidence-analysis",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-seed180-recovery-exec-c34a80e",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/p3w7-calibration-authority",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/r181-replacement",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/r182",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "data/stage57_nonleaking_external_bridge.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba-K",
+          "worktree_accessible": true
+        }
+      ],
+      "exact_saved_historical_version_matches": [],
+      "exact_saved_inventory_matches": [],
+      "global_absence_established": false,
+      "lfs_probe": "NO_ORIGINAL_POINTER_OR_OID_FOR_THIS_LITERAL; content-addressed LFS cannot identify a missing pathname. Prior known LFS recovery reused, not repeated.",
+      "literal": {
+        "commit_or_tree": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571",
+        "not_proof_of_global_absence": true,
+        "path": "data/stage57_nonleaking_external_bridge.json",
+        "status": "NOT_PRESENT_AT_INSPECTED_SOURCE_OBJECT"
+      },
+      "renamed_substitution_authorized": false
+    },
+    "DEBT-daa920260802e7e33fad": {
+      "exact_path_worktree_probes": [
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/c3",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/cm-full-audit-20261013",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/g3-grouped-r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/g3p",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/g3r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/g4d",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/g4fexec",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/g4fix",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/g4k-370",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/g4k-370-train",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/g4k-beh",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/g4k-bridge",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/g4k-collect-e951584",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/g4k-cudaeq",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/g4k-m1ladder",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/g4k-seed181-rep",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/g4k-xg2h",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/g5-state",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/g5cfgeo",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/main-readme-sync",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/o0c-minimal-runner-impl",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/p3w7-a0-n3-validated-evidence-analysis",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/p3w7-a0-seed180-recovery-exec-c34a80e",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/p3w7-calibration-authority",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/r181-replacement",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/r182",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba-K",
+          "worktree_accessible": true
+        }
+      ],
+      "exact_saved_historical_version_matches": [],
+      "exact_saved_inventory_matches": [],
+      "global_absence_established": false,
+      "lfs_probe": "NO_ORIGINAL_POINTER_OR_OID_FOR_THIS_LITERAL; content-addressed LFS cannot identify a missing pathname. Prior known LFS recovery reused, not repeated.",
+      "literal": {
+        "commit_or_tree": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571",
+        "not_proof_of_global_absence": true,
+        "path": "reports/reason_router_gen4_feature_identifiability_static_audit_candidate.md",
+        "status": "NOT_PRESENT_AT_INSPECTED_SOURCE_OBJECT"
+      },
+      "renamed_substitution_authorized": false
+    },
+    "DEBT-fdc2ffcf66170bd413df": {
+      "exact_path_worktree_probes": [
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/c3",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/cm-full-audit-20261013",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/g3-grouped-r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/g3p",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/g3r",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/g4d",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/g4fexec",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/g4fix",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/g4k-370",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/g4k-370-train",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/g4k-beh",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/g4k-bridge",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/g4k-collect-e951584",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/g4k-cudaeq",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/g4k-m1ladder",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/g4k-seed181-rep",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/g4k-xg2h",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/g5-state",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/g5cfgeo",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/main-readme-sync",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/o0c-minimal-runner-impl",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-n3-validated-evidence-analysis",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/p3w7-a0-seed180-recovery-exec-c34a80e",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/p3w7-calibration-authority",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/r181-replacement",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/r182",
+          "worktree_accessible": true
+        },
+        {
+          "exact_literal_path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+          "present": false,
+          "worktree": "C:/Users/Home1/Desktop/ContraMamba-K",
+          "worktree_accessible": true
+        }
+      ],
+      "exact_saved_historical_version_matches": [],
+      "exact_saved_inventory_matches": [],
+      "global_absence_established": false,
+      "lfs_probe": "NO_ORIGINAL_POINTER_OR_OID_FOR_THIS_LITERAL; content-addressed LFS cannot identify a missing pathname. Prior known LFS recovery reused, not repeated.",
+      "literal": {
+        "commit_or_tree": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571",
+        "not_proof_of_global_absence": true,
+        "path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.json",
+        "status": "NOT_PRESENT_AT_INSPECTED_SOURCE_OBJECT"
+      },
+      "renamed_substitution_authorized": false
+    }
+  },
+  "processed_debt_ids": [
+    "DEBT-0d1d0a7ad7523f000d85",
+    "DEBT-147516d2245e65ef7877",
+    "DEBT-1480092155660ecc4b94",
+    "DEBT-1cf50c30919cd0b245ba",
+    "DEBT-32f22d34f2c93d589cb2",
+    "DEBT-387884db8795c1eac6d9",
+    "DEBT-47b36522bccf8d604114",
+    "DEBT-51e7432f4b224b836902",
+    "DEBT-5a7b2e16bc74b4cb21ff",
+    "DEBT-5cc5383dc4a18340fead",
+    "DEBT-7d78449e860b0e6c721c",
+    "DEBT-a320ca5be694655d8686",
+    "DEBT-ba055f67b9646c4c5898",
+    "DEBT-d119d59547e8fb42b4c0",
+    "DEBT-daa920260802e7e33fad",
+    "DEBT-fdc2ffcf66170bd413df"
+  ],
+  "unprocessed_literal_ids": [],
+  "worktree_inventory": "worktree C:/Users/Home1/Desktop/ContraMamba\nHEAD b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7\nbranch refs/heads/iclr2027-mamba-five-scale-paper\n\nworktree C:/c3\nHEAD 3e0e9a435068c552abf20f3a74e0c3eccca344a3\ndetached\n\nworktree C:/cm-full-audit-20261013\nHEAD ff806bd5bd8efc62fcf6420cf8b097a63ed70571\ndetached\n\nworktree C:/g3-grouped-r\nHEAD 3e0e9a435068c552abf20f3a74e0c3eccca344a3\ndetached\n\nworktree C:/g3p\nHEAD d62c375e2d730f040717422d3951199b71dc688e\ndetached\n\nworktree C:/g3r\nHEAD d62c375e2d730f040717422d3951199b71dc688e\ndetached\n\nworktree C:/g4d\nHEAD 75b56b5b9390c0d1dcbbc38330d5dfdba8f44d75\ndetached\n\nworktree C:/g4fexec\nHEAD 1e28e8144163e3d2fe5faa5ff2ec01b3d077ca68\ndetached\n\nworktree C:/g4fix\nHEAD a738b4c169d30b0a7e21563c3aba2c29c481c456\nbranch refs/heads/gen4-phase-d-cache-validator-correction\n\nworktree C:/g4k-370\nHEAD ea03cdaa5394de03389d31aa1089b51e10340a57\nbranch refs/heads/gen4-mamba370m-core-replication\n\nworktree C:/g4k-370-train\nHEAD 3e0e9a435068c552abf20f3a74e0c3eccca344a3\ndetached\n\nworktree C:/g4k-beh\nHEAD 27ad8cd9a0962bf6e5e3c79c5a7e277e54a86317\nbranch refs/heads/gen4-behavioral-restoration-bridge\n\nworktree C:/g4k-bridge\nHEAD 8496ece911e0d461f0abbdf1a0fa619f8a2f22ab\nbranch refs/heads/gen4-k-directional-alignment-transport\n\nworktree C:/g4k-collect-e951584\nHEAD e951584e5d9e016d648ddf08c6b56b02b1d7ebb0\ndetached\n\nworktree C:/g4k-cudaeq\nHEAD 88de940d1b24b4b02c670a9ae67a2046aa082b38\nbranch refs/heads/gen4-k-family-subspace-sensitivity\n\nworktree C:/g4k-m1ladder\nHEAD 3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69\nbranch refs/heads/gen4-mamba1-five-scale-ladder-extension\n\nworktree C:/g4k-seed181-rep\nHEAD 18a14e7cf07de24c5cb8b3ad3b421337324fcebd\nbranch refs/heads/g4k-seed181-checkpoint-replication-prep\n\nworktree C:/g4k-xg2h\nHEAD 2c237fa7d2f4d2fdf7029826599a164c69455f36\nbranch refs/heads/gen4-k-xg2-basis-holdout\n\nworktree C:/g5-state\nHEAD ff806bd5bd8efc62fcf6420cf8b097a63ed70571\nbranch refs/heads/gen5-causal-role-state-ownership\n\nworktree C:/g5cfgeo\nHEAD 593199d8e849572fc77b1b0bc7475d3d19468d12\nbranch refs/heads/gen4-mamba1-five-scale-coordinate-free-geometry\n\nworktree C:/main-readme-sync\nHEAD ca1419603f397aaf4e157504c15b58cb403377de\nbranch refs/heads/main-readme-sync\n\nworktree C:/o0c-minimal-runner-impl\nHEAD ff2fb076f6e66a34a632515bb8502d8b1c90ad7f\nbranch refs/heads/o0c-minimal-scientific-runner-implementation\n\nworktree C:/p3w7-a0-n3-validated-evidence-analysis\nHEAD 91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea\nbranch refs/heads/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2\n\nworktree C:/p3w7-a0-seed180-recovery-exec-c34a80e\nHEAD b32d73dfa49b6b9dfabf3093802904323cf679cd\nbranch refs/heads/p3w7-a0-seed180-normal-reference-freeze\n\nworktree C:/p3w7-calibration-authority\nHEAD ba3fd1a82cba029dac05ba38a86d518252ab858f\nbranch refs/heads/p3w7-current-lineage-calibration-authority\n\nworktree C:/r181-replacement\nHEAD fb4f0e2c2a8382a642f1272b66f29552adaecb0e\nbranch refs/heads/p3w7-a0-seed181-replacement-result\n\nworktree C:/r182\nHEAD 82739bdfc8eee184de10ed8f55434f203a6d59a5\nbranch refs/heads/p3w7-a0-seed182-result\n\nworktree C:/Users/Home1/Desktop/ContraMamba-K\nHEAD 5f5f4d6a80085ad8baf43445475d1c3049535c22\nbranch refs/heads/longterm-k-series-native-state-kinematics"
+}

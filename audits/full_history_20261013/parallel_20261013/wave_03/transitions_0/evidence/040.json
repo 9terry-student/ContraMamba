@@ -1,0 +1,565 @@
+{
+  "shard_ordinal": 40,
+  "original_queue_id": "WORK-60424acd55fdf551a69d",
+  "original_source_ids": [
+    "HV000788"
+  ],
+  "original_source_identity": {
+    "commit": "ab950951323fbcdcce6ed1cc8df4a138eb38e1b5",
+    "path": "scripts/evaluate_stage34_heldout_coverage.py",
+    "blob": "11d489e6eb7b07e30ab77df269f670bc29050be7",
+    "object_type": "commit",
+    "bytes": 20576,
+    "sha256": "4d94a003c7d2b08413b751180efc898f098f3d3918400c3f25fe47f1f637e983"
+  },
+  "before": {
+    "commit": "f5b59dbff233a9b7e3cb932eb4b30c165e44bd3a",
+    "path": "scripts/evaluate_stage34_heldout_coverage.py",
+    "blob": "c5717dad60f5b63253bca6f9a5503db578c7de9a",
+    "object_type": "commit",
+    "bytes": 15887,
+    "sha256": "b7b1a6b046d01ac50b68c9da8f72b8050966a7eb225edf2f4abc150803997ad1"
+  },
+  "after": {
+    "commit": "ab950951323fbcdcce6ed1cc8df4a138eb38e1b5",
+    "path": "scripts/evaluate_stage34_heldout_coverage.py",
+    "blob": "11d489e6eb7b07e30ab77df269f670bc29050be7",
+    "object_type": "commit",
+    "bytes": 20576,
+    "sha256": "4d94a003c7d2b08413b751180efc898f098f3d3918400c3f25fe47f1f637e983"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0101"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "compute_stage34_counters",
+      "decide",
+      "group_metrics",
+      "infer_expected_route",
+      "infer_stage34_family",
+      "infer_stage34_relation",
+      "main",
+      "metadata_status",
+      "resolve_expected_route",
+      "resolve_group",
+      "resolve_stage34_family",
+      "resolve_stage34_relation",
+      "write_markdown"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 5 removed/replaced lines and 147 added/replaced lines in 13 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "87ff0cb95f7c2b48ed28e2c3ee9b3037d4728cd8",
+      "blob": "c5717dad60f5b63253bca6f9a5503db578c7de9a"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 119,
+      "before_end_exclusive": 119,
+      "after_start": 119,
+      "after_end_exclusive": 222,
+      "before": [],
+      "after": [
+        "def resolve_group(row: dict[str, Any]) -> str:",
+        "    for key in (",
+        "        \"group\",",
+        "        \"intervention_type\",",
+        "        \"normalized_intervention\",",
+        "        \"primary_failure_type\",",
+        "    ):",
+        "        value = row.get(key)",
+        "        if value not in (None, \"\"):",
+        "            return str(value)",
+        "    return \"UNKNOWN\"",
+        "",
+        "",
+        "def infer_stage34_family(group: str) -> str:",
+        "    key = group.lower()",
+        "    if any(token in key for token in (",
+        "        \"whole_to_part\",",
+        "        \"part_to_whole\",",
+        "        \"collection\",",
+        "        \"member\",",
+        "        \"region\",",
+        "        \"subregion\",",
+        "        \"category\",",
+        "        \"subcategory\",",
+        "        \"role\",",
+        "        \"specialized_role\",",
+        "        \"material\",",
+        "        \"variant\",",
+        "    )):",
+        "        return \"whole_part_family\"",
+        "    if any(token in key for token in (",
+        "        \"all_to_some\",",
+        "        \"some_to_all\",",
+        "        \"none_to_some\",",
+        "        \"some_to_none\",",
+        "        \"only_to_base\",",
+        "        \"also_to_only\",",
+        "    )):",
+        "        return \"logical_quantifier_family\"",
+        "    if \"specific_to_general\" in key or \"general_to_specific\" in key:",
+        "        return \"specific_general_family\"",
+        "    return \"unknown_family\"",
+        "",
+        "",
+        "def resolve_stage34_family(row: dict[str, Any], group: str) -> str:",
+        "    value = row.get(\"stage34_family\")",
+        "    if value not in (None, \"\"):",
+        "        return str(value)",
+        "    return infer_stage34_family(group)",
+        "",
+        "",
+        "def infer_stage34_relation(group: str) -> str:",
+        "    key = group.lower()",
+        "    if key.startswith(\"heldout_\"):",
+        "        key = key[len(\"heldout_\"):]",
+        "    for suffix in (\"_support\", \"_not_entitled\", \"_refute\"):",
+        "        if key.endswith(suffix):",
+        "            return key[: -len(suffix)]",
+        "    return \"unknown_relation\"",
+        "",
+        "",
+        "def resolve_stage34_relation(row: dict[str, Any], group: str) -> str:",
+        "    value = row.get(\"stage34_relation\")",
+        "    if value not in (None, \"\"):",
+        "        return str(value)",
+        "    return infer_stage34_relation(group)",
+        "",
+        "",
+        "def infer_expected_route(group: str) -> str:",
+        "    key = group.lower()",
+        "    if key.endswith(\"_support\"):",
+        "        return \"ENTAILMENT_PRESERVE\"",
+        "    if key.endswith(\"_refute\"):",
+        "        return \"CONTRADICTION_REFUTE\"",
+        "    if key.endswith(\"_not_entitled\"):",
+        "        return \"OVERCLAIM_NE\"",
+        "    return \"unknown\"",
+        "",
+        "",
+        "def resolve_expected_route(row: dict[str, Any], group: str) -> str:",
+        "    value = row.get(\"stage34_expected_route\")",
+        "    if value not in (None, \"\"):",
+        "        return str(value)",
+        "    return infer_expected_route(group)",
+        "",
+        "",
+        "def metadata_status(rows: list[dict[str, Any]]) -> dict[str, Any]:",
+        "    groups = [resolve_group(row) for row in rows]",
+        "    unknown_count = sum(group == \"UNKNOWN\" for group in groups)",
+        "    has_any_stage34 = any(",
+        "        row.get(\"stage34_family\") not in (None, \"\")",
+        "        or row.get(\"stage34_relation\") not in (None, \"\")",
+        "        or row.get(\"stage34_expected_route\") not in (None, \"\")",
+        "        or resolve_group(row) != \"UNKNOWN\"",
+        "        for row in rows",
+        "    )",
+        "    return {",
+        "        \"metadata_available\": bool(has_any_stage34 and unknown_count < len(rows)),",
+        "        \"unknown_group_count\": unknown_count,",
+        "        \"unknown_group_rate\": round(unknown_count / max(1, len(rows)), 4),",
+        "    }",
+        "",
+        ""
+      ],
+      "before_context": [
+        "    raise ValueError(f\"Could not detect {role} field; tried {candidates}\")",
+        "",
+        "",
+        "def prediction_metrics(golds: list[str], preds: list[str]) -> dict[str, Any]:",
+        "    accuracy = sum(g == p for g, p in zip(golds, preds)) / max(1, len(golds))",
+        "    per_class: dict[str, dict[str, float]] = {}"
+      ],
+      "after_context": [
+        "    raise ValueError(f\"Could not detect {role} field; tried {candidates}\")",
+        "",
+        "",
+        "def prediction_metrics(golds: list[str], preds: list[str]) -> dict[str, Any]:",
+        "    accuracy = sum(g == p for g, p in zip(golds, preds)) / max(1, len(golds))",
+        "    per_class: dict[str, dict[str, float]] = {}"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 153,
+      "before_end_exclusive": 154,
+      "after_start": 256,
+      "after_end_exclusive": 257,
+      "before": [
+        "        grouped[str(row.get(\"group\", \"MISSING\"))].append(row)"
+      ],
+      "after": [
+        "        grouped[resolve_group(row)].append(row)"
+      ],
+      "before_context": [
+        ") -> dict[str, Any]:",
+        "    grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)",
+        "    for row in rows:",
+        "    out: dict[str, Any] = {}",
+        "    for group, group_rows in sorted(grouped.items()):",
+        "        golds = [normalize_label(row[gold_field]) for row in group_rows]"
+      ],
+      "after_context": [
+        ") -> dict[str, Any]:",
+        "    grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)",
+        "    for row in rows:",
+        "    out: dict[str, Any] = {}",
+        "    for group, group_rows in sorted(grouped.items()):",
+        "        golds = [normalize_label(row[gold_field]) for row in group_rows]"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 181,
+      "before_end_exclusive": 181,
+      "after_start": 284,
+      "after_end_exclusive": 287,
+      "before": [],
+      "after": [
+        "    family_counts = Counter()",
+        "    relation_counts = Counter()",
+        "    expected_route_counts = Counter()"
+      ],
+      "before_context": [
+        "    route_counts = Counter()",
+        "    reason_counts = Counter()",
+        "    match_counts = Counter()",
+        "    for row in rows:",
+        "        group = str(row.get(\"group\", \"\"))",
+        "        gold = normalize_label(row[gold_field])"
+      ],
+      "after_context": [
+        "    route_counts = Counter()",
+        "    reason_counts = Counter()",
+        "    match_counts = Counter()",
+        "    for row in rows:",
+        "        group = resolve_group(row)",
+        "        family = resolve_stage34_family(row, group)"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 182,
+      "before_end_exclusive": 183,
+      "after_start": 288,
+      "after_end_exclusive": 292,
+      "before": [
+        "        group = str(row.get(\"group\", \"\"))"
+      ],
+      "after": [
+        "        group = resolve_group(row)",
+        "        family = resolve_stage34_family(row, group)",
+        "        relation = resolve_stage34_relation(row, group)",
+        "        expected_route = resolve_expected_route(row, group)"
+      ],
+      "before_context": [
+        "    reason_counts = Counter()",
+        "    match_counts = Counter()",
+        "    for row in rows:",
+        "        gold = normalize_label(row[gold_field])",
+        "        current = normalize_label(row[current_field])",
+        "        shadow = normalize_label(row[shadow_field])"
+      ],
+      "after_context": [
+        "    relation_counts = Counter()",
+        "    expected_route_counts = Counter()",
+        "    for row in rows:",
+        "        gold = normalize_label(row[gold_field])",
+        "        current = normalize_label(row[current_field])",
+        "        shadow = normalize_label(row[shadow_field])"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 193,
+      "before_end_exclusive": 193,
+      "after_start": 302,
+      "after_end_exclusive": 305,
+      "before": [],
+      "after": [
+        "        family_counts[family] += 1",
+        "        relation_counts[relation] += 1",
+        "        expected_route_counts[expected_route] += 1"
+      ],
+      "before_context": [
+        "        reason_counts[reason] += 1",
+        "        if match:",
+        "            match_counts[match] += 1",
+        "",
+        "        if gold == \"NOT_ENTITLED\" and shadow == \"SUPPORT\":",
+        "            counters[\"heldout_overclaim_to_support\"] += 1"
+      ],
+      "after_context": [
+        "        reason_counts[reason] += 1",
+        "        if match:",
+        "            match_counts[match] += 1",
+        "",
+        "        if gold == \"NOT_ENTITLED\" and shadow == \"SUPPORT\":",
+        "            counters[\"heldout_overclaim_to_support\"] += 1"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 260,
+      "before_end_exclusive": 260,
+      "after_start": 372,
+      "after_end_exclusive": 375,
+      "before": [],
+      "after": [
+        "    out[\"stage34_family_counts\"] = dict(family_counts)",
+        "    out[\"stage34_relation_counts\"] = dict(relation_counts)",
+        "    out[\"stage34_expected_route_counts\"] = dict(expected_route_counts)"
+      ],
+      "before_context": [
+        "    out[\"stage33_reason_counts\"] = dict(reason_counts)",
+        "    out[\"stage33_whole_part_match_counts\"] = dict(match_counts)",
+        "    out[\"stage33_whole_part_direct_support_block_reason_counts\"] = dict(block_reasons)",
+        "    return out",
+        "",
+        ""
+      ],
+      "after_context": [
+        "    out[\"stage33_reason_counts\"] = dict(reason_counts)",
+        "    out[\"stage33_whole_part_match_counts\"] = dict(match_counts)",
+        "    out[\"stage33_whole_part_direct_support_block_reason_counts\"] = dict(block_reasons)",
+        "    return out",
+        "",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 263,
+      "before_end_exclusive": 264,
+      "after_start": 378,
+      "after_end_exclusive": 384,
+      "before": [
+        "def decide(current_metrics: dict[str, Any], shadow_metrics: dict[str, Any], counters: dict[str, Any]) -> dict[str, str]:"
+      ],
+      "after": [
+        "def decide(",
+        "    current_metrics: dict[str, Any],",
+        "    shadow_metrics: dict[str, Any],",
+        "    counters: dict[str, Any],",
+        "    metadata: dict[str, Any],",
+        ") -> dict[str, Any]:"
+      ],
+      "before_context": [
+        "    return out",
+        "",
+        "",
+        "    macro_delta = shadow_metrics[\"macro_f1\"] - current_metrics[\"macro_f1\"]",
+        "    support_gain = (",
+        "        counters[\"heldout_support_shadow_support\"]"
+      ],
+      "after_context": [
+        "    return out",
+        "",
+        "",
+        "    macro_delta = shadow_metrics[\"macro_f1\"] - current_metrics[\"macro_f1\"]",
+        "    if not metadata[\"metadata_available\"]:",
+        "        return {"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 265,
+      "before_end_exclusive": 265,
+      "after_start": 385,
+      "after_end_exclusive": 395,
+      "before": [],
+      "after": [
+        "    if not metadata[\"metadata_available\"]:",
+        "        return {",
+        "            \"label\": \"STAGE34A_METADATA_MISSING_DIAGNOSTIC_INVALID\",",
+        "            \"reason\": (",
+        "                \"Held-out metadata is absent from prediction rows; aggregate metrics \"",
+        "                \"are available but group-specific generalization cannot be claimed.\"",
+        "            ),",
+        "            \"aggregate_shadow_macro_f1\": shadow_metrics[\"macro_f1\"],",
+        "            \"aggregate_delta_macro_f1\": round(macro_delta, 4),",
+        "        }"
+      ],
+      "before_context": [
+        "",
+        "def decide(current_metrics: dict[str, Any], shadow_metrics: dict[str, Any], counters: dict[str, Any]) -> dict[str, str]:",
+        "    macro_delta = shadow_metrics[\"macro_f1\"] - current_metrics[\"macro_f1\"]",
+        "    support_gain = (",
+        "        counters[\"heldout_support_shadow_support\"]",
+        "        - counters[\"heldout_support_current_support\"]"
+      ],
+      "after_context": [
+        "    metadata: dict[str, Any],",
+        ") -> dict[str, Any]:",
+        "    macro_delta = shadow_metrics[\"macro_f1\"] - current_metrics[\"macro_f1\"]",
+        "    support_gain = (",
+        "        counters[\"heldout_support_shadow_support\"]",
+        "        - counters[\"heldout_support_current_support\"]"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 278,
+      "before_end_exclusive": 279,
+      "after_start": 408,
+      "after_end_exclusive": 414,
+      "before": [
+        "    if support_gain >= 20 and macro_delta >= -0.02:"
+      ],
+      "after": [
+        "    if (",
+        "        support_gain >= 20",
+        "        and counters[\"heldout_whole_to_part_support_recovered\"] >= 20",
+        "        and counters[\"heldout_part_to_whole_ne_preserved\"] >= 20",
+        "        and macro_delta >= -0.02",
+        "    ):"
+      ],
+      "before_context": [
+        "            \"label\": \"STAGE34A_HELDOUT_UNSAFE\",",
+        "            \"reason\": \"Held-out overclaim/refute rows were routed to SUPPORT.\",",
+        "        }",
+        "        return {",
+        "            \"label\": \"STAGE34A_HELDOUT_GENERALIZATION_PROMISING\",",
+        "            \"reason\": \"Held-out SUPPORT recovery improves without safety errors or collapse.\","
+      ],
+      "after_context": [
+        "            \"label\": \"STAGE34A_HELDOUT_UNSAFE\",",
+        "            \"reason\": \"Held-out overclaim/refute rows were routed to SUPPORT.\",",
+        "        }",
+        "        return {",
+        "            \"label\": \"STAGE34A_HELDOUT_GENERALIZATION_PROMISING\",",
+        "            \"reason\": \"Held-out SUPPORT recovery improves without safety errors or collapse.\","
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 310,
+      "before_end_exclusive": 310,
+      "after_start": 445,
+      "after_end_exclusive": 447,
+      "before": [],
+      "after": [
+        "        f\"- Metadata available: {report['metadata_status']['metadata_available']}\",",
+        "        f\"- Unknown group rows: {report['metadata_status']['unknown_group_count']}\","
+      ],
+      "before_context": [
+        "        f\"- Rows: {report['row_count']}\",",
+        "        f\"- Decision: `{report['decision']['label']}`\",",
+        "        f\"- Decision reason: {report['decision']['reason']}\",",
+        "        \"\",",
+        "        \"## Metrics\",",
+        "        f\"- Current accuracy: {report['current_metrics']['accuracy']:.4f}\","
+      ],
+      "after_context": [
+        "        f\"- Rows: {report['row_count']}\",",
+        "        f\"- Decision: `{report['decision']['label']}`\",",
+        "        f\"- Decision reason: {report['decision']['reason']}\",",
+        "        \"\",",
+        "        \"## Metrics\",",
+        "        f\"- Current accuracy: {report['current_metrics']['accuracy']:.4f}\","
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 333,
+      "before_end_exclusive": 333,
+      "after_start": 470,
+      "after_end_exclusive": 473,
+      "before": [],
+      "after": [
+        "        (\"Stage34 Family Counts\", \"stage34_family_counts\"),",
+        "        (\"Stage34 Relation Counts\", \"stage34_relation_counts\"),",
+        "        (\"Stage34 Expected Route Counts\", \"stage34_expected_route_counts\"),"
+      ],
+      "before_context": [
+        "        (\"Stage33 Route Counts\", \"stage33_route_counts\"),",
+        "        (\"Stage33 Reason Counts\", \"stage33_reason_counts\"),",
+        "        (\"Whole/Part Match Counts\", \"stage33_whole_part_match_counts\"),",
+        "    ):",
+        "        lines.extend([\"\", f\"## {title}\", \"| Value | Count |\", \"|---|---:|\"])",
+        "        for name, count in sorted(report[\"stage34_counters\"][key].items()):"
+      ],
+      "after_context": [
+        "        (\"Stage33 Route Counts\", \"stage33_route_counts\"),",
+        "        (\"Stage33 Reason Counts\", \"stage33_reason_counts\"),",
+        "        (\"Whole/Part Match Counts\", \"stage33_whole_part_match_counts\"),",
+        "    ):",
+        "        lines.extend([\"\", f\"## {title}\", \"| Value | Count |\", \"|---|---:|\"])",
+        "        for name, count in sorted(report[\"stage34_counters\"][key].items()):"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 370,
+      "before_end_exclusive": 370,
+      "after_start": 510,
+      "after_end_exclusive": 511,
+      "before": [],
+      "after": [
+        "    metadata = metadata_status(rows)"
+      ],
+      "before_context": [
+        "    current_metrics = prediction_metrics(golds, current)",
+        "    shadow_metrics = prediction_metrics(golds, shadow)",
+        "    counters = compute_stage34_counters(rows, gold_field, current_field, shadow_field)",
+        "    report = {",
+        "        \"run_name\": args.run_name,",
+        "        \"predictions_file\": args.predictions_file,"
+      ],
+      "after_context": [
+        "    current_metrics = prediction_metrics(golds, current)",
+        "    shadow_metrics = prediction_metrics(golds, shadow)",
+        "    counters = compute_stage34_counters(rows, gold_field, current_field, shadow_field)",
+        "    report = {",
+        "        \"run_name\": args.run_name,",
+        "        \"predictions_file\": args.predictions_file,"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 391,
+      "before_end_exclusive": 392,
+      "after_start": 532,
+      "after_end_exclusive": 534,
+      "before": [
+        "        \"decision\": decide(current_metrics, shadow_metrics, counters),"
+      ],
+      "after": [
+        "        \"metadata_status\": metadata,",
+        "        \"decision\": decide(current_metrics, shadow_metrics, counters, metadata),"
+      ],
+      "before_context": [
+        "        },",
+        "        \"group_metrics\": group_metrics(rows, gold_field, current_field, shadow_field),",
+        "        \"stage34_counters\": counters,",
+        "        \"leakage_policy\": (",
+        "            \"Diagnostic-only. Do not use for training, calibration, threshold \"",
+        "            \"selection, loss, or checkpoint selection.\""
+      ],
+      "after_context": [
+        "        },",
+        "        \"group_metrics\": group_metrics(rows, gold_field, current_field, shadow_field),",
+        "        \"stage34_counters\": counters,",
+        "        \"leakage_policy\": (",
+        "            \"Diagnostic-only. Do not use for training, calibration, threshold \"",
+        "            \"selection, loss, or checkpoint selection.\""
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1601 @@
+header=f30d0d0a00000000fb4b396a23130000
+/<module> vars=() names=('__future__', 'annotations', 'builtins', '@py_builtins', '_pytest.assertion.rewrite', 'assertion', 'rewrite', '@pytest_ar', 'pytest', 'torch', 'contramamba.losses', 'intervention_pairwise_losses', 'PAIR_IDS', 'INTERVENTIONS', 'ideal_output', 'test_ideal_intervention_relations_have_zero_loss', 'test_violations_produce_loss_and_gradients', 'test_pair_metadata_validation', 'test_frame_anchor_penalizes_jointly_low_preserved_frames', 'test_zero_symmetric_polarity_margins_are_anchored', 'test_opposite_nonzero_margins_are_preferred_to_zero')
+constants=[0, ('annotations',), None, ('intervention_pairwise_losses',), 'p', 6, ('none', 'paraphrase', 'predicate_swap', 'evidence_deletion', 'evidence_truncation', 'polarity_flip'), ('return', 'dict[str, torch.Tensor]'), ('return', 'None')]
+  0           RESUME                   0
+
+  1           LOAD_CONST               0 (0)
+              LOAD_CONST               1 (('annotations',))
+              IMPORT_NAME              0 (__future__)
+              IMPORT_FROM              1 (annotations)
+              STORE_NAME               1 (annotations)
+              POP_TOP
+
+  3           LOAD_CONST               0 (0)
+              LOAD_CONST               2 (None)
+              IMPORT_NAME              2 (builtins)
+              STORE_NAME               3 (@py_builtins)
+              LOAD_CONST               0 (0)
+              LOAD_CONST               2 (None)
+              IMPORT_NAME              4 (_pytest.assertion.rewrite)
+              IMPORT_FROM              5 (assertion)
+              SWAP                     2
+              POP_TOP
+              IMPORT_FROM              6 (rewrite)
+              STORE_NAME               7 (@pytest_ar)
+              POP_TOP
+              LOAD_CONST               0 (0)
+              LOAD_CONST               2 (None)
+              IMPORT_NAME              8 (pytest)
+              STORE_NAME               8 (pytest)
+
+  4           LOAD_CONST               0 (0)
+              LOAD_CONST               2 (None)
+              IMPORT_NAME              9 (torch)
+              STORE_NAME               9 (torch)
+
+  6           LOAD_CONST               0 (0)
+              LOAD_CONST               3 (('intervention_pairwise_losses',))
+              IMPORT_NAME             10 (contramamba.losses)
+              IMPORT_FROM             11 (intervention_pairwise_losses)
+              STORE_NAME              11 (intervention_pairwise_losses)
+              POP_TOP
+
+  9           LOAD_CONST               4 ('p')
+              BUILD_LIST               1
+              LOAD_CONST               5 (6)
+              BINARY_OP                5 (*)
+              STORE_NAME              12 (PAIR_IDS)
+
+ 10           BUILD_LIST               0
+              LOAD_CONST               6 (('none', 'paraphrase', 'predicate_swap', 'evidence_deletion', 'evidence_truncation', 'polarity_flip'))
+              LIST_EXTEND              1
+              STORE_NAME              13 (INTERVENTIONS)
+
+ 20           LOAD_CONST              14 (('return', 'dict[str, torch.Tensor]'))
+              LOAD_CONST               7 (<code object ideal_output at 0x0000021930C6D430, file "C:\Users\Home1\Desktop\ContraMamba\tests\test_intervention_losses.py", line 20>)
+              MAKE_FUNCTION
+              SET_FUNCTION_ATTRIBUTE   4 (annotations)
+              STORE_NAME              14 (ideal_output)
+
+ 49           LOAD_CONST              15 (('return', 'None'))
+              LOAD_CONST               8 (<code object test_ideal_intervention_relations_have_zero_loss at 0x00000219313B9DE0, file "C:\Users\Home1\Desktop\ContraMamba\tests\test_intervention_losses.py", line 49>)
+              MAKE_FUNCTION
+              SET_FUNCTION_ATTRIBUTE   4 (annotations)
+              STORE_NAME              15 (test_ideal_intervention_relations_have_zero_loss)
+
+ 74           LOAD_CONST              15 (('return', 'None'))
+              LOAD_CONST               9 (<code object test_violations_produce_loss_and_gradients at 0x00000219313BAB00, file "C:\Users\Home1\Desktop\ContraMamba\tests\test_intervention_losses.py", line 74>)
+              MAKE_FUNCTION
+              SET_FUNCTION_ATTRIBUTE   4 (annotations)
+              STORE_NAME              16 (test_violations_produce_loss_and_gradients)
+
+ 98           LOAD_CONST              15 (('return', 'None'))
+              LOAD_CONST              10 (<code object test_pair_metadata_validation at 0x0000021930EACB90, file "C:\Users\Home1\Desktop\ContraMamba\tests\test_intervention_losses.py", line 98>)
+              MAKE_FUNCTION
+              SET_FUNCTION_ATTRIBUTE   4 (annotations)
+              STORE_NAME              17 (test_pair_metadata_validation)
+
+114           LOAD_CONST              15 (('return', 'None'))
+              LOAD_CONST              11 (<code object test_frame_anchor_penalizes_jointly_low_preserved_frames at 0x000002192E5D77D0, file "C:\Users\Home1\Desktop\ContraMamba\tests\test_intervention_losses.py", line 114>)
+              MAKE_FUNCTION
+              SET_FUNCTION_ATTRIBUTE   4 (annotations)
+              STORE_NAME              18 (test_frame_anchor_penalizes_jointly_low_preserved_frames)
+
+127           LOAD_CONST              15 (('return', 'None'))
+              LOAD_CONST              12 (<code object test_zero_symmetric_polarity_margins_are_anchored at 0x000002192E5B7350, file "C:\Users\Home1\Desktop\ContraMamba\tests\test_intervention_losses.py", line 127>)
+              MAKE_FUNCTION
+              SET_FUNCTION_ATTRIBUTE   4 (annotations)
+              STORE_NAME              19 (test_zero_symmetric_polarity_margins_are_anchored)
+
+137           LOAD_CONST              15 (('return', 'None'))
+              LOAD_CONST              13 (<code object test_opposite_nonzero_margins_are_preferred_to_zero at 0x000002192E530AD0, file "C:\Users\Home1\Desktop\ContraMamba\tests\test_intervention_losses.py", line 137>)
+              MAKE_FUNCTION
+              SET_FUNCTION_ATTRIBUTE   4 (annotations)
+              STORE_NAME              20 (test_opposite_nonzero_margins_are_preferred_to_zero)
+              RETURN_CONST             2 (None)
+
+/<module>/ideal_output vars=() names=('torch', 'tensor')
+constants=[None, (1.0, 1.0, 1.0, -1.0, -1.0, 1.0), True, ('requires_grad',), (1.0, 1.0, 0.0, 1.0, 1.0, 1.0), (1.0, 1.0, 1.0, 0.0, 0.0, 1.0), (0.8, 0.8, 0.2, 0.1, 0.1, 0.8), (2.0, 2.0, 0.0, 0.0, 0.0, -2.0), (0.0, 0.0, 2.0), (0.0, 2.0, 0.0), (2.0, 0.0, 0.0), ('frame_logit', 'predicate_coverage_logit', 'sufficiency_logit', 'entitlement_prob', 'polarity_margin', 'logits')]
+ 20           RESUME                   0
+
+ 22           LOAD_GLOBAL              0 (torch)
+              LOAD_ATTR                2 (tensor)
+              PUSH_NULL
+              BUILD_LIST               0
+              LOAD_CONST               1 ((1.0, 1.0, 1.0, -1.0, -1.0, 1.0))
+              LIST_EXTEND              1
+              LOAD_CONST               2 (True)
+              LOAD_CONST               3 (('requires_grad',))
+              CALL_KW                  2
+
+ 23           LOAD_GLOBAL              0 (torch)
+              LOAD_ATTR                2 (tensor)
+              PUSH_NULL
+
+ 24           BUILD_LIST               0
+              LOAD_CONST               4 ((1.0, 1.0, 0.0, 1.0, 1.0, 1.0))
+              LIST_EXTEND              1
+              LOAD_CONST               2 (True)
+
+ 23           LOAD_CONST               3 (('requires_grad',))
+              CALL_KW                  2
+
+ 26           LOAD_GLOBAL              0 (torch)
+              LOAD_ATTR                2 (tensor)
+              PUSH_NULL
+
+ 27           BUILD_LIST               0
+              LOAD_CONST               5 ((1.0, 1.0, 1.0, 0.0, 0.0, 1.0))
+              LIST_EXTEND              1
+              LOAD_CONST               2 (True)
+
+ 26           LOAD_CONST               3 (('requires_grad',))
+              CALL_KW                  2
+
+ 29           LOAD_GLOBAL              0 (torch)
+              LOAD_ATTR                2 (tensor)
+              PUSH_NULL
+
+ 30           BUILD_LIST               0
+              LOAD_CONST               6 ((0.8, 0.8, 0.2, 0.1, 0.1, 0.8))
+              LIST_EXTEND              1
+              LOAD_CONST               2 (True)
+
+ 29           LOAD_CONST               3 (('requires_grad',))
+              CALL_KW                  2
+
+ 32           LOAD_GLOBAL              0 (torch)
+              LOAD_ATTR                2 (tensor)
+              PUSH_NULL
+
+ 33           BUILD_LIST               0
+              LOAD_CONST               7 ((2.0, 2.0, 0.0, 0.0, 0.0, -2.0))
+              LIST_EXTEND              1
+              LOAD_CONST               2 (True)
+
+ 32           LOAD_CONST               3 (('requires_grad',))
+              CALL_KW                  2
+
+ 35           LOAD_GLOBAL              0 (torch)
+              LOAD_ATTR                2 (tensor)
+              PUSH_NULL
+
+ 37           BUILD_LIST               0
+              LOAD_CONST               8 ((0.0, 0.0, 2.0))
+              LIST_EXTEND              1
+
+ 38           BUILD_LIST               0
+              LOAD_CONST               8 ((0.0, 0.0, 2.0))
+              LIST_EXTEND              1
+
+ 39           BUILD_LIST               0
+              LOAD_CONST               9 ((0.0, 2.0, 0.0))
+              LIST_EXTEND              1
+
+ 40           BUILD_LIST               0
+              LOAD_CONST               9 ((0.0, 2.0, 0.0))
+              LIST_EXTEND              1
+
+ 41           BUILD_LIST               0
+              LOAD_CONST               9 ((0.0, 2.0, 0.0))
+              LIST_EXTEND              1
+
+ 42           BUILD_LIST               0
+              LOAD_CONST              10 ((2.0, 0.0, 0.0))
+              LIST_EXTEND              1
+
+ 36           BUILD_LIST               6
+
+ 44           LOAD_CONST               2 (True)
+
+ 35           LOAD_CONST               3 (('requires_grad',))
+              CALL_KW                  2
+
+ 21           LOAD_CONST              11 (('frame_logit', 'predicate_coverage_logit', 'sufficiency_logit', 'entitlement_prob', 'polarity_margin', 'logits'))
+              BUILD_CONST_KEY_MAP      6
+              RETURN_VALUE
+
+/<module>/test_ideal_intervention_relations_have_zero_loss vars=('losses', '@py_assert1', '@py_assert3', '@py_assert6', '@py_assert8', '@py_assert10', '@py_assert12', '@py_format14', '@py_assert2', '@py_assert5', '@py_assert4', '@py_format7', '@py_format9') names=('intervention_pairwise_losses', 'ideal_output', 'PAIR_IDS', 'INTERVENTIONS', 'torch', 'equal', 'tensor', '@py_builtins', 'locals', '@pytest_ar', '_should_repr_global_name', '_saferepr', 'AssertionError', '_format_explanation', 'set', '_call_reprcompare')
+constants=[None, 0.5, 0.0, ('ranking_margin', 'lambda_frame_anchor', 'lambda_predicate_anchor'), 'total', 'assert %(py13)s\n{%(py13)s = %(py2)s\n{%(py2)s = %(py0)s.equal\n}(%(py4)s, %(py11)s\n{%(py11)s = %(py7)s\n{%(py7)s = %(py5)s.tensor\n}(%(py9)s)\n})\n}', 'torch', ('py0', 'py2', 'py4', 'py5', 'py7', 'py9', 'py11', 'py13'), frozenset({'predicate_anchor', 'predicate_contrast', 'paraphrase_preserve', 'sufficiency_contrast', 'total', 'frame_preserve', 'entitlement_preserve', 'polarity_margin_anchor', 'frame_anchor', 'polarity_flip', 'logit_preserve'}), ('==',), ('%(py3)s\n{%(py3)s = %(py0)s(%(py1)s)\n} == %(py6)s',), 'set', 'losses', ('py0', 'py1', 'py3', 'py6'), 'assert %(py8)s', 'py8']
+ 49            RESUME                   0
+
+ 50            LOAD_GLOBAL              1 (intervention_pairwise_losses + NULL)
+
+ 51            LOAD_GLOBAL              3 (ideal_output + NULL)
+               CALL                     0
+
+ 52            LOAD_GLOBAL              4 (PAIR_IDS)
+
+ 53            LOAD_GLOBAL              6 (INTERVENTIONS)
+
+ 54            LOAD_CONST               1 (0.5)
+
+ 55            LOAD_CONST               2 (0.0)
+
+ 56            LOAD_CONST               2 (0.0)
+
+ 50            LOAD_CONST               3 (('ranking_margin', 'lambda_frame_anchor', 'lambda_predicate_anchor'))
+               CALL_KW                  6
+               STORE_FAST               0 (losses)
+
+ 58            LOAD_GLOBAL              8 (torch)
+               LOAD_ATTR               10 (equal)
+               STORE_FAST_LOAD_FAST    16 (@py_assert1, losses)
+               LOAD_CONST               4 ('total')
+               BINARY_SUBSCR
+               STORE_FAST               2 (@py_assert3)
+               LOAD_GLOBAL              8 (torch)
+               LOAD_ATTR               12 (tensor)
+               STORE_FAST               3 (@py_assert6)
+               LOAD_CONST               2 (0.0)
+               STORE_FAST_LOAD_FAST    67 (@py_assert8, @py_assert6)
+               PUSH_NULL
+               LOAD_FAST                4 (@py_assert8)
+               CALL                     1
+               STORE_FAST_LOAD_FAST    81 (@py_assert10, @py_assert1)
+               PUSH_NULL
+               LOAD_FAST_LOAD_FAST     37 (@py_assert3, @py_assert10)
+               CALL                     2
+               STORE_FAST_LOAD_FAST   102 (@py_assert12, @py_assert12)
+               TO_BOOL
+               EXTENDED_ARG             1
+               POP_JUMP_IF_TRUE       329 (to L7)
+               LOAD_CONST               5 ('assert %(py13)s\n{%(py13)s = %(py2)s\n{%(py2)s = %(py0)s.equal\n}(%(py4)s, %(py11)s\n{%(py11)s = %(py7)s\n{%(py7)s = %(py5)s.tensor\n}(%(py9)s)\n})\n}')
+               LOAD_CONST               6 ('torch')
+               LOAD_GLOBAL             14 (@py_builtins)
+               LOAD_ATTR               16 (locals)
+               PUSH_NULL
+               CALL                     0
+               CONTAINS_OP              0
+               POP_JUMP_IF_TRUE        31 (to L1)
+               LOAD_GLOBAL             18 (@pytest_ar)
+               LOAD_ATTR               20 (_should_repr_global_name)
+               PUSH_NULL
+               LOAD_GLOBAL              8 (torch)
+               CALL                     1
+               TO_BOOL
+               POP_JUMP_IF_FALSE       26 (to L2)
+       L1:     LOAD_GLOBAL             18 (@pytest_ar)
+               LOAD_ATTR               22 (_saferepr)
+               PUSH_NULL
+               LOAD_GLOBAL              8 (torch)
+               CALL                     1
+               JUMP_FORWARD             1 (to L3)
+       L2:     LOAD_CONST               6 ('torch')
+       L3:     LOAD_GLOBAL             18 (@pytest_ar)
+               LOAD_ATTR               22 (_saferepr)
+               PUSH_NULL
+               LOAD_FAST                1 (@py_assert1)
+               CALL                     1
+               LOAD_GLOBAL             18 (@pytest_ar)
+               LOAD_ATTR               22 (_saferepr)
+               PUSH_NULL
+               LOAD_FAST                2 (@py_assert3)
+               CALL                     1
+               LOAD_CONST               6 ('torch')
+               LOAD_GLOBAL             14 (@py_builtins)
+               LOAD_ATTR               16 (locals)
+               PUSH_NULL
+               CALL                     0
+               CONTAINS_OP              0
+               POP_JUMP_IF_TRUE        31 (to L4)
+               LOAD_GLOBAL             18 (@pytest_ar)
+               LOAD_ATTR               20 (_should_repr_global_name)
+               PUSH_NULL
+               LOAD_GLOBAL              8 (torch)
+               CALL                     1
+               TO_BOOL
+               POP_JUMP_IF_FALSE       26 (to L5)
+       L4:     LOAD_GLOBAL             18 (@pytest_ar)
+               LOAD_ATTR               22 (_saferepr)
+               PUSH_NULL
+               LOAD_GLOBAL              8 (torch)
+               CALL                     1
+               JUMP_FORWARD             1 (to L6)
+       L5:     LOAD_CONST               6 ('torch')
+       L6:     LOAD_GLOBAL             18 (@pytest_ar)
+               LOAD_ATTR               22 (_saferepr)
+               PUSH_NULL
+               LOAD_FAST                3 (@py_assert6)
+               CALL                     1
+               LOAD_GLOBAL             18 (@pytest_ar)
+               LOAD_ATTR               22 (_saferepr)
+               PUSH_NULL
+               LOAD_FAST                4 (@py_assert8)
+               CALL                     1
+               LOAD_GLOBAL             18 (@pytest_ar)
+               LOAD_ATTR               22 (_saferepr)
+               PUSH_NULL
+               LOAD_FAST                5 (@py_assert10)
+               CALL                     1
+               LOAD_GLOBAL             18 (@pytest_ar)
+               LOAD_ATTR               22 (_saferepr)
+               PUSH_NULL
+               LOAD_FAST                6 (@py_assert12)
+               CALL                     1
+               LOAD_CONST               7 (('py0', 'py2', 'py4', 'py5', 'py7', 'py9', 'py11', 'py13'))
+               BUILD_CONST_KEY_MAP      8
+               BINARY_OP                6 (%)
+               STORE_FAST               7 (@py_format14)
+               LOAD_GLOBAL             25 (AssertionError + NULL)
+               LOAD_GLOBAL             18 (@pytest_ar)
+               LOAD_ATTR               26 (_format_explanation)
+               PUSH_NULL
+               LOAD_FAST                7 (@py_format14)
+               CALL                     1
+               CALL                     1
+               RAISE_VARARGS            1
+       L7:     LOAD_CONST               0 (None)
+               COPY                     1
+               STORE_FAST               1 (@py_assert1)
+               COPY                     1
+               STORE_FAST               2 (@py_assert3)
+               COPY                     1
+               STORE_FAST               3 (@py_assert6)
+               COPY                     1
+               STORE_FAST               4 (@py_assert8)
+               COPY                     1
+               STORE_FAST_STORE_FAST   86 (@py_assert10, @py_assert12)
+
+ 59            LOAD_GLOBAL             29 (set + NULL)
+               LOAD_FAST                0 (losses)
+               CALL                     1
+               STORE_FAST               8 (@py_assert2)
+               BUILD_SET                0
+               LOAD_CONST               8 (frozenset({'predicate_anchor', 'predicate_contrast', 'paraphrase_preserve', 'sufficiency_contrast', 'total', 'frame_preserve', 'entitlement_preserve', 'polarity_margin_anchor', 'frame_anchor', 'polarity_flip', 'logit_preserve'}))
+               SET_UPDATE               1
+               STORE_FAST_LOAD_FAST   152 (@py_assert5, @py_assert2)
+               LOAD_FAST                9 (@py_assert5)
+               COMPARE_OP              72 (==)
+               STORE_FAST_LOAD_FAST   170 (@py_assert4, @py_assert4)
+               TO_BOOL
+               EXTENDED_ARG             1
+               POP_JUMP_IF_TRUE       269 (to L14)
+               LOAD_GLOBAL             18 (@pytest_ar)
+
+ 71            LOAD_ATTR               30 (_call_reprcompare)
+
+ 59            PUSH_NULL
+               LOAD_CONST               9 (('==',))
+               LOAD_FAST               10 (@py_assert4)
+               BUILD_TUPLE              1
+               LOAD_CONST              10 (('%(py3)s\n{%(py3)s = %(py0)s(%(py1)s)\n} == %(py6)s',))
+               LOAD_FAST_LOAD_FAST    137 (@py_assert2, @py_assert5)
+               BUILD_TUPLE              2
+               CALL                     4
+               LOAD_CONST              11 ('set')
+               LOAD_GLOBAL             14 (@py_builtins)
+
+ 71            LOAD_ATTR               16 (locals)
+
+ 59            PUSH_NULL
+               CALL                     0
+               CONTAINS_OP              0
+               POP_JUMP_IF_TRUE        31 (to L8)
+               LOAD_GLOBAL             18 (@pytest_ar)
+
+ 71            LOAD_ATTR               20 (_should_repr_global_name)
+
+ 59            PUSH_NULL
+               LOAD_GLOBAL             28 (set)
+               CALL                     1
+               TO_BOOL
+               POP_JUMP_IF_FALSE       26 (to L9)
+       L8:     LOAD_GLOBAL             18 (@pytest_ar)
+
+ 71            LOAD_ATTR               22 (_saferepr)
+
+ 59            PUSH_NULL
+               LOAD_GLOBAL             28 (set)
+               CALL                     1
+               JUMP_FORWARD             1 (to L10)
+       L9:     LOAD_CONST              11 ('set')
+      L10:     LOAD_CONST              12 ('losses')
+               LOAD_GLOBAL             14 (@py_builtins)
+
+ 71            LOAD_ATTR               16 (locals)
+
+ 59            PUSH_NULL
+               CALL                     0
+               CONTAINS_OP              0
+               POP_JUMP_IF_TRUE        27 (to L11)
+               LOAD_GLOBAL             18 (@pytest_ar)
+
+ 71            LOAD_ATTR               20 (_should_repr_global_name)
+
+ 59            PUSH_NULL
+               LOAD_FAST                0 (losses)
+               CALL                     1
+               TO_BOOL
+               POP_JUMP_IF_FALSE       22 (to L12)
+      L11:     LOAD_GLOBAL             18 (@pytest_ar)
+
+ 71            LOAD_ATTR               22 (_saferepr)
+
+ 59            PUSH_NULL
+               LOAD_FAST                0 (losses)
+               CALL                     1
+               JUMP_FORWARD             1 (to L13)
+      L12:     LOAD_CONST              12 ('losses')
+      L13:     LOAD_GLOBAL             18 (@pytest_ar)
+
+ 71            LOAD_ATTR               22 (_saferepr)
+
+ 59            PUSH_NULL
+               LOAD_FAST                8 (@py_assert2)
+               CALL                     1
+               LOAD_GLOBAL             18 (@pytest_ar)
+
+ 71            LOAD_ATTR               22 (_saferepr)
+
+ 59            PUSH_NULL
+               LOAD_FAST                9 (@py_assert5)
+               CALL                     1
+               LOAD_CONST              13 (('py0', 'py1', 'py3', 'py6'))
+               BUILD_CONST_KEY_MAP      4
+               BINARY_OP                6 (%)
+               STORE_FAST              11 (@py_format7)
+               LOAD_CONST              14 ('assert %(py8)s')
+               LOAD_CONST              15 ('py8')
+               LOAD_FAST               11 (@py_format7)
+               BUILD_MAP                1
+               BINARY_OP                6 (%)
+               STORE_FAST              12 (@py_format9)
+               LOAD_GLOBAL             25 (AssertionError + NULL)
+               LOAD_GLOBAL             18 (@pytest_ar)
+
+ 71            LOAD_ATTR               26 (_format_explanation)
+
+ 59            PUSH_NULL
+               LOAD_FAST               12 (@py_format9)
+               CALL                     1
+               CALL                     1
+               RAISE_VARARGS            1
+      L14:     LOAD_CONST               0 (None)
+               COPY                     1
+               STORE_FAST               8 (@py_assert2)
+               COPY                     1
+               STORE_FAST_STORE_FAST  169 (@py_assert4, @py_assert5)
+               RETURN_CONST             0 (None)
+
+/<module>/test_violations_produce_loss_and_gradients vars=('output', 'losses', '@py_assert0', '@py_assert2', '@py_assert4', '@py_assert7', '@py_assert6', '@py_format9', '@py_format11', '@py_assert5', '@py_format7') names=('ideal_output', 'torch', 'tensor', 'intervention_pairwise_losses', 'PAIR_IDS', 'INTERVENTIONS', 'backward', 'item', '@pytest_ar', '_call_reprcompare', '_saferepr', 'AssertionError', '_format_explanation', 'grad')
+constants=[None, (1.0, -1.0, -1.0, -1.0, -1.0, -1.0), True, ('requires_grad',), 'frame_logit', (0.0, 0.0, 1.0, 0.0, 0.0, 0.0), 'predicate_coverage_logit', (0.0, 0.0, 0.0, 1.0, 1.0, 0.0), 'sufficiency_logit', (0.9, 0.2, 0.2, 0.1, 0.1, 0.1), 'entitlement_prob', (2.0, 0.0, 0.0, 0.0, 0.0, 2.0), 'polarity_margin', 'total', 0, ('>',), ('%(py5)s\n{%(py5)s = %(py3)s\n{%(py3)s = %(py1)s.item\n}()\n} > %(py8)s',), ('py1', 'py3', 'py5', 'py8'), 'assert %(py10)s', 'py10', ('is not',), ('%(py3)s\n{%(py3)s = %(py1)s.grad\n} is not %(py6)s',), ('py1', 'py3', 'py6'), 'assert %(py8)s', 'py8']
+ 74           RESUME                   0
+
+ 75           LOAD_GLOBAL              1 (ideal_output + NULL)
+              CALL                     0
+              STORE_FAST               0 (output)
+
+ 76           LOAD_GLOBAL              2 (torch)
+              LOAD_ATTR                4 (tensor)
+              PUSH_NULL
+
+ 77           BUILD_LIST               0
+              LOAD_CONST               1 ((1.0, -1.0, -1.0, -1.0, -1.0, -1.0))
+              LIST_EXTEND              1
+              LOAD_CONST               2 (True)
+
+ 76           LOAD_CONST               3 (('requires_grad',))
+              CALL_KW                  2
+              LOAD_FAST                0 (output)
+              LOAD_CONST               4 ('frame_logit')
+              STORE_SUBSCR
+
+ 79           LOAD_GLOBAL              2 (torch)
+              LOAD_ATTR                4 (tensor)
+              PUSH_NULL
+
+ 80           BUILD_LIST               0
+              LOAD_CONST               5 ((0.0, 0.0, 1.0, 0.0, 0.0, 0.0))
+              LIST_EXTEND              1
+              LOAD_CONST               2 (True)
+
+ 79           LOAD_CONST               3 (('requires_grad',))
+              CALL_KW                  2
+              LOAD_FAST                0 (output)
+              LOAD_CONST               6 ('predicate_coverage_logit')
+              STORE_SUBSCR
+
+ 82           LOAD_GLOBAL              2 (torch)
+              LOAD_ATTR                4 (tensor)
+              PUSH_NULL
+
+ 83           BUILD_LIST               0
+              LOAD_CONST               7 ((0.0, 0.0, 0.0, 1.0, 1.0, 0.0))
+              LIST_EXTEND              1
+              LOAD_CONST               2 (True)
+
+ 82           LOAD_CONST               3 (('requires_grad',))
+              CALL_KW                  2
+              LOAD_FAST                0 (output)
+              LOAD_CONST               8 ('sufficiency_logit')
+              STORE_SUBSCR
+
+ 85           LOAD_GLOBAL              2 (torch)
+              LOAD_ATTR                4 (tensor)
+              PUSH_NULL
+
+ 86           BUILD_LIST               0
+              LOAD_CONST               9 ((0.9, 0.2, 0.2, 0.1, 0.1, 0.1))
+              LIST_EXTEND              1
+              LOAD_CONST               2 (True)
+
+ 85           LOAD_CONST               3 (('requires_grad',))
+              CALL_KW                  2
+              LOAD_FAST                0 (output)
+              LOAD_CONST              10 ('entitlement_prob')
+              STORE_SUBSCR
+
+ 88           LOAD_GLOBAL              2 (torch)
+              LOAD_ATTR                4 (tensor)
+              PUSH_NULL
+
+ 89           BUILD_LIST               0
+              LOAD_CONST              11 ((2.0, 0.0, 0.0, 0.0, 0.0, 2.0))
+              LIST_EXTEND              1
+              LOAD_CONST               2 (True)
+
+ 88           LOAD_CONST               3 (('requires_grad',))
+              CALL_KW                  2
+              LOAD_FAST                0 (output)
+              LOAD_CONST              12 ('polarity_margin')
+              STORE_SUBSCR
+
+ 91           LOAD_GLOBAL              7 (intervention_pairwise_losses + NULL)
+              LOAD_FAST                0 (output)
+              LOAD_GLOBAL              8 (PAIR_IDS)
+              LOAD_GLOBAL             10 (INTERVENTIONS)
+              CALL                     3
+              STORE_FAST               1 (losses)
+
+ 92           LOAD_FAST                1 (losses)
+              LOAD_CONST              13 ('total')
+              BINARY_SUBSCR
+              LOAD_ATTR               13 (backward + NULL|self)
+              CALL                     0
+              POP_TOP
+
+ 93           LOAD_FAST                1 (losses)
+              LOAD_CONST              13 ('total')
+              BINARY_SUBSCR
+              STORE_FAST_LOAD_FAST    34 (@py_assert0, @py_assert0)
+              LOAD_ATTR               14 (item)
+              STORE_FAST_LOAD_FAST    51 (@py_assert2, @py_assert2)
+              PUSH_NULL
+              CALL                     0
+              STORE_FAST               4 (@py_assert4)
+              LOAD_CONST              14 (0)
+              STORE_FAST_LOAD_FAST    84 (@py_assert7, @py_assert4)
+              LOAD_FAST                5 (@py_assert7)
+              COMPARE_OP             132 (>)
+              STORE_FAST_LOAD_FAST   102 (@py_assert6, @py_assert6)
+              TO_BOOL
+              POP_JUMP_IF_TRUE       153 (to L1)
+              LOAD_GLOBAL             16 (@pytest_ar)
+              LOAD_ATTR               18 (_call_reprcompare)
+              PUSH_NULL
+              LOAD_CONST              15 (('>',))
+              LOAD_FAST                6 (@py_assert6)
+              BUILD_TUPLE              1
+              LOAD_CONST              16 (('%(py5)s\n{%(py5)s = %(py3)s\n{%(py3)s = %(py1)s.item\n}()\n} > %(py8)s',))
+              LOAD_FAST_LOAD_FAST     69 (@py_assert4, @py_assert7)
+              BUILD_TUPLE              2
+              CALL                     4
+              LOAD_GLOBAL             16 (@pytest_ar)
+              LOAD_ATTR               20 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                2 (@py_assert0)
+              CALL                     1
+              LOAD_GLOBAL             16 (@pytest_ar)
+              LOAD_ATTR               20 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                3 (@py_assert2)
+              CALL                     1
+              LOAD_GLOBAL             16 (@pytest_ar)
+              LOAD_ATTR               20 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                4 (@py_assert4)
+              CALL                     1
+              LOAD_GLOBAL             16 (@pytest_ar)
+              LOAD_ATTR               20 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                5 (@py_assert7)
+              CALL                     1
+              LOAD_CONST              17 (('py1', 'py3', 'py5', 'py8'))
+              BUILD_CONST_KEY_MAP      4
+              BINARY_OP                6 (%)
+              STORE_FAST               7 (@py_format9)
+              LOAD_CONST              18 ('assert %(py10)s')
+              LOAD_CONST              19 ('py10')
+              LOAD_FAST                7 (@py_format9)
+              BUILD_MAP                1
+              BINARY_OP                6 (%)
+              STORE_FAST               8 (@py_format11)
+              LOAD_GLOBAL             23 (AssertionError + NULL)
+              LOAD_GLOBAL             16 (@pytest_ar)
+              LOAD_ATTR               24 (_format_explanation)
+              PUSH_NULL
+              LOAD_FAST                8 (@py_format11)
+              CALL                     1
+              CALL                     1
+              RAISE_VARARGS            1
+      L1:     LOAD_CONST               0 (None)
+              COPY                     1
+              STORE_FAST               2 (@py_assert0)
+              COPY                     1
+              STORE_FAST               3 (@py_assert2)
+              COPY                     1
+              STORE_FAST               4 (@py_assert4)
+              COPY                     1
+              STORE_FAST_STORE_FAST  101 (@py_assert6, @py_assert7)
+
+ 94           LOAD_FAST                0 (output)
+              LOAD_CONST               4 ('frame_logit')
+              BINARY_SUBSCR
+              STORE_FAST_LOAD_FAST    34 (@py_assert0, @py_assert0)
+              LOAD_ATTR               26 (grad)
+              STORE_FAST               3 (@py_assert2)
+              LOAD_CONST               0 (None)
+              STORE_FAST_LOAD_FAST   147 (@py_assert5, @py_assert2)
+              LOAD_FAST                9 (@py_assert5)
+              IS_OP                    1
+              STORE_FAST_LOAD_FAST    68 (@py_assert4, @py_assert4)
+              TO_BOOL
+              POP_JUMP_IF_TRUE       132 (to L2)
+              LOAD_GLOBAL             16 (@pytest_ar)
+              LOAD_ATTR               18 (_call_reprcompare)
+              PUSH_NULL
+              LOAD_CONST              20 (('is not',))
+              LOAD_FAST                4 (@py_assert4)
+              BUILD_TUPLE              1
+              LOAD_CONST              21 (('%(py3)s\n{%(py3)s = %(py1)s.grad\n} is not %(py6)s',))
+              LOAD_FAST_LOAD_FAST     57 (@py_assert2, @py_assert5)
+              BUILD_TUPLE              2
+              CALL                     4
+              LOAD_GLOBAL             16 (@pytest_ar)
+              LOAD_ATTR               20 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                2 (@py_assert0)
+              CALL                     1
+              LOAD_GLOBAL             16 (@pytest_ar)
+              LOAD_ATTR               20 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                3 (@py_assert2)
+              CALL                     1
+              LOAD_GLOBAL             16 (@pytest_ar)
+              LOAD_ATTR               20 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                9 (@py_assert5)
+              CALL                     1
+              LOAD_CONST              22 (('py1', 'py3', 'py6'))
+              BUILD_CONST_KEY_MAP      3
+              BINARY_OP                6 (%)
+              STORE_FAST              10 (@py_format7)
+              LOAD_CONST              23 ('assert %(py8)s')
+              LOAD_CONST              24 ('py8')
+              LOAD_FAST               10 (@py_format7)
+              BUILD_MAP                1
+              BINARY_OP                6 (%)
+              STORE_FAST               7 (@py_format9)
+              LOAD_GLOBAL             23 (AssertionError + NULL)
+              LOAD_GLOBAL             16 (@pytest_ar)
+              LOAD_ATTR               24 (_format_explanation)
+              PUSH_NULL
+              LOAD_FAST                7 (@py_format9)
+              CALL                     1
+              CALL                     1
+              RAISE_VARARGS            1
+      L2:     LOAD_CONST               0 (None)
+              COPY                     1
+              STORE_FAST               2 (@py_assert0)
+              COPY                     1
+              STORE_FAST               3 (@py_assert2)
+              COPY                     1
+              STORE_FAST_STORE_FAST   73 (@py_assert4, @py_assert5)
+
+ 95           LOAD_FAST                0 (output)
+              LOAD_CONST              12 ('polarity_margin')
+              BINARY_SUBSCR
+              STORE_FAST_LOAD_FAST    34 (@py_assert0, @py_assert0)
+              LOAD_ATTR               26 (grad)
+              STORE_FAST               3 (@py_assert2)
+              LOAD_CONST               0 (None)
+              STORE_FAST_LOAD_FAST   147 (@py_assert5, @py_assert2)
+              LOAD_FAST                9 (@py_assert5)
+              IS_OP                    1
+              STORE_FAST_LOAD_FAST    68 (@py_assert4, @py_assert4)
+              TO_BOOL
+              POP_JUMP_IF_TRUE       132 (to L3)
+              LOAD_GLOBAL             16 (@pytest_ar)
+              LOAD_ATTR               18 (_call_reprcompare)
+              PUSH_NULL
+              LOAD_CONST              20 (('is not',))
+              LOAD_FAST                4 (@py_assert4)
+              BUILD_TUPLE              1
+              LOAD_CONST              21 (('%(py3)s\n{%(py3)s = %(py1)s.grad\n} is not %(py6)s',))
+              LOAD_FAST_LOAD_FAST     57 (@py_assert2, @py_assert5)
+              BUILD_TUPLE              2
+              CALL                     4
+              LOAD_GLOBAL             16 (@pytest_ar)
+              LOAD_ATTR               20 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                2 (@py_assert0)
+              CALL                     1
+              LOAD_GLOBAL             16 (@pytest_ar)
+              LOAD_ATTR               20 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                3 (@py_assert2)
+              CALL                     1
+              LOAD_GLOBAL             16 (@pytest_ar)
+              LOAD_ATTR               20 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                9 (@py_assert5)
+              CALL                     1
+              LOAD_CONST              22 (('py1', 'py3', 'py6'))
+              BUILD_CONST_KEY_MAP      3
+              BINARY_OP                6 (%)
+              STORE_FAST              10 (@py_format7)
+              LOAD_CONST              23 ('assert %(py8)s')
+              LOAD_CONST              24 ('py8')
+              LOAD_FAST               10 (@py_format7)
+              BUILD_MAP                1
+              BINARY_OP                6 (%)
+              STORE_FAST               7 (@py_format9)
+              LOAD_GLOBAL             23 (AssertionError + NULL)
+              LOAD_GLOBAL             16 (@pytest_ar)
+              LOAD_ATTR               24 (_format_explanation)
+              PUSH_NULL
+              LOAD_FAST                7 (@py_format9)
+              CALL                     1
+              CALL                     1
+              RAISE_VARARGS            1
+      L3:     LOAD_CONST               0 (None)
+              COPY                     1
+              STORE_FAST               2 (@py_assert0)
+              COPY                     1
+              STORE_FAST               3 (@py_assert2)
+              COPY                     1
+              STORE_FAST_STORE_FAST   73 (@py_assert4, @py_assert5)
+              RETURN_CONST             0 (None)
+
+/<module>/test_pair_metadata_validation vars=() names=('pytest', 'raises', 'ValueError', 'intervention_pairwise_losses', 'ideal_output', 'INTERVENTIONS', 'PAIR_IDS')
+constants=[None, 'equal length', ('match',), 'p', 'has no original', 5, 1, 'polarity_margin_min', -0.1, ('polarity_margin_min',)]
+  98            RESUME                   0
+
+  99            LOAD_GLOBAL              0 (pytest)
+                LOAD_ATTR                2 (raises)
+                PUSH_NULL
+                LOAD_GLOBAL              4 (ValueError)
+                LOAD_CONST               1 ('equal length')
+                LOAD_CONST               2 (('match',))
+                CALL_KW                  2
+                BEFORE_WITH
+        L1:     POP_TOP
+
+ 100            LOAD_GLOBAL              7 (intervention_pairwise_losses + NULL)
+                LOAD_GLOBAL              9 (ideal_output + NULL)
+                CALL                     0
+                LOAD_CONST               3 ('p')
+                BUILD_LIST               1
+                LOAD_GLOBAL             10 (INTERVENTIONS)
+                CALL                     3
+                POP_TOP
+
+  99    L2:     LOAD_CONST               0 (None)
+                LOAD_CONST               0 (None)
+                LOAD_CONST               0 (None)
+                CALL                     2
+                POP_TOP
+
+ 101    L3:     LOAD_GLOBAL              0 (pytest)
+                LOAD_ATTR                2 (raises)
+                PUSH_NULL
+                LOAD_GLOBAL              4 (ValueError)
+                LOAD_CONST               4 ('has no original')
+                LOAD_CONST               2 (('match',))
+                CALL_KW                  2
+                BEFORE_WITH
+        L4:     POP_TOP
+
+ 102            LOAD_GLOBAL              7 (intervention_pairwise_losses + NULL)
+
+ 103            LOAD_GLOBAL              9 (ideal_output + NULL)
+                CALL                     0
+
+ 104            LOAD_CONST               3 ('p')
+                BUILD_LIST               1
+                LOAD_CONST               5 (5)
+                BINARY_OP                5 (*)
+
+ 105            LOAD_GLOBAL             10 (INTERVENTIONS)
+                LOAD_CONST               6 (1)
+                LOAD_CONST               0 (None)
+                BINARY_SLICE
+
+ 102            CALL                     3
+                POP_TOP
+
+ 101    L5:     LOAD_CONST               0 (None)
+                LOAD_CONST               0 (None)
+                LOAD_CONST               0 (None)
+                CALL                     2
+                POP_TOP
+
+ 108    L6:     LOAD_GLOBAL              0 (pytest)
+                LOAD_ATTR                2 (raises)
+                PUSH_NULL
+                LOAD_GLOBAL              4 (ValueError)
+                LOAD_CONST               7 ('polarity_margin_min')
+                LOAD_CONST               2 (('match',))
+                CALL_KW                  2
+                BEFORE_WITH
+        L7:     POP_TOP
+
+ 109            LOAD_GLOBAL              7 (intervention_pairwise_losses + NULL)
+
+ 110            LOAD_GLOBAL              9 (ideal_output + NULL)
+                CALL                     0
+                LOAD_GLOBAL             12 (PAIR_IDS)
+                LOAD_GLOBAL             10 (INTERVENTIONS)
+                LOAD_CONST               8 (-0.1)
+
+ 109            LOAD_CONST               9 (('polarity_margin_min',))
+                CALL_KW                  4
+                POP_TOP
+
+ 108    L8:     LOAD_CONST               0 (None)
+                LOAD_CONST               0 (None)
+                LOAD_CONST               0 (None)
+                CALL                     2
+                POP_TOP
+                RETURN_CONST             0 (None)
+
+  99    L9:     PUSH_EXC_INFO
+                WITH_EXCEPT_START
+                TO_BOOL
+                POP_JUMP_IF_TRUE         1 (to L10)
+                RERAISE                  2
+       L10:     POP_TOP
+       L11:     POP_EXCEPT
+                POP_TOP
+                POP_TOP
+                JUMP_BACKWARD_NO_INTERRUPT 143 (to L3)
+
+  --   L12:     COPY                     3
+                POP_EXCEPT
+                RERAISE                  1
+
+ 101   L13:     PUSH_EXC_INFO
+                WITH_EXCEPT_START
+                TO_BOOL
+                POP_JUMP_IF_TRUE         1 (to L14)
+                RERAISE                  2
+       L14:     POP_TOP
+       L15:     POP_EXCEPT
+                POP_TOP
+                POP_TOP
+                JUMP_BACKWARD_NO_INTERRUPT 94 (to L6)
+
+  --   L16:     COPY                     3
+                POP_EXCEPT
+                RERAISE                  1
+
+ 108   L17:     PUSH_EXC_INFO
+                WITH_EXCEPT_START
+                TO_BOOL
+                POP_JUMP_IF_TRUE         1 (to L18)
+                RERAISE                  2
+       L18:     POP_TOP
+       L19:     POP_EXCEPT
+                POP_TOP
+                POP_TOP
+                RETURN_CONST             0 (None)
+
+  --   L20:     COPY                     3
+                POP_EXCEPT
+                RERAISE                  1
+ExceptionTable:
+  L1 to L2 -> L9 [1] lasti
+  L4 to L5 -> L13 [1] lasti
+  L7 to L8 -> L17 [1] lasti
+  L9 to L11 -> L12 [3] lasti
+  L13 to L15 -> L16 [3] lasti
+  L17 to L19 -> L20 [3] lasti
+
+/<module>/test_frame_anchor_penalizes_jointly_low_preserved_frames vars=('high', 'low', 'high_losses', 'low_losses', '@py_assert0', '@py_assert2', '@py_assert4', '@py_assert7', '@py_assert6', '@py_format9', '@py_format11', '@py_assert3', '@py_format5', '@py_format7') names=('ideal_output', 'torch', 'tensor', 'intervention_pairwise_losses', 'PAIR_IDS', 'INTERVENTIONS', 'item', '@pytest_ar', '_call_reprcompare', '_saferepr', 'AssertionError', '_format_explanation')
+constants=[None, (-5.0, -5.0, -5.0, -1.0, -1.0, -5.0), True, ('requires_grad',), 'frame_logit', 'frame_preserve', 0.0, ('==',), ('%(py5)s\n{%(py5)s = %(py3)s\n{%(py3)s = %(py1)s.item\n}()\n} == %(py8)s',), ('py1', 'py3', 'py5', 'py8'), 'assert %(py10)s', 'py10', 'frame_anchor', ('>',), ('%(py1)s > %(py4)s',), ('py1', 'py4'), 'assert %(py6)s', 'py6', 'total']
+114           RESUME                   0
+
+115           LOAD_GLOBAL              1 (ideal_output + NULL)
+              CALL                     0
+              STORE_FAST               0 (high)
+
+116           LOAD_GLOBAL              1 (ideal_output + NULL)
+              CALL                     0
+              STORE_FAST               1 (low)
+
+117           LOAD_GLOBAL              2 (torch)
+              LOAD_ATTR                4 (tensor)
+              PUSH_NULL
+
+118           BUILD_LIST               0
+              LOAD_CONST               1 ((-5.0, -5.0, -5.0, -1.0, -1.0, -5.0))
+              LIST_EXTEND              1
+              LOAD_CONST               2 (True)
+
+117           LOAD_CONST               3 (('requires_grad',))
+              CALL_KW                  2
+              LOAD_FAST                1 (low)
+              LOAD_CONST               4 ('frame_logit')
+              STORE_SUBSCR
+
+120           LOAD_GLOBAL              7 (intervention_pairwise_losses + NULL)
+              LOAD_FAST                0 (high)
+              LOAD_GLOBAL              8 (PAIR_IDS)
+              LOAD_GLOBAL             10 (INTERVENTIONS)
+              CALL                     3
+              STORE_FAST               2 (high_losses)
+
+121           LOAD_GLOBAL              7 (intervention_pairwise_losses + NULL)
+              LOAD_FAST                1 (low)
+              LOAD_GLOBAL              8 (PAIR_IDS)
+              LOAD_GLOBAL             10 (INTERVENTIONS)
+              CALL                     3
+              STORE_FAST               3 (low_losses)
+
+122           LOAD_FAST                3 (low_losses)
+              LOAD_CONST               5 ('frame_preserve')
+              BINARY_SUBSCR
+              STORE_FAST_LOAD_FAST    68 (@py_assert0, @py_assert0)
+              LOAD_ATTR               12 (item)
+              STORE_FAST_LOAD_FAST    85 (@py_assert2, @py_assert2)
+              PUSH_NULL
+              CALL                     0
+              STORE_FAST               6 (@py_assert4)
+              LOAD_CONST               6 (0.0)
+              STORE_FAST_LOAD_FAST   118 (@py_assert7, @py_assert4)
+              LOAD_FAST                7 (@py_assert7)
+              COMPARE_OP              72 (==)
+              STORE_FAST_LOAD_FAST   136 (@py_assert6, @py_assert6)
+              TO_BOOL
+              POP_JUMP_IF_TRUE       153 (to L1)
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               16 (_call_reprcompare)
+              PUSH_NULL
+              LOAD_CONST               7 (('==',))
+              LOAD_FAST                8 (@py_assert6)
+              BUILD_TUPLE              1
+              LOAD_CONST               8 (('%(py5)s\n{%(py5)s = %(py3)s\n{%(py3)s = %(py1)s.item\n}()\n} == %(py8)s',))
+              LOAD_FAST_LOAD_FAST    103 (@py_assert4, @py_assert7)
+              BUILD_TUPLE              2
+              CALL                     4
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                4 (@py_assert0)
+              CALL                     1
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                5 (@py_assert2)
+              CALL                     1
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                6 (@py_assert4)
+              CALL                     1
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                7 (@py_assert7)
+              CALL                     1
+              LOAD_CONST               9 (('py1', 'py3', 'py5', 'py8'))
+              BUILD_CONST_KEY_MAP      4
+              BINARY_OP                6 (%)
+              STORE_FAST               9 (@py_format9)
+              LOAD_CONST              10 ('assert %(py10)s')
+              LOAD_CONST              11 ('py10')
+              LOAD_FAST                9 (@py_format9)
+              BUILD_MAP                1
+              BINARY_OP                6 (%)
+              STORE_FAST              10 (@py_format11)
+              LOAD_GLOBAL             21 (AssertionError + NULL)
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               22 (_format_explanation)
+              PUSH_NULL
+              LOAD_FAST               10 (@py_format11)
+              CALL                     1
+              CALL                     1
+              RAISE_VARARGS            1
+      L1:     LOAD_CONST               0 (None)
+              COPY                     1
+              STORE_FAST               4 (@py_assert0)
+              COPY                     1
+              STORE_FAST               5 (@py_assert2)
+              COPY                     1
+              STORE_FAST               6 (@py_assert4)
+              COPY                     1
+              STORE_FAST_STORE_FAST  135 (@py_assert6, @py_assert7)
+
+123           LOAD_FAST                3 (low_losses)
+              LOAD_CONST              12 ('frame_anchor')
+              BINARY_SUBSCR
+              STORE_FAST_LOAD_FAST    66 (@py_assert0, high_losses)
+              LOAD_CONST              12 ('frame_anchor')
+              BINARY_SUBSCR
+              STORE_FAST_LOAD_FAST   180 (@py_assert3, @py_assert0)
+              LOAD_FAST               11 (@py_assert3)
+              COMPARE_OP             132 (>)
+              STORE_FAST_LOAD_FAST    85 (@py_assert2, @py_assert2)
+              TO_BOOL
+              POP_JUMP_IF_TRUE       111 (to L2)
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               16 (_call_reprcompare)
+              PUSH_NULL
+              LOAD_CONST              13 (('>',))
+              LOAD_FAST                5 (@py_assert2)
+              BUILD_TUPLE              1
+              LOAD_CONST              14 (('%(py1)s > %(py4)s',))
+              LOAD_FAST_LOAD_FAST     75 (@py_assert0, @py_assert3)
+              BUILD_TUPLE              2
+              CALL                     4
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                4 (@py_assert0)
+              CALL                     1
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST               11 (@py_assert3)
+              CALL                     1
+              LOAD_CONST              15 (('py1', 'py4'))
+              BUILD_CONST_KEY_MAP      2
+              BINARY_OP                6 (%)
+              STORE_FAST              12 (@py_format5)
+              LOAD_CONST              16 ('assert %(py6)s')
+              LOAD_CONST              17 ('py6')
+              LOAD_FAST               12 (@py_format5)
+              BUILD_MAP                1
+              BINARY_OP                6 (%)
+              STORE_FAST              13 (@py_format7)
+              LOAD_GLOBAL             21 (AssertionError + NULL)
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               22 (_format_explanation)
+              PUSH_NULL
+              LOAD_FAST               13 (@py_format7)
+              CALL                     1
+              CALL                     1
+              RAISE_VARARGS            1
+      L2:     LOAD_CONST               0 (None)
+              COPY                     1
+              STORE_FAST               4 (@py_assert0)
+              COPY                     1
+              STORE_FAST_STORE_FAST   91 (@py_assert2, @py_assert3)
+
+124           LOAD_FAST                3 (low_losses)
+              LOAD_CONST              18 ('total')
+              BINARY_SUBSCR
+              STORE_FAST_LOAD_FAST    66 (@py_assert0, high_losses)
+              LOAD_CONST              18 ('total')
+              BINARY_SUBSCR
+              STORE_FAST_LOAD_FAST   180 (@py_assert3, @py_assert0)
+              LOAD_FAST               11 (@py_assert3)
+              COMPARE_OP             132 (>)
+              STORE_FAST_LOAD_FAST    85 (@py_assert2, @py_assert2)
+              TO_BOOL
+              POP_JUMP_IF_TRUE       111 (to L3)
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               16 (_call_reprcompare)
+              PUSH_NULL
+              LOAD_CONST              13 (('>',))
+              LOAD_FAST                5 (@py_assert2)
+              BUILD_TUPLE              1
+              LOAD_CONST              14 (('%(py1)s > %(py4)s',))
+              LOAD_FAST_LOAD_FAST     75 (@py_assert0, @py_assert3)
+              BUILD_TUPLE              2
+              CALL                     4
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                4 (@py_assert0)
+              CALL                     1
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST               11 (@py_assert3)
+              CALL                     1
+              LOAD_CONST              15 (('py1', 'py4'))
+              BUILD_CONST_KEY_MAP      2
+              BINARY_OP                6 (%)
+              STORE_FAST              12 (@py_format5)
+              LOAD_CONST              16 ('assert %(py6)s')
+              LOAD_CONST              17 ('py6')
+              LOAD_FAST               12 (@py_format5)
+              BUILD_MAP                1
+              BINARY_OP                6 (%)
+              STORE_FAST              13 (@py_format7)
+              LOAD_GLOBAL             21 (AssertionError + NULL)
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               22 (_format_explanation)
+              PUSH_NULL
+              LOAD_FAST               13 (@py_format7)
+              CALL                     1
+              CALL                     1
+              RAISE_VARARGS            1
+      L3:     LOAD_CONST               0 (None)
+              COPY                     1
+              STORE_FAST               4 (@py_assert0)
+              COPY                     1
+              STORE_FAST_STORE_FAST   91 (@py_assert2, @py_assert3)
+              RETURN_CONST             0 (None)
+
+/<module>/test_zero_symmetric_polarity_margins_are_anchored vars=('output', 'losses', '@py_assert0', '@py_assert2', '@py_assert4', '@py_assert7', '@py_assert6', '@py_format9', '@py_format11', '@py_assert8', '@py_assert10', '@py_assert12', '@py_format14', '@py_format16') names=('ideal_output', 'torch', 'zeros', 'intervention_pairwise_losses', 'PAIR_IDS', 'INTERVENTIONS', 'item', '@pytest_ar', '_call_reprcompare', '_saferepr', 'AssertionError', '_format_explanation', 'pytest', 'approx', '@py_builtins', 'locals', '_should_repr_global_name')
+constants=[None, 6, True, ('requires_grad',), 'polarity_margin', 1.0, ('polarity_margin_min',), 'polarity_flip', 0.0, ('==',), ('%(py5)s\n{%(py5)s = %(py3)s\n{%(py3)s = %(py1)s.item\n}()\n} == %(py8)s',), ('py1', 'py3', 'py5', 'py8'), 'assert %(py10)s', 'py10', 'polarity_margin_anchor', ('%(py5)s\n{%(py5)s = %(py3)s\n{%(py3)s = %(py1)s.item\n}()\n} == %(py13)s\n{%(py13)s = %(py9)s\n{%(py9)s = %(py7)s.approx\n}(%(py11)s)\n}',), 'pytest', ('py1', 'py3', 'py5', 'py7', 'py9', 'py11', 'py13'), 'assert %(py15)s', 'py15']
+127           RESUME                   0
+
+128           LOAD_GLOBAL              1 (ideal_output + NULL)
+              CALL                     0
+              STORE_FAST               0 (output)
+
+129           LOAD_GLOBAL              2 (torch)
+              LOAD_ATTR                4 (zeros)
+              PUSH_NULL
+              LOAD_CONST               1 (6)
+              LOAD_CONST               2 (True)
+              LOAD_CONST               3 (('requires_grad',))
+              CALL_KW                  2
+              LOAD_FAST                0 (output)
+              LOAD_CONST               4 ('polarity_margin')
+              STORE_SUBSCR
+
+130           LOAD_GLOBAL              7 (intervention_pairwise_losses + NULL)
+
+131           LOAD_FAST                0 (output)
+              LOAD_GLOBAL              8 (PAIR_IDS)
+              LOAD_GLOBAL             10 (INTERVENTIONS)
+              LOAD_CONST               5 (1.0)
+
+130           LOAD_CONST               6 (('polarity_margin_min',))
+              CALL_KW                  4
+              STORE_FAST               1 (losses)
+
+133           LOAD_FAST                1 (losses)
+              LOAD_CONST               7 ('polarity_flip')
+              BINARY_SUBSCR
+              STORE_FAST_LOAD_FAST    34 (@py_assert0, @py_assert0)
+              LOAD_ATTR               12 (item)
+              STORE_FAST_LOAD_FAST    51 (@py_assert2, @py_assert2)
+              PUSH_NULL
+              CALL                     0
+              STORE_FAST               4 (@py_assert4)
+              LOAD_CONST               8 (0.0)
+              STORE_FAST_LOAD_FAST    84 (@py_assert7, @py_assert4)
+              LOAD_FAST                5 (@py_assert7)
+              COMPARE_OP              72 (==)
+              STORE_FAST_LOAD_FAST   102 (@py_assert6, @py_assert6)
+              TO_BOOL
+              POP_JUMP_IF_TRUE       153 (to L1)
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               16 (_call_reprcompare)
+              PUSH_NULL
+              LOAD_CONST               9 (('==',))
+              LOAD_FAST                6 (@py_assert6)
+              BUILD_TUPLE              1
+              LOAD_CONST              10 (('%(py5)s\n{%(py5)s = %(py3)s\n{%(py3)s = %(py1)s.item\n}()\n} == %(py8)s',))
+              LOAD_FAST_LOAD_FAST     69 (@py_assert4, @py_assert7)
+              BUILD_TUPLE              2
+              CALL                     4
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                2 (@py_assert0)
+              CALL                     1
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                3 (@py_assert2)
+              CALL                     1
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                4 (@py_assert4)
+              CALL                     1
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                5 (@py_assert7)
+              CALL                     1
+              LOAD_CONST              11 (('py1', 'py3', 'py5', 'py8'))
+              BUILD_CONST_KEY_MAP      4
+              BINARY_OP                6 (%)
+              STORE_FAST               7 (@py_format9)
+              LOAD_CONST              12 ('assert %(py10)s')
+              LOAD_CONST              13 ('py10')
+              LOAD_FAST                7 (@py_format9)
+              BUILD_MAP                1
+              BINARY_OP                6 (%)
+              STORE_FAST               8 (@py_format11)
+              LOAD_GLOBAL             21 (AssertionError + NULL)
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               22 (_format_explanation)
+              PUSH_NULL
+              LOAD_FAST                8 (@py_format11)
+              CALL                     1
+              CALL                     1
+              RAISE_VARARGS            1
+      L1:     LOAD_CONST               0 (None)
+              COPY                     1
+              STORE_FAST               2 (@py_assert0)
+              COPY                     1
+              STORE_FAST               3 (@py_assert2)
+              COPY                     1
+              STORE_FAST               4 (@py_assert4)
+              COPY                     1
+              STORE_FAST_STORE_FAST  101 (@py_assert6, @py_assert7)
+
+134           LOAD_FAST                1 (losses)
+              LOAD_CONST              14 ('polarity_margin_anchor')
+              BINARY_SUBSCR
+              STORE_FAST_LOAD_FAST    34 (@py_assert0, @py_assert0)
+              LOAD_ATTR               12 (item)
+              STORE_FAST_LOAD_FAST    51 (@py_assert2, @py_assert2)
+              PUSH_NULL
+              CALL                     0
+              STORE_FAST               4 (@py_assert4)
+              LOAD_GLOBAL             24 (pytest)
+              LOAD_ATTR               26 (approx)
+              STORE_FAST               9 (@py_assert8)
+              LOAD_CONST               5 (1.0)
+              STORE_FAST_LOAD_FAST   169 (@py_assert10, @py_assert8)
+              PUSH_NULL
+              LOAD_FAST               10 (@py_assert10)
+              CALL                     1
+              STORE_FAST_LOAD_FAST   180 (@py_assert12, @py_assert4)
+              LOAD_FAST               11 (@py_assert12)
+              COMPARE_OP              72 (==)
+              STORE_FAST_LOAD_FAST   102 (@py_assert6, @py_assert6)
+              TO_BOOL
+              EXTENDED_ARG             1
+              POP_JUMP_IF_TRUE       278 (to L5)
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               16 (_call_reprcompare)
+              PUSH_NULL
+              LOAD_CONST               9 (('==',))
+              LOAD_FAST                6 (@py_assert6)
+              BUILD_TUPLE              1
+              LOAD_CONST              15 (('%(py5)s\n{%(py5)s = %(py3)s\n{%(py3)s = %(py1)s.item\n}()\n} == %(py13)s\n{%(py13)s = %(py9)s\n{%(py9)s = %(py7)s.approx\n}(%(py11)s)\n}',))
+              LOAD_FAST_LOAD_FAST     75 (@py_assert4, @py_assert12)
+              BUILD_TUPLE              2
+              CALL                     4
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                2 (@py_assert0)
+              CALL                     1
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                3 (@py_assert2)
+              CALL                     1
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                4 (@py_assert4)
+              CALL                     1
+              LOAD_CONST              16 ('pytest')
+              LOAD_GLOBAL             28 (@py_builtins)
+              LOAD_ATTR               30 (locals)
+              PUSH_NULL
+              CALL                     0
+              CONTAINS_OP              0
+              POP_JUMP_IF_TRUE        31 (to L2)
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               32 (_should_repr_global_name)
+              PUSH_NULL
+              LOAD_GLOBAL             24 (pytest)
+              CALL                     1
+              TO_BOOL
+              POP_JUMP_IF_FALSE       26 (to L3)
+      L2:     LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_GLOBAL             24 (pytest)
+              CALL                     1
+              JUMP_FORWARD             1 (to L4)
+      L3:     LOAD_CONST              16 ('pytest')
+      L4:     LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                9 (@py_assert8)
+              CALL                     1
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST               10 (@py_assert10)
+              CALL                     1
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST               11 (@py_assert12)
+              CALL                     1
+              LOAD_CONST              17 (('py1', 'py3', 'py5', 'py7', 'py9', 'py11', 'py13'))
+              BUILD_CONST_KEY_MAP      7
+              BINARY_OP                6 (%)
+              STORE_FAST              12 (@py_format14)
+              LOAD_CONST              18 ('assert %(py15)s')
+              LOAD_CONST              19 ('py15')
+              LOAD_FAST               12 (@py_format14)
+              BUILD_MAP                1
+              BINARY_OP                6 (%)
+              STORE_FAST              13 (@py_format16)
+              LOAD_GLOBAL             21 (AssertionError + NULL)
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               22 (_format_explanation)
+              PUSH_NULL
+              LOAD_FAST               13 (@py_format16)
+              CALL                     1
+              CALL                     1
+              RAISE_VARARGS            1
+      L5:     LOAD_CONST               0 (None)
+              COPY                     1
+              STORE_FAST               2 (@py_assert0)
+              COPY                     1
+              STORE_FAST               3 (@py_assert2)
+              COPY                     1
+              STORE_FAST               4 (@py_assert4)
+              COPY                     1
+              STORE_FAST               6 (@py_assert6)
+              COPY                     1
+              STORE_FAST               9 (@py_assert8)
+              COPY                     1
+              STORE_FAST_STORE_FAST  171 (@py_assert10, @py_assert12)
+              RETURN_CONST             0 (None)
+
+/<module>/test_opposite_nonzero_margins_are_preferred_to_zero vars=('nonzero', 'zero_output', 'zero', '@py_assert0', '@py_assert2', '@py_assert4', '@py_assert7', '@py_assert6', '@py_format9', '@py_format11', '@py_assert3', '@py_format5', '@py_format7') names=('intervention_pairwise_losses', 'ideal_output', 'PAIR_IDS', 'INTERVENTIONS', 'torch', 'zeros', 'item', '@pytest_ar', '_call_reprcompare', '_saferepr', 'AssertionError', '_format_explanation')
+constants=[None, 1.0, ('polarity_margin_min',), 6, True, ('requires_grad',), 'polarity_margin', 'polarity_flip', 0.0, ('==',), ('%(py5)s\n{%(py5)s = %(py3)s\n{%(py3)s = %(py1)s.item\n}()\n} == %(py8)s',), ('py1', 'py3', 'py5', 'py8'), 'assert %(py10)s', 'py10', 'polarity_margin_anchor', 'total', ('>',), ('%(py1)s > %(py4)s',), ('py1', 'py4'), 'assert %(py6)s', 'py6']
+137           RESUME                   0
+
+138           LOAD_GLOBAL              1 (intervention_pairwise_losses + NULL)
+
+139           LOAD_GLOBAL              3 (ideal_output + NULL)
+              CALL                     0
+              LOAD_GLOBAL              4 (PAIR_IDS)
+              LOAD_GLOBAL              6 (INTERVENTIONS)
+              LOAD_CONST               1 (1.0)
+
+138           LOAD_CONST               2 (('polarity_margin_min',))
+              CALL_KW                  4
+              STORE_FAST               0 (nonzero)
+
+141           LOAD_GLOBAL              3 (ideal_output + NULL)
+              CALL                     0
+              STORE_FAST               1 (zero_output)
+
+142           LOAD_GLOBAL              8 (torch)
+              LOAD_ATTR               10 (zeros)
+              PUSH_NULL
+              LOAD_CONST               3 (6)
+              LOAD_CONST               4 (True)
+              LOAD_CONST               5 (('requires_grad',))
+              CALL_KW                  2
+              LOAD_FAST                1 (zero_output)
+              LOAD_CONST               6 ('polarity_margin')
+              STORE_SUBSCR
+
+143           LOAD_GLOBAL              1 (intervention_pairwise_losses + NULL)
+
+144           LOAD_FAST                1 (zero_output)
+              LOAD_GLOBAL              4 (PAIR_IDS)
+              LOAD_GLOBAL              6 (INTERVENTIONS)
+              LOAD_CONST               1 (1.0)
+
+143           LOAD_CONST               2 (('polarity_margin_min',))
+              CALL_KW                  4
+              STORE_FAST               2 (zero)
+
+146           LOAD_FAST                0 (nonzero)
+              LOAD_CONST               7 ('polarity_flip')
+              BINARY_SUBSCR
+              STORE_FAST_LOAD_FAST    51 (@py_assert0, @py_assert0)
+              LOAD_ATTR               12 (item)
+              STORE_FAST_LOAD_FAST    68 (@py_assert2, @py_assert2)
+              PUSH_NULL
+              CALL                     0
+              STORE_FAST               5 (@py_assert4)
+              LOAD_CONST               8 (0.0)
+              STORE_FAST_LOAD_FAST   101 (@py_assert7, @py_assert4)
+              LOAD_FAST                6 (@py_assert7)
+              COMPARE_OP              72 (==)
+              STORE_FAST_LOAD_FAST   119 (@py_assert6, @py_assert6)
+              TO_BOOL
+              POP_JUMP_IF_TRUE       153 (to L1)
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               16 (_call_reprcompare)
+              PUSH_NULL
+              LOAD_CONST               9 (('==',))
+              LOAD_FAST                7 (@py_assert6)
+              BUILD_TUPLE              1
+              LOAD_CONST              10 (('%(py5)s\n{%(py5)s = %(py3)s\n{%(py3)s = %(py1)s.item\n}()\n} == %(py8)s',))
+              LOAD_FAST_LOAD_FAST     86 (@py_assert4, @py_assert7)
+              BUILD_TUPLE              2
+              CALL                     4
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                3 (@py_assert0)
+              CALL                     1
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                4 (@py_assert2)
+              CALL                     1
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                5 (@py_assert4)
+              CALL                     1
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                6 (@py_assert7)
+              CALL                     1
+              LOAD_CONST              11 (('py1', 'py3', 'py5', 'py8'))
+              BUILD_CONST_KEY_MAP      4
+              BINARY_OP                6 (%)
+              STORE_FAST               8 (@py_format9)
+              LOAD_CONST              12 ('assert %(py10)s')
+              LOAD_CONST              13 ('py10')
+              LOAD_FAST                8 (@py_format9)
+              BUILD_MAP                1
+              BINARY_OP                6 (%)
+              STORE_FAST               9 (@py_format11)
+              LOAD_GLOBAL             21 (AssertionError + NULL)
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               22 (_format_explanation)
+              PUSH_NULL
+              LOAD_FAST                9 (@py_format11)
+              CALL                     1
+              CALL                     1
+              RAISE_VARARGS            1
+      L1:     LOAD_CONST               0 (None)
+              COPY                     1
+              STORE_FAST               3 (@py_assert0)
+              COPY                     1
+              STORE_FAST               4 (@py_assert2)
+              COPY                     1
+              STORE_FAST               5 (@py_assert4)
+              COPY                     1
+              STORE_FAST_STORE_FAST  118 (@py_assert6, @py_assert7)
+
+147           LOAD_FAST                0 (nonzero)
+              LOAD_CONST              14 ('polarity_margin_anchor')
+              BINARY_SUBSCR
+              STORE_FAST_LOAD_FAST    51 (@py_assert0, @py_assert0)
+              LOAD_ATTR               12 (item)
+              STORE_FAST_LOAD_FAST    68 (@py_assert2, @py_assert2)
+              PUSH_NULL
+              CALL                     0
+              STORE_FAST               5 (@py_assert4)
+              LOAD_CONST               8 (0.0)
+              STORE_FAST_LOAD_FAST   101 (@py_assert7, @py_assert4)
+              LOAD_FAST                6 (@py_assert7)
+              COMPARE_OP              72 (==)
+              STORE_FAST_LOAD_FAST   119 (@py_assert6, @py_assert6)
+              TO_BOOL
+              POP_JUMP_IF_TRUE       153 (to L2)
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               16 (_call_reprcompare)
+              PUSH_NULL
+              LOAD_CONST               9 (('==',))
+              LOAD_FAST                7 (@py_assert6)
+              BUILD_TUPLE              1
+              LOAD_CONST              10 (('%(py5)s\n{%(py5)s = %(py3)s\n{%(py3)s = %(py1)s.item\n}()\n} == %(py8)s',))
+              LOAD_FAST_LOAD_FAST     86 (@py_assert4, @py_assert7)
+              BUILD_TUPLE              2
+              CALL                     4
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                3 (@py_assert0)
+              CALL                     1
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                4 (@py_assert2)
+              CALL                     1
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                5 (@py_assert4)
+              CALL                     1
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                6 (@py_assert7)
+              CALL                     1
+              LOAD_CONST              11 (('py1', 'py3', 'py5', 'py8'))
+              BUILD_CONST_KEY_MAP      4
+              BINARY_OP                6 (%)
+              STORE_FAST               8 (@py_format9)
+              LOAD_CONST              12 ('assert %(py10)s')
+              LOAD_CONST              13 ('py10')
+              LOAD_FAST                8 (@py_format9)
+              BUILD_MAP                1
+              BINARY_OP                6 (%)
+              STORE_FAST               9 (@py_format11)
+              LOAD_GLOBAL             21 (AssertionError + NULL)
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               22 (_format_explanation)
+              PUSH_NULL
+              LOAD_FAST                9 (@py_format11)
+              CALL                     1
+              CALL                     1
+              RAISE_VARARGS            1
+      L2:     LOAD_CONST               0 (None)
+              COPY                     1
+              STORE_FAST               3 (@py_assert0)
+              COPY                     1
+              STORE_FAST               4 (@py_assert2)
+              COPY                     1
+              STORE_FAST               5 (@py_assert4)
+              COPY                     1
+              STORE_FAST_STORE_FAST  118 (@py_assert6, @py_assert7)
+
+148           LOAD_FAST                2 (zero)
+              LOAD_CONST              15 ('total')
+              BINARY_SUBSCR
+              STORE_FAST_LOAD_FAST    48 (@py_assert0, nonzero)
+              LOAD_CONST              15 ('total')
+              BINARY_SUBSCR
+              STORE_FAST_LOAD_FAST   163 (@py_assert3, @py_assert0)
+              LOAD_FAST               10 (@py_assert3)
+              COMPARE_OP             132 (>)
+              STORE_FAST_LOAD_FAST    68 (@py_assert2, @py_assert2)
+              TO_BOOL
+              POP_JUMP_IF_TRUE       111 (to L3)
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               16 (_call_reprcompare)
+              PUSH_NULL
+              LOAD_CONST              16 (('>',))
+              LOAD_FAST                4 (@py_assert2)
+              BUILD_TUPLE              1
+              LOAD_CONST              17 (('%(py1)s > %(py4)s',))
+              LOAD_FAST_LOAD_FAST     58 (@py_assert0, @py_assert3)
+              BUILD_TUPLE              2
+              CALL                     4
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST                3 (@py_assert0)
+              CALL                     1
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               18 (_saferepr)
+              PUSH_NULL
+              LOAD_FAST               10 (@py_assert3)
+              CALL                     1
+              LOAD_CONST              18 (('py1', 'py4'))
+              BUILD_CONST_KEY_MAP      2
+              BINARY_OP                6 (%)
+              STORE_FAST              11 (@py_format5)
+              LOAD_CONST              19 ('assert %(py6)s')
+              LOAD_CONST              20 ('py6')
+              LOAD_FAST               11 (@py_format5)
+              BUILD_MAP                1
+              BINARY_OP                6 (%)
+              STORE_FAST              12 (@py_format7)
+              LOAD_GLOBAL             21 (AssertionError + NULL)
+              LOAD_GLOBAL             14 (@pytest_ar)
+              LOAD_ATTR               22 (_format_explanation)
+              PUSH_NULL
+              LOAD_FAST               12 (@py_format7)
+              CALL                     1
+              CALL                     1
+              RAISE_VARARGS            1
+      L3:     LOAD_CONST               0 (None)
+              COPY                     1
+              STORE_FAST               3 (@py_assert0)
+              COPY                     1
+              STORE_FAST_STORE_FAST   74 (@py_assert2, @py_assert3)
+              RETURN_CONST             0 (None)
+

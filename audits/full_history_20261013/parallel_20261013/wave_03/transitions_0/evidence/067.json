@@ -1,0 +1,128 @@
+{
+  "shard_ordinal": 67,
+  "original_queue_id": "WORK-a00bd02f882e43022d1e",
+  "original_source_ids": [
+    "HV001462"
+  ],
+  "original_source_identity": {
+    "commit": "d56e49dd23238e401c0787ee0b2c565a04228baa",
+    "path": "tests/test_reason_router_gen5_ainit_temporal_birth.py",
+    "blob": "96d376cdbd98571867776300359b6b00c64f78f5",
+    "object_type": "commit",
+    "bytes": 20645,
+    "sha256": "271e7e667646901f014be6acdacfa1edc1159747a1fbbaf2f9a104ca363ed092"
+  },
+  "before": {
+    "commit": "34fd4e5fc88e56f1b7ab40143a2c858b060779c2",
+    "path": "tests/test_reason_router_gen5_ainit_temporal_birth.py",
+    "blob": "e50b8fb2fa25a3e9eec3b56a943e55a3e49158d6",
+    "object_type": "commit",
+    "bytes": 18792,
+    "sha256": "de10cb93523da847c3aac6da1de068c238ec4127527d946e4ecc307608b19509"
+  },
+  "after": {
+    "commit": "d56e49dd23238e401c0787ee0b2c565a04228baa",
+    "path": "tests/test_reason_router_gen5_ainit_temporal_birth.py",
+    "blob": "96d376cdbd98571867776300359b6b00c64f78f5",
+    "object_type": "commit",
+    "bytes": 20645,
+    "sha256": "271e7e667646901f014be6acdacfa1edc1159747a1fbbaf2f9a104ca363ed092"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0262"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "Dummy",
+      "test_phase_b_joint_analysis_runtime_neutralizes_and_restores_historical_edge_state",
+      "test_phase_b_joint_analysis_runtime_restores_absent_attributes",
+      "test_phase_b_joint_forward_explicitly_neutralizes_edge_specific_arguments"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate test assertion/fixture contracts and their relationship to the historical implementation and stage authority from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 0 removed/replaced lines and 47 added/replaced lines in 1 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "34fd4e5fc88e56f1b7ab40143a2c858b060779c2",
+      "blob": "e50b8fb2fa25a3e9eec3b56a943e55a3e49158d6"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 544,
+      "before_end_exclusive": 544,
+      "after_start": 544,
+      "after_end_exclusive": 591,
+      "before": [],
+      "after": [
+        "",
+        "def test_phase_b_joint_analysis_runtime_neutralizes_and_restores_historical_edge_state():",
+        "    class Dummy:",
+        "        pass",
+        "",
+        "    model = Dummy()",
+        "    original_edges = {\"F_TO_P\": 0.25, \"F_TO_S\": 0.5}",
+        "    model.gradient_ownership_mode = \"edge_specific\"",
+        "    model.gradient_ownership_lambda = None",
+        "    model.edge_gradient_lambdas = original_edges",
+        "    model.return_q_diagnostics = True",
+        "",
+        "    with mod._phase_b_joint_analysis_runtime(model):",
+        "        assert model.gradient_ownership_mode == \"joint\"",
+        "        assert model.gradient_ownership_lambda is None",
+        "        assert model.edge_gradient_lambdas is None",
+        "        assert model.return_q_diagnostics is True",
+        "",
+        "    assert model.gradient_ownership_mode == \"edge_specific\"",
+        "    assert model.gradient_ownership_lambda is None",
+        "    assert model.edge_gradient_lambdas is original_edges",
+        "    assert model.return_q_diagnostics is True",
+        "",
+        "",
+        "def test_phase_b_joint_analysis_runtime_restores_absent_attributes():",
+        "    class Dummy:",
+        "        pass",
+        "",
+        "    model = Dummy()",
+        "    with mod._phase_b_joint_analysis_runtime(model):",
+        "        assert model.gradient_ownership_mode == \"joint\"",
+        "        assert model.gradient_ownership_lambda is None",
+        "        assert model.edge_gradient_lambdas is None",
+        "        assert model.return_q_diagnostics is True",
+        "",
+        "    assert not hasattr(model, \"gradient_ownership_mode\")",
+        "    assert not hasattr(model, \"gradient_ownership_lambda\")",
+        "    assert not hasattr(model, \"edge_gradient_lambdas\")",
+        "    assert not hasattr(model, \"return_q_diagnostics\")",
+        "",
+        "",
+        "def test_phase_b_joint_forward_explicitly_neutralizes_edge_specific_arguments():",
+        "    source = inspect.getsource(mod._phase_b_joint_forward_from_hidden)",
+        "    assert 'gradient_ownership_mode=\"joint\"' in source",
+        "    assert \"gradient_ownership_lambda=None\" in source",
+        "    assert \"edge_gradient_lambdas=None\" in source",
+        "    assert \"with _phase_b_joint_analysis_runtime(model):\" in source"
+      ],
+      "before_context": [
+        "    source = inspect.getsource(mod.validate_phase_b_static_contract)",
+        "    assert \"PHASE_B_PRECURSOR_CORRECTION_BLOB\" in source",
+        "    assert \"PHASE_B_PRECURSOR_CORRECTION_TOKEN\" not in source"
+      ],
+      "after_context": [
+        "    source = inspect.getsource(mod.validate_phase_b_static_contract)",
+        "    assert \"PHASE_B_PRECURSOR_CORRECTION_BLOB\" in source",
+        "    assert \"PHASE_B_PRECURSOR_CORRECTION_TOKEN\" not in source"
+      ]
+    }
+  ]
+}

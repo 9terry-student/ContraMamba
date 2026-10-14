@@ -1,0 +1,24 @@
+{
+  "decision": "PASS_INDEPENDENT_SERIALIZED_READBACK_AND_PRESERVATION",
+  "experiments_tests_kaggle_commit_push": "NOT_RUN",
+  "original_payload_equality": true,
+  "output_hashes_before_this_record": {
+    "authenticated_upstream_sources.jsonl": "970528c95ffb0dc9f32c80022220042af7789552277032e5d9a88f2241dfb058",
+    "consolidate.py": "38f13ea02ff3d8cd6843b86b351b5466009c4aeee928d95e474c621debafd773",
+    "consolidated_debt_accounting.jsonl": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+    "documentary_debt_closures.jsonl": "b2e173904ade35d7d9ffca84da9960260e048037b9a5a82aa9f632d15ee8c40a",
+    "input_preservation_checkpoint.json": "6a1cac7401ed29acf82358f6bb05496d8e54d189e370de6b67a5a3a2fb89220c",
+    "next_local_reconstruction.json": "c75876278a5d67a38adc3486ef1b842dc991a95fecffc78db2f0529579b70175",
+    "report.md": "c9b1c8d662eb10b085fcda8bfd920c29568be359e2549b955c92a696124f29d8",
+    "unlocated_originals.jsonl": "1bc4350de39f858a04479ee2e3fdc079a8f19b8543ad13cba2d25bc3ac2925d7",
+    "user_testimony.json": "e9081ce6c576eb0b8cf72ed830ee88a298eaa0766afae45e9e5d20732118733c",
+    "validation.json": "7bf453f591b79c309674d00729e1c0ba774b793789de0e4b04246b82d67e6823"
+  },
+  "previous_files_rechecked": 705,
+  "remaining_classifications": {
+    "BOUNDED_HISTORICAL_LIMITATION": 3,
+    "CENSUS_BLOCKING": 197,
+    "SCIENTIFIC_VALIDATION_DEFERRED": 8
+  },
+  "remaining_strict_blockers": 198
+}

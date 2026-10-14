@@ -1,0 +1,233 @@
+{
+  "shard_ordinal": 38,
+  "original_queue_id": "WORK-5d5d036c0f2ba7ba403b",
+  "original_source_ids": [
+    "HV000134"
+  ],
+  "original_source_identity": {
+    "commit": "3de4c5bc3e3019cc509ea4d332a8df3c68cfa325",
+    "path": "paper/iclr2027/main.pdf",
+    "blob": "cc64840f208312913cef93cadc42a2fa9b4c0794",
+    "object_type": "commit",
+    "bytes": 670660,
+    "sha256": "ac6e2646b3fba77cbc84226308d84c17dcb5394f1023e12a43ac71c35a5aecaa"
+  },
+  "before": {
+    "commit": "27e5541b9cb4e05ed8941263eb63e73a53bbfaac",
+    "path": "paper/iclr2027/main.pdf",
+    "blob": "9990cc1856fa5177cc7dfc2eeb3597e93344fa36",
+    "object_type": "commit",
+    "bytes": 670414,
+    "sha256": "a597783f635f30578f019d3028ec2579be8c0ee43905d7d9e3ad6cf99a0f3d36"
+  },
+  "after": {
+    "commit": "3de4c5bc3e3019cc509ea4d332a8df3c68cfa325",
+    "path": "paper/iclr2027/main.pdf",
+    "blob": "cc64840f208312913cef93cadc42a2fa9b4c0794",
+    "object_type": "commit",
+    "bytes": 670660,
+    "sha256": "ac6e2646b3fba77cbc84226308d84c17dcb5394f1023e12a43ac71c35a5aecaa"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "versions_shard_0/semantic_revision_records.jsonl",
+      "jsonl_line": 26,
+      "record": {
+        "after_commit": "3de4c5bc3e3019cc509ea4d332a8df3c68cfa325",
+        "before_commit": "27e5541b9cb4e05ed8941263eb63e73a53bbfaac",
+        "categories": [],
+        "evidence": [
+          {
+            "byte_sha256_after": "ac6e2646b3fba77cbc84226308d84c17dcb5394f1023e12a43ac71c35a5aecaa",
+            "byte_sha256_before": "a597783f635f30578f019d3028ec2579be8c0ee43905d7d9e3ad6cf99a0f3d36"
+          }
+        ],
+        "from_blob": "9990cc1856fa5177cc7dfc2eeb3597e93344fa36",
+        "from_kind": "BINARY",
+        "from_size_bytes": 670414,
+        "id": "SR000026",
+        "interpretation": "UNRESOLVED_BINARY_CONTENT",
+        "path": "paper/iclr2027/main.pdf",
+        "relationship": "ANCESTRAL_PATH_EVENT_TRANSITION",
+        "selected_target_ids": [
+          "HV000134"
+        ],
+        "to_blob": "cc64840f208312913cef93cadc42a2fa9b4c0794",
+        "to_kind": "BINARY",
+        "to_size_bytes": 670660
+      }
+    }
+  ],
+  "prior_interpretation": null,
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "27e5541b9cb4e05ed8941263eb63e73a53bbfaac",
+      "blob": "9990cc1856fa5177cc7dfc2eeb3597e93344fa36"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "extracted_pdf_text",
+  "changes": [
+    {
+      "operation": "replace",
+      "before_start": 206,
+      "before_end_exclusive": 209,
+      "after_start": 206,
+      "after_end_exclusive": 209,
+      "before": [
+        "cosine-RSM giving the same qualitative picture. We therefore test and rejectexact CKA-level in-",
+        "variance, not the stronger claim that cross-scale similarity is absent or unexpectedly low under a",
+        "calibrated null."
+      ],
+      "after": [
+        "cosine-RSM giving the same qualitative picture. We therefore find thatexact CKA-level invari-",
+        "ance does not hold on these frozen cohorts, without claiming that cross-scale similarity is absent or",
+        "unexpectedly low under a calibrated null."
+      ],
+      "before_context": [
+        "five planes before an untouched matched-control confirmation. The frozen primary contrast is then",
+        "read under downstream and pretrained objectives. Arrows indicate study order, not shared plane",
+        "identity or a continuous scaling law.",
+        "The second result concerns functional use. For each scale’s primary frozen native contrast, the",
+        "downstream task and pretrained next-token objectives yield opposed five-scale point-estimate sign",
+        "vectors. Eight of ten scale-by-objective cells are individually sign-stable under pair resampling; the"
+      ],
+      "after_context": [
+        "five planes before an untouched matched-control confirmation. The frozen primary contrast is then",
+        "read under downstream and pretrained objectives. Arrows indicate study order, not shared plane",
+        "identity or a continuous scaling law.",
+        "The second result concerns functional use. For each scale’s primary frozen native contrast, the",
+        "downstream task and pretrained next-token objectives yield opposed five-scale point-estimate sign",
+        "vectors. Eight of ten scale-by-objective cells are individually sign-stable under pair resampling; the"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 400,
+      "before_end_exclusive": 401,
+      "after_start": 400,
+      "after_end_exclusive": 404,
+      "before": [
+        "dichotomy."
+      ],
+      "after": [
+        "dichotomy. The XG2/XG4 contrast is intentionally controlled rather than semantically natural: it",
+        "provides a response-independent comparison axis on which recurrent-state susceptibility can be lo-",
+        "calized and prospectively tested. Its scientific role is as a reproducible mechanistic probe, not as a",
+        "claim that the two generator families instantiate a latent semantic variable."
+      ],
+      "before_context": [
+        "lies with different controlled record templates and lexicons (bulletin-style versus register-style) used",
+        "to reconstruct native geometry. ThusQ=E XG2 −E XG4 denotes relative squared local suscep-",
+        "tibility to these two controlled generator families; it is not claimed to encode a natural semantic",
+        "3.1 DEEP CAUSAL ESTABLISHMENT ATMAMBA-130M",
+        "We first establish the local recurrent-state mechanism in Mamba-130M before asking whether any",
+        "part of it recurs at larger scales. Here, acausal rolemeans that manipulating a scale-local native-"
+      ],
+      "after_context": [
+        "lies with different controlled record templates and lexicons (bulletin-style versus register-style) used",
+        "to reconstruct native geometry. ThusQ=E XG2 −E XG4 denotes relative squared local suscep-",
+        "tibility to these two controlled generator families; it is not claimed to encode a natural semantic",
+        "3.1 DEEP CAUSAL ESTABLISHMENT ATMAMBA-130M",
+        "We first establish the local recurrent-state mechanism in Mamba-130M before asking whether any",
+        "part of it recurs at larger scales. Here, acausal rolemeans that manipulating a scale-local native-"
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 431,
+      "before_end_exclusive": 435,
+      "after_start": 434,
+      "after_end_exclusive": 434,
+      "before": [
+        "The selected/control pairs are P3/P5 at 130M, P3/P5 at 370M, P2/P5 at 790M, P5/P4 at 1.4B, and",
+        "P3/P5 at 2.8B (Fig. 3A). These are scale-local identities, not same-numbered-plane homologies.",
+        "At 130M, P3 was localized from response-blind XG2/XG4 geometry before XG1 outcomes. At",
+        "later scales, all five reconstructed planes were evaluated only on a dedicated discovery cohort; the"
+      ],
+      "after": [],
+      "before_context": [
+        "3.2 OPERATIONAL CAUSAL-ROLE RECURRENCE WITH PARTIAL GEOMETRIC CONSERVATION",
+        "We next ask two questions:does an operationally matched causal role survive at larger scales, and",
+        "how much of the response-blind geometry is conserved?",
+        "4",
+        "PAGE 5",
+        "216"
+      ],
+      "after_context": [
+        "3.2 OPERATIONAL CAUSAL-ROLE RECURRENCE WITH PARTIAL GEOMETRIC CONSERVATION",
+        "We next ask two questions:does an operationally matched causal role survive at larger scales, and",
+        "how much of the response-blind geometry is conserved?",
+        "4",
+        "PAGE 5",
+        "216"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 535,
+      "before_end_exclusive": 535,
+      "after_start": 534,
+      "after_end_exclusive": 538,
+      "before": [],
+      "after": [
+        "The selected/control pairs are P3/P5 at 130M, P3/P5 at 370M, P2/P5 at 790M, P5/P4 at 1.4B, and",
+        "P3/P5 at 2.8B (Fig. 3A). These are scale-local identities, not same-numbered-plane homologies.",
+        "At 130M, P3 was localized from response-blind XG2/XG4 geometry before XG1 outcomes. At",
+        "later scales, all five reconstructed planes were evaluated only on a dedicated discovery cohort; the"
+      ],
+      "before_context": [
+        "blind specificity, matched necessity, and restoration; their distinct endpoints are not comparable as",
+        "raw magnitudes. (B) Restoration reaches a continuous task margin, without an accuracy claim. (C)",
+        "Local readout and behavioral effects covary descriptively.",
+        "unique mean-response argmax was frozen, a non-selected control was chosen from frozen geometry",
+        "alone, and the pair was then evaluated on a disjoint confirmation cohort. The discovery winner",
+        "is therefore a selection rule rather than confirmatory evidence, and the primary claim is matched-"
+      ],
+      "after_context": [
+        "blind specificity, matched necessity, and restoration; their distinct endpoints are not comparable as",
+        "raw magnitudes. (B) Restoration reaches a continuous task margin, without an accuracy claim. (C)",
+        "Local readout and behavioral effects covary descriptively.",
+        "unique mean-response argmax was frozen, a non-selected control was chosen from frozen geometry",
+        "alone, and the pair was then evaluated on a disjoint confirmation cohort. The discovery winner",
+        "is therefore a selection rule rather than confirmatory evidence, and the primary claim is matched-"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 1023,
+      "before_end_exclusive": 1027,
+      "after_start": 1026,
+      "after_end_exclusive": 1030,
+      "before": [
+        "Generative AI tools assisted literature discovery, experimental planning and methodology design,",
+        "code development and debugging, artifact verification, result interpretation, figure preparation, and",
+        "manuscript drafting and editing. The authors reviewed all AI-assisted outputs and take responsibility",
+        "for the final methods, results, citations, and claims."
+      ],
+      "after": [
+        "Generative AI tools assisted related-work discovery, experimental planning, code development and",
+        "debugging, artifact verification, figure preparation, and manuscript drafting and editing. The authors",
+        "reviewed all AI-assisted outputs and take responsibility for the final methods, results, citations, and",
+        "claims."
+      ],
+      "before_context": [
+        "REPRODUCIBILITY STATEMENT",
+        "Frozen revisions, populations, sites, statistics, and figure sources are specified in the appendix.",
+        "AIUSE STATEMENT",
+        "REFERENCES",
+        "Laure Ciernik, Lorenz Linhardt, Marco Morik, Jonas Dippel, Simon Kornblith, and Lukas Mutten-",
+        "thaler. Objective drives the consistency of representational similarity across datasets. InProceed-"
+      ],
+      "after_context": [
+        "REPRODUCIBILITY STATEMENT",
+        "Frozen revisions, populations, sites, statistics, and figure sources are specified in the appendix.",
+        "AIUSE STATEMENT",
+        "REFERENCES",
+        "Laure Ciernik, Lorenz Linhardt, Marco Morik, Jonas Dippel, Simon Kornblith, and Lukas Mutten-",
+        "thaler. Objective drives the consistency of representational similarity across datasets. InProceed-"
+      ]
+    }
+  ]
+}

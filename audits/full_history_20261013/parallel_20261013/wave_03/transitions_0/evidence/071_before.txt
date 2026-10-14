@@ -1,0 +1,56 @@
+PAGE 1
+A
+Scale-local causal roles across all five Mamba-1 scales
+Selected / control ranks are local identities, not semantic homologues.
+130M
+370M
+790M
+1.4B
+2.8B
+Common contrast: Q(selected restored) - Q(coefficient-matched control)
+Selected / control
+P3 / P5
+P3 / P5
+P2 / P5
+P5 / P4
+P3 / P5
+Historical label
+D_SUF
+D_DOM
+D_CORE
+D_CORE
+D_CORE
+Result
+Supported
+Supported
+Supported
+Supported
+Supported
+130M restoration sufficiency; 370M two-test Holm family (residual criterion failed).
+790M-2.8B: later core confirmations. Distinct protocols; no magnitude scaling.
+B
+Native kernel reorganization
+C
+Native geometry reorganization
+Kernel mean squared weight (mu_k2)
+Leading plane lambda1
+0.00
+0.01
+0.02
+0.03
+130M
+370M
+790M
+1.4B
+2.8B
+0.85
+0.90
+0.95
+1.00
+130M
+370M
+790M
+1.4B
+2.8B
+Open markers: historical response-blind 130M; filled markers: later matched 370M-2.8B bridge.
+Categorical scale positions; raw values, no scaling fit. Geometry axis begins at 0.85.

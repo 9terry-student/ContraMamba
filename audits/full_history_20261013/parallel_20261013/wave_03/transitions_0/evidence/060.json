@@ -1,0 +1,152 @@
+{
+  "shard_ordinal": 60,
+  "original_queue_id": "WORK-92db5cf11e11070eac09",
+  "original_source_ids": [
+    "HV000121"
+  ],
+  "original_source_identity": {
+    "commit": "048fb78258bbe0dac29f0dfbe0310b9023ecc672",
+    "path": "paper/iclr2027/figures/fig4_objective_conditioned_functionalization.pdf",
+    "blob": "b279b9a68fccede75fbfa1c65c81aa71f6cc2ef5",
+    "object_type": "commit",
+    "bytes": 75176,
+    "sha256": "96372da7dc888552cf3551c45c7c7652948216e84678abf5d5ee0a80c8dbb793"
+  },
+  "before": {
+    "commit": "ef1806bef9e4a7f55e1f7e77f7a0f08592fb4abe",
+    "path": "paper/iclr2027/figures/fig4_objective_conditioned_functionalization.pdf",
+    "blob": "abf04295d5b6d374de856b229f3e070ebbe91e82",
+    "object_type": "commit",
+    "bytes": 74700,
+    "sha256": "8ca4156cd0f97feb8f9ebfd437e694d25dd8b4e1656bce6df72a0ce49f1fc43a"
+  },
+  "after": {
+    "commit": "048fb78258bbe0dac29f0dfbe0310b9023ecc672",
+    "path": "paper/iclr2027/figures/fig4_objective_conditioned_functionalization.pdf",
+    "blob": "b279b9a68fccede75fbfa1c65c81aa71f6cc2ef5",
+    "object_type": "commit",
+    "bytes": 75176,
+    "sha256": "96372da7dc888552cf3551c45c7c7652948216e84678abf5d5ee0a80c8dbb793"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "versions_shard_1/semantic_revision_records.jsonl",
+      "jsonl_line": 50,
+      "record": {
+        "added_excerpt": [],
+        "added_lines": null,
+        "classification": "UNRESOLVED_CONTENT",
+        "from_blob": "abf04295d5b6d374de856b229f3e070ebbe91e82",
+        "from_commit": "ef1806bef9e4a7f55e1f7e77f7a0f08592fb4abe",
+        "from_id": "HV000122",
+        "manual_content_review": "NO",
+        "path": "paper/iclr2027/figures/fig4_objective_conditioned_functionalization.pdf",
+        "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+        "removed_excerpt": [],
+        "removed_lines": null,
+        "semantic_disposition": "REVIEW_REQUIRED",
+        "to_blob": "b279b9a68fccede75fbfa1c65c81aa71f6cc2ef5",
+        "to_commit": "048fb78258bbe0dac29f0dfbe0310b9023ecc672",
+        "to_id": "HV000121",
+        "truncated_diff": true
+      }
+    }
+  ],
+  "prior_interpretation": null,
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "8423ef9d1325c007ecd31849a668131197e2214d",
+      "blob": "abf04295d5b6d374de856b229f3e070ebbe91e82"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "extracted_pdf_text",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 12,
+      "before_end_exclusive": 12,
+      "after_start": 12,
+      "after_end_exclusive": 13,
+      "before": [],
+      "after": [
+        "0.006"
+      ],
+      "before_context": [
+        "0.000",
+        "0.002",
+        "0.004",
+        "130M",
+        "370M",
+        "790M"
+      ],
+      "after_context": [
+        "0.000",
+        "0.002",
+        "0.004",
+        "130M",
+        "370M",
+        "790M"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 37,
+      "before_end_exclusive": 38,
+      "after_start": 38,
+      "after_end_exclusive": 39,
+      "before": [
+        "Separate y-scales preserve raw units. Bars are frozen means; signs are shown explicitly."
+      ],
+      "after": [
+        "Separate y-scales; bars and signs are point means, whiskers are percentile 95% pair intervals."
+      ],
+      "before_context": [
+        "-",
+        "+",
+        "+",
+        "C",
+        "Opposite aggregate signs do not imply rowwise inversion",
+        "130M"
+      ],
+      "after_context": [
+        "-",
+        "+",
+        "+",
+        "C",
+        "Pair-level associations remain mixed",
+        "130M"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 39,
+      "before_end_exclusive": 40,
+      "after_start": 40,
+      "after_end_exclusive": 41,
+      "before": [
+        "Opposite aggregate signs do not imply rowwise inversion"
+      ],
+      "after": [
+        "Pair-level associations remain mixed"
+      ],
+      "before_context": [
+        "+",
+        "Separate y-scales preserve raw units. Bars are frozen means; signs are shown explicitly.",
+        "C",
+        "130M",
+        "370M",
+        "790M"
+      ],
+      "after_context": [
+        "+",
+        "Separate y-scales; bars and signs are point means, whiskers are percentile 95% pair intervals.",
+        "C",
+        "130M",
+        "370M",
+        "790M"
+      ]
+    }
+  ]
+}

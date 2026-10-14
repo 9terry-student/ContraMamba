@@ -1,0 +1,219 @@
+{
+  "shard_ordinal": 103,
+  "original_queue_id": "WORK-f278730c819b40e6a62d",
+  "original_source_ids": [
+    "HV001516"
+  ],
+  "original_source_identity": {
+    "commit": "da1f9a3ded6c87f7b8b4e58556c40eb22c9d6adb",
+    "path": "tests/test_reason_router_p3w6f2_p4d_controlled_data_integrity_gate.py",
+    "blob": "c915b0cda0cc20160fa311fab2a4238ba608c7ec",
+    "object_type": "commit",
+    "bytes": 14254,
+    "sha256": "9c30873d445b971575d6b062930fd2057a4c245b28b3754779c88f9aeb8a9de5"
+  },
+  "before": {
+    "commit": "ffb0747d78dd1fbf2764b46c4b93717ee6d769b8",
+    "path": "tests/test_reason_router_p3w6f2_p4d_controlled_data_integrity_gate.py",
+    "blob": "0fbd7a9d94d2593d9eb2fb0dd4297745270ff7f5",
+    "object_type": "commit",
+    "bytes": 13367,
+    "sha256": "d18e7318c15c76b283f802fba8dd4672be861f3cce856eb75ebe33ea699c7a79"
+  },
+  "after": {
+    "commit": "da1f9a3ded6c87f7b8b4e58556c40eb22c9d6adb",
+    "path": "tests/test_reason_router_p3w6f2_p4d_controlled_data_integrity_gate.py",
+    "blob": "c915b0cda0cc20160fa311fab2a4238ba608c7ec",
+    "object_type": "commit",
+    "bytes": 14254,
+    "sha256": "9c30873d445b971575d6b062930fd2057a4c245b28b3754779c88f9aeb8a9de5"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0286"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "test_exact_238_authorized_deltas_and_delta_adversaries",
+      "test_pair_count_drift_blocks"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate test assertion/fixture contracts and their relationship to the historical implementation and stage authority from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 4 removed/replaced lines and 24 added/replaced lines in 5 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "ffb0747d78dd1fbf2764b46c4b93717ee6d769b8",
+      "blob": "0fbd7a9d94d2593d9eb2fb0dd4297745270ff7f5"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "replace",
+      "before_start": 130,
+      "before_end_exclusive": 133,
+      "after_start": 130,
+      "after_end_exclusive": 136,
+      "before": [
+        "    for row in rows[:12]:",
+        "        row[\"pair_id\"] = \"merged_pair\"",
+        "    with pytest.raises(gate.GateBlocked, match=\"PAIR_COUNT_MISMATCH|DUPLICATE_PAIR_INTERVENTION\"):"
+      ],
+      "after": [
+        "    fresh_pair_id = \"fresh_pair_count_drift_pair\"",
+        "    assert fresh_pair_id not in {row[\"pair_id\"] for row in rows}",
+        "    rows[0][\"pair_id\"] = fresh_pair_id",
+        "    assert len(rows) == gate.ROW_COUNT",
+        "    assert len({row[\"pair_id\"] for row in rows}) == gate.PAIR_COUNT + 1",
+        "    with pytest.raises(gate.GateBlocked, match=\"PAIR_COUNT_MISMATCH\"):"
+      ],
+      "before_context": [
+        "",
+        "def test_pair_count_drift_blocks():",
+        "    rows = copy.deepcopy(regenerated_rows())",
+        "        gate.validate_dataset_structure(rows, label=\"MUTATED\")",
+        "",
+        ""
+      ],
+      "after_context": [
+        "",
+        "def test_pair_count_drift_blocks():",
+        "    rows = copy.deepcopy(regenerated_rows())",
+        "        gate.validate_dataset_structure(rows, label=\"MUTATED\")",
+        "",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 166,
+      "before_end_exclusive": 166,
+      "after_start": 169,
+      "after_end_exclusive": 170,
+      "before": [],
+      "after": [
+        "    hist_by_id = by_id(hist)"
+      ],
+      "before_context": [
+        "    hist = historical_rows()",
+        "    regen = copy.deepcopy(regenerated_rows())",
+        "    auth = gate._authorized_pair_ids_from_artifacts(artifact_dir())",
+        "    result = gate.validate_identity_label_linkage_and_deltas(hist, regen, authorized_pair_ids=auth)",
+        "    assert result[\"changed_row_count\"] == 238",
+        "    assert result[\"changed_pair_count\"] == 119"
+      ],
+      "after_context": [
+        "    hist = historical_rows()",
+        "    regen = copy.deepcopy(regenerated_rows())",
+        "    auth = gate._authorized_pair_ids_from_artifacts(artifact_dir())",
+        "    result = gate.validate_identity_label_linkage_and_deltas(hist, regen, authorized_pair_ids=auth)",
+        "    assert result[\"changed_row_count\"] == 238",
+        "    assert result[\"changed_pair_count\"] == 119"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 176,
+      "before_end_exclusive": 177,
+      "after_start": 180,
+      "after_end_exclusive": 181,
+      "before": [
+        "    target = next(row for row in non_f2 if row[\"pair_id\"] not in auth)"
+      ],
+      "after": [
+        "    target = next(row for row in non_f2 if row[\"pair_id\"] in auth and row[\"intervention_type\"] == \"entity_swap\")"
+      ],
+      "before_context": [
+        "    with pytest.raises(gate.GateBlocked, match=\"LABEL_DRIFT\"):",
+        "        gate.validate_identity_label_linkage_and_deltas(hist, f2_field, authorized_pair_ids=auth)",
+        "    non_f2 = copy.deepcopy(regen)",
+        "    target[\"evidence\"] += \" extra\"",
+        "    with pytest.raises(gate.GateBlocked, match=\"NON_F2_MUTATION\"):",
+        "        gate.validate_identity_label_linkage_and_deltas(hist, non_f2, authorized_pair_ids=auth)"
+      ],
+      "after_context": [
+        "    with pytest.raises(gate.GateBlocked, match=\"LABEL_DRIFT\"):",
+        "        gate.validate_identity_label_linkage_and_deltas(hist, f2_field, authorized_pair_ids=auth)",
+        "    non_f2 = copy.deepcopy(regen)",
+        "    target[\"evidence\"] += \" extra\"",
+        "    restored = next(",
+        "        row"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 178,
+      "before_end_exclusive": 178,
+      "after_start": 182,
+      "after_end_exclusive": 190,
+      "before": [],
+      "after": [
+        "    restored = next(",
+        "        row",
+        "        for row in non_f2",
+        "        if row[\"pair_id\"] == target[\"pair_id\"]",
+        "        and row[\"intervention_type\"] in gate.AUTHORIZED_CHANGED_INTERVENTIONS",
+        "        and row[\"evidence\"] != hist_by_id[row[\"id\"]][\"evidence\"]",
+        "    )",
+        "    restored[\"evidence\"] = hist_by_id[restored[\"id\"]][\"evidence\"]"
+      ],
+      "before_context": [
+        "    non_f2 = copy.deepcopy(regen)",
+        "    target = next(row for row in non_f2 if row[\"pair_id\"] not in auth)",
+        "    target[\"evidence\"] += \" extra\"",
+        "    with pytest.raises(gate.GateBlocked, match=\"NON_F2_MUTATION\"):",
+        "        gate.validate_identity_label_linkage_and_deltas(hist, non_f2, authorized_pair_ids=auth)",
+        "    polarity = copy.deepcopy(regen)"
+      ],
+      "after_context": [
+        "    non_f2 = copy.deepcopy(regen)",
+        "    target = next(row for row in non_f2 if row[\"pair_id\"] in auth and row[\"intervention_type\"] == \"entity_swap\")",
+        "    target[\"evidence\"] += \" extra\"",
+        "    with pytest.raises(gate.GateBlocked, match=\"NON_F2_MUTATION\"):",
+        "        gate.validate_identity_label_linkage_and_deltas(hist, non_f2, authorized_pair_ids=auth)",
+        "    polarity = copy.deepcopy(regen)"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 183,
+      "before_end_exclusive": 183,
+      "after_start": 195,
+      "after_end_exclusive": 203,
+      "before": [],
+      "after": [
+        "    restored = next(",
+        "        row",
+        "        for row in polarity",
+        "        if row[\"pair_id\"] == target[\"pair_id\"]",
+        "        and row[\"intervention_type\"] in gate.AUTHORIZED_CHANGED_INTERVENTIONS",
+        "        and row[\"evidence\"] != hist_by_id[row[\"id\"]][\"evidence\"]",
+        "    )",
+        "    restored[\"evidence\"] = hist_by_id[restored[\"id\"]][\"evidence\"]"
+      ],
+      "before_context": [
+        "    polarity = copy.deepcopy(regen)",
+        "    target = next(row for row in polarity if row[\"pair_id\"] in auth and row[\"intervention_type\"] == \"polarity_flip\")",
+        "    target[\"evidence\"] += \" extra\"",
+        "    with pytest.raises(gate.GateBlocked, match=\"F2_POLARITY_FLIP_MUTATION\"):",
+        "        gate.validate_identity_label_linkage_and_deltas(hist, polarity, authorized_pair_ids=auth)",
+        ""
+      ],
+      "after_context": [
+        "    polarity = copy.deepcopy(regen)",
+        "    target = next(row for row in polarity if row[\"pair_id\"] in auth and row[\"intervention_type\"] == \"polarity_flip\")",
+        "    target[\"evidence\"] += \" extra\"",
+        "    with pytest.raises(gate.GateBlocked, match=\"F2_POLARITY_FLIP_MUTATION\"):",
+        "        gate.validate_identity_label_linkage_and_deltas(hist, polarity, authorized_pair_ids=auth)",
+        ""
+      ]
+    }
+  ]
+}

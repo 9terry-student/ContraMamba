@@ -1,0 +1,272 @@
+{
+  "actual_original_targets": 126,
+  "all_16_literal_dependencies_accounted": true,
+  "all_dispositions_have_evidence": true,
+  "applicable_literal_audit_source_discrepancies": 1,
+  "applicable_missing_literals": 1,
+  "authority": "Current user-directed Census Recovery A + AGENTS.md",
+  "bounded_unknown_is_not_recovery": true,
+  "broad_source_universe_scan_repeated": false,
+  "closed_target_semantic_requirements": 4,
+  "disposition_counts": {
+    "BOUNDED_HISTORICAL_UNKNOWN": 4,
+    "REQUIRES_COMPANION_EVIDENCE": 2,
+    "SEMANTICS_RECOVERED": 4,
+    "UNRESOLVED": 116
+  },
+  "expected_original_targets": 126,
+  "full_census_completion_claimed": false,
+  "git_commands_by_producer": [
+    [
+      "git",
+      "show",
+      "b0a3b33c0be18bbb8bba29a93a65b33e469ec160"
+    ],
+    [
+      "git",
+      "show",
+      "d6fac7e0cdf466c03d66e453a010363383048159"
+    ],
+    [
+      "git",
+      "show",
+      "e1d4e76eb41773d35670bdeacedae1286d39a6a2"
+    ],
+    [
+      "git",
+      "show",
+      "0de699659f0728a82d3662910b3bc7e29fb08f40"
+    ],
+    [
+      "git",
+      "show",
+      "4ec381860d98889b48be756c071e7144e31995fe"
+    ],
+    [
+      "git",
+      "show",
+      "23b7617ace807b09071e9570650189a1099595fa"
+    ],
+    [
+      "git",
+      "show",
+      "374af78d4f355f9aab195f760a53957dbcff6e17"
+    ],
+    [
+      "git",
+      "show",
+      "cda1626f9122feb42a561d454ed063815f855d2f"
+    ],
+    [
+      "git",
+      "show",
+      "7e360a69c2aa924af873a1bc0d7d9e5515380768"
+    ]
+  ],
+  "git_diff_check": "PASSED; tracked staged and unstaged stats empty; untracked audits remains",
+  "git_identity_verification_repeated": false,
+  "id_bijection": true,
+  "independent_serialized_readback": {
+    "41_consulted_input_files_unchanged": true,
+    "all_16_literal_roots_and_exact_applicability_validated": true,
+    "every_prior_evidence_payload_readback_equal": true,
+    "exact_126_id_bijection": true,
+    "frozen_manifest_payload_equality": true,
+    "gap_partition": {
+      "closed": 4,
+      "open": 122
+    },
+    "no_scientific_validation_performed": true,
+    "producer_imported": false,
+    "report_and_output_fingerprints": {
+      "missing_literal_recovery.jsonl": "96ace038201a8e45b32b9c36ba7c2141b287d5d35d404a53b8e1bccc76e6807d",
+      "recover_local_semantics.py": "51cf249d689932086b2ec22b2be007cd1e007d2ef3a7f0f61c12c29f9cc015e5",
+      "remaining_semantic_gaps.jsonl": "1c30c0bc330d512269eab86b81db4a2929a29e06baa06a6c8d54600da1e471fc",
+      "report.md": "bf797929401ef87a64769c4b0d96199368e29069d4a87b0479bd961ef466fcf3",
+      "semantic_recovery_results.jsonl": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2",
+      "target_manifest.jsonl": "ab37073ad7b37187220ccf285d27e0f43dcf1bc3e8e8fe5b0722d2ac66b01f3d"
+    },
+    "reviewed_unit_hashes_validated": 510,
+    "status": "PASS_ACCOUNTING_AND_PRESERVATION_ONLY"
+  },
+  "input_fingerprints": {
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\expansion_02\\study_identity_ledger.jsonl": {
+      "bytes": 24090,
+      "sha256": "843fc6d2f7aab77ce476dce5885aa04c650b048982d9edeeb52348621f0f0743"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\study_identity_116\\study_identity_evidence.jsonl": {
+      "bytes": 353634,
+      "sha256": "a87384b5229fd79e7aefb0470f3c6c74831587166a7f07faee606f1075fbbf73"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_02\\integration_02\\remaining_census_work_queue.jsonl": {
+      "bytes": 2808549,
+      "sha256": "d1246cf4c90cf93e5f28735e97155dd9fafdfdf8138bc99eb2f98dfc3622ec17"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_02\\study_adjudication\\study_identity_adjudications.jsonl": {
+      "bytes": 10936199,
+      "sha256": "22c6fc8f0dbb82ad0559c4f5f049c13af7a96b72b9f72f806f07e5785836c71f"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\census_closure\\closure_report.md": {
+      "bytes": 14193,
+      "sha256": "9402dd401b3ff6b2a384022d116d2594c7e3df73eea8f2929021da6cf4c4d888"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\census_closure\\closure_validation.json": {
+      "bytes": 214190,
+      "sha256": "ee22f494c41dd6db4a2070ec99389cb7ce9cbc3b206234b87752074a3de834c7"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\census_closure\\frozen_211_target_manifest.jsonl": {
+      "bytes": 3327715,
+      "sha256": "d501aa7fa375a21721e3d9fc1fa731e004776f462605522535b330b95125df8b"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\census_closure\\root_evidence_requirements.jsonl": {
+      "bytes": 1390021,
+      "sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\census_closure\\source_recovery_results.jsonl": {
+      "bytes": 975027,
+      "sha256": "911f00bc3a4a9c34aa7e47683abd0fa2c2e20104fd6284c74b861705ab5f40cf"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\content_recovery\\recovered_scientific_source_records.jsonl": {
+      "bytes": 190859392,
+      "sha256": "ca9728c6b34a6977c4b6073cadf329dc985aa8e914889370296353d183737827"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\content_recovery\\remaining_content_gaps.jsonl": {
+      "bytes": 113132,
+      "sha256": "3b6b06299ffa74c940bbc357b9b134a612461d1b0e12a328e460fb37e40a89fb"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\content_recovery\\source_content_recovery.jsonl": {
+      "bytes": 240143,
+      "sha256": "c9e2f548eba81a4b796f5ea40f1d4061c78e7a5bd212ae497adba00931968771"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\content_recovery\\source_damage_registry.jsonl": {
+      "bytes": 495536,
+      "sha256": "2f9850fdbb6de22d871822e04126af81d1998b1564f951f48fccc44a32dde733"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\014.json": {
+      "bytes": 50134,
+      "sha256": "cd36c146ea0ab41012065dc211502c3478c149ba2ec6ade4870847227c7b02c0"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\031.json": {
+      "bytes": 2726,
+      "sha256": "5e713fde2f2de182ad2b35b93fe558fe854b8d58b52852a5a1b0bc7bfee4c335"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\038.json": {
+      "bytes": 11739,
+      "sha256": "d78b2b08db82b51ed7817e955296a67091a6f66d60d5aad3bbe5e8b38f4fc5be"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\038_after_companion_README.md": {
+      "bytes": 8283,
+      "sha256": "675fcc357b69678374ab061a285e5ef8bd09cd1d978dfb51d4f83e20ab4ea203"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\038_after_companion_appendix.tex": {
+      "bytes": 21083,
+      "sha256": "3ddb2da9b2d2903b7e8325ef1eb2ed349fb862aa4287f308289d39786ab6e7f6"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\038_after_companion_figure_data_manifest.json": {
+      "bytes": 236696,
+      "sha256": "50c621f3240bd31cd05688da1fb78082840e16928be3281797d63e24ee49a252"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\038_after_companion_main.tex": {
+      "bytes": 30424,
+      "sha256": "91dd0adfeee7368793813c140e78d82d5a54073eedefcb03f83da9a3b0931518"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\038_before_companion_README.md": {
+      "bytes": 8283,
+      "sha256": "675fcc357b69678374ab061a285e5ef8bd09cd1d978dfb51d4f83e20ab4ea203"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\038_before_companion_appendix.tex": {
+      "bytes": 21083,
+      "sha256": "3ddb2da9b2d2903b7e8325ef1eb2ed349fb862aa4287f308289d39786ab6e7f6"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\038_before_companion_figure_data_manifest.json": {
+      "bytes": 236696,
+      "sha256": "50c621f3240bd31cd05688da1fb78082840e16928be3281797d63e24ee49a252"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\038_before_companion_main.tex": {
+      "bytes": 30078,
+      "sha256": "5f307eb5a6e1c6e32dfc9cc4a2dd52ed87b1a116aaa111e9feee6ed1cfa76832"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\042.json": {
+      "bytes": 3208,
+      "sha256": "94745360b6d342f52837fd609bde1a48df3f521c777c7d078fdbc9ab4684fb6f"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\047.json": {
+      "bytes": 61646,
+      "sha256": "7d60273b16778d24af96690a05e18cc6e63f1c8a1c665fcc118f706585208aa6"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\048.json": {
+      "bytes": 112530,
+      "sha256": "480fda8ca57a9a5a68a934754648b5c3f4aeb25fae7947488b1486ff749a3f22"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\060.json": {
+      "bytes": 4584,
+      "sha256": "1ed924bb64fd79b8bbf93f8b350f00b3d2752f5ed7c8914c2ae0967855564b66"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\064.json": {
+      "bytes": 70074,
+      "sha256": "b16bda7f26347504b69759b2ee09fcaa310a409b62517c181be8dea4c85a4b82"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\071.json": {
+      "bytes": 9644,
+      "sha256": "91a6854155563beb4b24d979f2a8ba77be3fa9cff472a0e925b95c1c4724c602"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\077.json": {
+      "bytes": 40319,
+      "sha256": "30aadb4f97c19da4c60655e8eded44f3f18810852880ce387eef7acb590b9e85"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\078.json": {
+      "bytes": 12453,
+      "sha256": "e2e00896b4b81a51697eabc33f750877cc746dad20b5b05062d0a9093bef0df1"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\079.json": {
+      "bytes": 46211,
+      "sha256": "67afec8289e05c514a93031e20c77947dff8df4e67ff7438373beb05223d1bed"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\081.json": {
+      "bytes": 9313,
+      "sha256": "7b7d494e968ee48904c5e53d19f4c8fece4766b1620a34a1250f16e55c9d37e2"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\085.json": {
+      "bytes": 56999,
+      "sha256": "c50749d4c1de630e538166ab582bd61d7ea7541c5723c0631ae56eb04b3a67a5"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\090.json": {
+      "bytes": 127430,
+      "sha256": "89c31e19fba6299e98d905cc4161d089199c5d62bf3c54f0bfb41240787ccf76"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\093.json": {
+      "bytes": 2724,
+      "sha256": "0d250a5eb6b1b2c63ee393d7d34dfa114c78f45a8f3d29f74a9a57a12b037281"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\099.json": {
+      "bytes": 59239,
+      "sha256": "48550fb69be810c3ce2cd6aee111a3737664820610bd1fa686918d3f9494d02f"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\evidence\\106.json": {
+      "bytes": 2639,
+      "sha256": "3c0ef4cf891e7cf33c33d911dc8861b627326f3768da6b988f7e6e2533c5e982"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\historical_scientific_changes.jsonl": {
+      "bytes": 147556,
+      "sha256": "37013e7f55212945d71e76b45a3520ff11fced4906ceeb54116c63df7a56b3e1"
+    },
+    "C:\\cm-full-audit-20261013\\audits\\full_history_20261013\\parallel_20261013\\wave_03\\transitions_0\\transition_interpretations.jsonl": {
+      "bytes": 751213,
+      "sha256": "d7e2ed74fac4143e5349c261849e579232c4a5f38537a801cc521371ebd2e518"
+    }
+  },
+  "original_identity_payload_preserved": true,
+  "partial_function_target_count": 102,
+  "partial_local_function_units": 510,
+  "phase": "STATIC_HISTORICAL_RECONSTRUCTION_ONLY",
+  "previous_evidence_sufficient_whole_target_count": 0,
+  "prior_inputs_unchanged": true,
+  "recovered_original_literals": 0,
+  "remaining_source_census_blocker_count_in_assigned_population": 122,
+  "scientific_validity_certified": false,
+  "scope_limit": "UNRESOLVED means investigated with bounded partial evidence, not completed independent whole-function review. Documentary closure does not close separate study-run/adoption or snapshot chronology debt.",
+  "training_evaluation_gpu_tests": "NOT_RUN",
+  "unprocessed_target_ids": [],
+  "whole_trainer_semantics_complete": false,
+  "zero_silent_omissions": true
+}

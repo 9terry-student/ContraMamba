@@ -1,0 +1,319 @@
+{
+  "created_utc": "2026-10-14T07:27:23.418937+00:00",
+  "completed_owner_records_preserved": true,
+  "purpose": "Additional exact-decimal, chronology and narrowly relevant manuscript-reference checks; neither completed owner verdict is discarded or rewritten.",
+  "owners": {
+    "HV000107": {
+      "exact_decimal_complete_operation_paths_match": true,
+      "exact_decimal_existing_values_unchanged": true,
+      "actual_parent_publication_blobs": [
+        {
+          "commit": "2e65dd887ba4159d4024d85b8996306cfadec023",
+          "publication_path": "paper/iclr2027/figures/fig2_130m_causal_foundation.pdf",
+          "blob": "d26b10c013bdffd96799a27abd7fbe9277a13a61",
+          "same_as_selected_before": true
+        }
+      ],
+      "selected_before_is_direct_parent": false,
+      "reference_comparisons": [
+        {
+          "path": "paper/iclr2027/main.tex",
+          "before_identity": {
+            "commit": "cfd1e5b4f43be1ae3847ce943906dfc841ed5373",
+            "actual_blob": "3b2c216dbc1fd16ef80f4ee013b94369e68b11ce",
+            "raw_sha256": "637fb432b94d38aa625288ffce1dfb42f973d543a3acaae449682fbcbd05844f"
+          },
+          "after_identity": {
+            "commit": "ef1806bef9e4a7f55e1f7e77f7a0f08592fb4abe",
+            "actual_blob": "bd5fea7184ec4585f08248d4a8e1a01548a49ddd",
+            "raw_sha256": "cad134dd09020ecdb3be6adbd77bf616ed2959cbc003155431693294c78f97b1"
+          },
+          "complete_changes_in_bounded_relevant_source_span": [],
+          "scope_before_lines": [
+            70,
+            95
+          ]
+        },
+        {
+          "path": "paper/iclr2027/appendix.tex",
+          "before_identity": {
+            "commit": "cfd1e5b4f43be1ae3847ce943906dfc841ed5373",
+            "actual_blob": "421511023cf8a562a8f6ac08757cecaee2bec099",
+            "raw_sha256": "77b1f22c3278caaf7dcde79611ee67c2293f5a6a6736150cc7e6dd490a9d335b"
+          },
+          "after_identity": {
+            "commit": "ef1806bef9e4a7f55e1f7e77f7a0f08592fb4abe",
+            "actual_blob": "0ccb6a3a51a04457c4b8a7378606435a7c6c8fca",
+            "raw_sha256": "4551743c71a729488572f225abcea170c7dd9e4884d70e340218836744cd22be"
+          },
+          "complete_changes_in_bounded_relevant_source_span": [],
+          "scope_before_lines": [
+            105,
+            154
+          ]
+        }
+      ]
+    },
+    "HV000113": {
+      "exact_decimal_complete_operation_paths_match": true,
+      "exact_decimal_existing_values_unchanged": true,
+      "actual_parent_publication_blobs": [
+        {
+          "commit": "8423ef9d1325c007ecd31849a668131197e2214d",
+          "publication_path": "paper/iclr2027/figures/fig3_five_scale_recurrence_reorganization.pdf",
+          "blob": "f12d9bb756806b6438ac3cd1ac7c9deccd2d4670",
+          "same_as_selected_before": true
+        }
+      ],
+      "selected_before_is_direct_parent": false,
+      "reference_comparisons": [
+        {
+          "path": "paper/iclr2027/main.tex",
+          "before_identity": {
+            "commit": "ef1806bef9e4a7f55e1f7e77f7a0f08592fb4abe",
+            "actual_blob": "bd5fea7184ec4585f08248d4a8e1a01548a49ddd",
+            "raw_sha256": "cad134dd09020ecdb3be6adbd77bf616ed2959cbc003155431693294c78f97b1"
+          },
+          "after_identity": {
+            "commit": "048fb78258bbe0dac29f0dfbe0310b9023ecc672",
+            "actual_blob": "5b25d43810a08fcedb8be9051d5199017c898279",
+            "raw_sha256": "3ba8fe90a6c967f2d34313439ec8d6f6833778632258aaf59da14a063f9c1e02"
+          },
+          "complete_changes_in_bounded_relevant_source_span": [
+            {
+              "op": "replace",
+              "before_start": 95,
+              "before_end": 95,
+              "before": [
+                "\\subsection{A scale-local causal role recurs while native geometry reorganizes}"
+              ],
+              "after_start": 112,
+              "after_end": 112,
+              "after": [
+                "\\subsection{A scale-local causal role recurs while native geometry is only partially conserved}"
+              ]
+            },
+            {
+              "op": "replace",
+              "before_start": 106,
+              "before_end": 106,
+              "before": [
+                "That is not what we observe. Every off-diagonal entry in both five-scale CKA matrices lies below one (Fig.~\\ref{fig:scale}B--C), with substantial heterogeneity across scale pairs rather than a monotonic progression with parameter count. A separately frozen cosine-RSM comparison of the same rows gives the same qualitative conclusion (Appendix~\\ref{app:geometry}). The geometry is therefore \\textbf{partially conserved but not invariant} across the sampled scales."
+              ],
+              "after_start": 123,
+              "after_end": 123,
+              "after": [
+                "Both five-scale CKA matrices have off-diagonal entries below one (Fig.~\\ref{fig:scale}B--C), with scale-pair heterogeneity rather than a monotonic size trend. Frozen cosine-RSM agrees (Appendix~\\ref{app:geometry}); geometry is \\textbf{partially conserved but not invariant}. Joint source-pair resampling preserves the qualitative intermediate CKA structure, while repeated split halves show stronger fine-grained ordering stability for XG2 than XG4 (Appendix~\\ref{app:robustness})."
+              ]
+            },
+            {
+              "op": "replace",
+              "before_start": 113,
+              "before_end": 113,
+              "before": [
+                "\\caption{Causal-role recurrence with coordinate-insensitive geometric reorganization. (A) The selected/control identity is reconstructed independently within each scale, but the common scale-local causal contrast is supported at all five sizes. (B--C) Centered linear CKA compares the frozen response-blind XG2 and XG4 alignment geometry on the same 300 source pairs per family. Off-diagonal values below one show that recurrence of causal role does not require invariant sample geometry. Historical protocol details and secondary cosine-RSM values are reported in the appendix.}"
+              ],
+              "after_start": 130,
+              "after_end": 130,
+              "after": [
+                "\\caption{Causal-role recurrence with only partial geometric conservation. (A) The selected/control identity is reconstructed independently within each scale, but the common scale-local causal contrast is supported at all five sizes. (B--C) Centered linear CKA compares the frozen response-blind XG2 and XG4 alignment geometry on the same 300 source pairs per family. Off-diagonal values below one show that recurrence of causal role does not require invariant sample geometry. Historical protocol details and secondary cosine-RSM values are reported in the appendix.}"
+              ]
+            }
+          ],
+          "scope_before_lines": [
+            94,
+            114
+          ]
+        },
+        {
+          "path": "paper/iclr2027/appendix.tex",
+          "before_identity": {
+            "commit": "ef1806bef9e4a7f55e1f7e77f7a0f08592fb4abe",
+            "actual_blob": "0ccb6a3a51a04457c4b8a7378606435a7c6c8fca",
+            "raw_sha256": "4551743c71a729488572f225abcea170c7dd9e4884d70e340218836744cd22be"
+          },
+          "after_identity": {
+            "commit": "048fb78258bbe0dac29f0dfbe0310b9023ecc672",
+            "actual_blob": "3e5160c059feb3c91d1c14ef4be7ccd07e528f0a",
+            "raw_sha256": "dc13a9990a0fc9a67df721ae84ef2d0c3a03f2d607a0852f2fac72978067764c"
+          },
+          "complete_changes_in_bounded_relevant_source_span": [],
+          "scope_before_lines": [
+            73,
+            123
+          ]
+        }
+      ],
+      "additional_manuscript_context": {
+        "interpretation": "Actual main.tex subsection95->112 changes reorganizes to only partially conserved; caption113->130 changes coordinate-insensitive geometric reorganization to only partial geometric conservation. Before106->after123 retains partial-not-invariant interpretation but newly cites joint pair resampling and stronger XG2 than XG4 ordering stability. Actual appendix339-375 adds the descriptive robustness section, whose eight table medians match the pinned source CSV. The rendered Figure3 itself introduces no new CKA endpoint or robustness interval. These are authenticated publication/source claims, not independent statistical/scientific validation.",
+        "main_reference_file": "paper/iclr2027/main.tex",
+        "appendix_identity": {
+          "commit": "048fb78258bbe0dac29f0dfbe0310b9023ecc672",
+          "path": "paper/iclr2027/appendix.tex",
+          "actual_blob": "3e5160c059feb3c91d1c14ef4be7ccd07e528f0a",
+          "raw_sha256": "dc13a9990a0fc9a67df721ae84ef2d0c3a03f2d607a0852f2fac72978067764c"
+        },
+        "appendix_line_start": 339,
+        "appendix_line_end": 375,
+        "exact_appendix_lines": [
+          "\\subsection{Pair-resampling robustness of objectives and geometry}",
+          "\\label{app:robustness}",
+          "",
+          "The frozen CPU-only \\texttt{source\\_pair\\_id} bootstrap uses $B=10{,}000$",
+          "replicates and percentile 95\\% intervals. Zero lies within the intervals",
+          "for 370M pretrained LM ($-0.00197532$; $[-0.00655147,0.00253593]$)",
+          "and 2.8B task ($-0.00014835$; $[-0.00048602,0.00018915]$). These point",
+          "signs lack individual pair-resampling stability; the five-scale vectors",
+          "remain descriptive, without a new prospective inferential family.",
+          "",
+          "Geometry shares bootstrap multiplicities across five scales within each",
+          "family; XG2 and XG4 are separate. All 20 off-diagonal CKA entries retain",
+          "their qualitative intermediate range. In $1{,}000$ balanced 150/150",
+          "split halves, Pearson, Spearman, mean absolute difference (MAD), and root",
+          "mean square error (RMSE) compare ten off-diagonal CKA values. Frozen",
+          "medians in Table~\\ref{tab:robustness} show stable overall structure on",
+          "the controlled pairs, with weaker fine-grained ordering for XG4.",
+          "",
+          "\\begin{table}[h]",
+          "\\centering\\small",
+          "\\caption{Frozen median correlations and differences between the ten",
+          "off-diagonal CKA values across 1,000 balanced split halves.}",
+          "\\label{tab:robustness}",
+          "\\begin{tabular}{lrrrr}",
+          "\\toprule",
+          "Family & Pearson & Spearman & MAD & RMSE \\\\",
+          "\\midrule",
+          "XG2 & .875577 & .878788 & .057331 & .068640 \\\\",
+          "XG4 & .652928 & .672727 & .056955 & .068166 \\\\",
+          "\\bottomrule",
+          "\\end{tabular}",
+          "\\end{table}",
+          "",
+          "These summaries describe sampling robustness on frozen cohorts, not a",
+          "noise ceiling, model uncertainty, or independent replication. Analysis,",
+          "CSVs, and protocol are pinned to",
+          "\\nolinkurl{8423ef9d1325c007ecd31849a668131197e2214d}."
+        ],
+        "bounded_additional_source_authentication": [
+          {
+            "commit": "8423ef9d1325c007ecd31849a668131197e2214d",
+            "path": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/analysis_report.md",
+            "expected_blob": "3b30599617ae8f05be1f910a226ad87900e40420",
+            "actual_blob": "3b30599617ae8f05be1f910a226ad87900e40420",
+            "raw_sha256": "7e474dbc0570369a0f3ec8ec0a4f75ab048a4097765e58e3ea3bd3e544682644",
+            "expected_sha256": null,
+            "size": 4069,
+            "saved_file": null,
+            "matches": true,
+            "commit_type": "commit"
+          },
+          {
+            "commit": "8423ef9d1325c007ecd31849a668131197e2214d",
+            "path": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/geometry_cka_bootstrap.csv",
+            "expected_blob": "b7397601ac688164c93ed41089a617fb55444960",
+            "actual_blob": "b7397601ac688164c93ed41089a617fb55444960",
+            "raw_sha256": "23fb1c52e0f03ab67be639c3a1dd070424f4764f73557d85e1da7b247e8c4cfb",
+            "expected_sha256": null,
+            "size": 2382,
+            "saved_file": null,
+            "matches": true,
+            "commit_type": "commit"
+          },
+          {
+            "commit": "8423ef9d1325c007ecd31849a668131197e2214d",
+            "path": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/geometry_split_half_summary.csv",
+            "expected_blob": "1ad050efe54dcfc9f31fe628fd16ad4c607b24ab",
+            "actual_blob": "1ad050efe54dcfc9f31fe628fd16ad4c607b24ab",
+            "raw_sha256": "eff54d9544643e4671d8ed0db7effa29a8bc259637c9fd871eaf8f8b9a2e9939",
+            "expected_sha256": null,
+            "size": 1290,
+            "saved_file": null,
+            "matches": true,
+            "commit_type": "commit"
+          },
+          {
+            "commit": "8423ef9d1325c007ecd31849a668131197e2214d",
+            "path": "reports/reason_router_gen4_mamba1_iclr_pair_resampling_robustness_v1/provenance_manifest.json",
+            "expected_blob": "08ed09e467922f205c6e337547a2157e58d66eab",
+            "actual_blob": "08ed09e467922f205c6e337547a2157e58d66eab",
+            "raw_sha256": "087e869a25ffacd0fdb488dbd58e75a77ab46262c7157b0c2e0e8571c21b7a1a",
+            "expected_sha256": null,
+            "size": 9334,
+            "saved_file": null,
+            "matches": true,
+            "commit_type": "commit"
+          }
+        ],
+        "eight_median_display_checks": [
+          {
+            "source_row": 2,
+            "family": "xg2",
+            "metric": "pearson",
+            "source_median": "0.8755769823009234",
+            "appendix_display": "0.875577",
+            "matches": true
+          },
+          {
+            "source_row": 3,
+            "family": "xg2",
+            "metric": "spearman",
+            "source_median": "0.8787878787878788",
+            "appendix_display": "0.878788",
+            "matches": true
+          },
+          {
+            "source_row": 4,
+            "family": "xg2",
+            "metric": "mad",
+            "source_median": "0.057330608827711224",
+            "appendix_display": "0.057331",
+            "matches": true
+          },
+          {
+            "source_row": 5,
+            "family": "xg2",
+            "metric": "rmse",
+            "source_median": "0.06864010410582612",
+            "appendix_display": "0.068640",
+            "matches": true
+          },
+          {
+            "source_row": 6,
+            "family": "xg4",
+            "metric": "pearson",
+            "source_median": "0.6529277396976914",
+            "appendix_display": "0.652928",
+            "matches": true
+          },
+          {
+            "source_row": 7,
+            "family": "xg4",
+            "metric": "spearman",
+            "source_median": "0.6727272727272727",
+            "appendix_display": "0.672727",
+            "matches": true
+          },
+          {
+            "source_row": 8,
+            "family": "xg4",
+            "metric": "mad",
+            "source_median": "0.05695519602913263",
+            "appendix_display": "0.056955",
+            "matches": true
+          },
+          {
+            "source_row": 9,
+            "family": "xg4",
+            "metric": "rmse",
+            "source_median": "0.06816598634223836",
+            "appendix_display": "0.068166",
+            "matches": true
+          }
+        ],
+        "scientific_producer_executed": false,
+        "independent_replication": false,
+        "owner_verdict_unchanged": true
+      }
+    }
+  }
+}

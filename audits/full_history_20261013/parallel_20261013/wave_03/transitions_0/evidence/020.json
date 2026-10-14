@@ -1,0 +1,475 @@
+{
+  "shard_ordinal": 20,
+  "original_queue_id": "WORK-3424f26cf75bce74dd5e",
+  "original_source_ids": [
+    "HV000824"
+  ],
+  "original_source_identity": {
+    "commit": "9e406738a62d32e98b9f9fe89b71100fe49f9b5a",
+    "path": "scripts/longterm_k0_rvg_strong_alignment_causal_falsification.py",
+    "blob": "d002c274e1cc3793a3143d9e115783cad7616002",
+    "object_type": "commit",
+    "bytes": 66423,
+    "sha256": "07c730ed87641ddba89b3193029ac1427990e78d9f32f36c94ee790b2e5e26ae"
+  },
+  "before": {
+    "commit": "09499444e08891c53ff683702a914fa6d3779788",
+    "path": "scripts/longterm_k0_rvg_strong_alignment_causal_falsification.py",
+    "blob": "7670b5760db091b6149853041c700c0339007745",
+    "object_type": "commit",
+    "bytes": 60464,
+    "sha256": "b2a122384e533de340177bfc29f12793ffaaa23aa2e6126be87cd0257f5880c3"
+  },
+  "after": {
+    "commit": "9e406738a62d32e98b9f9fe89b71100fe49f9b5a",
+    "path": "scripts/longterm_k0_rvg_strong_alignment_causal_falsification.py",
+    "blob": "d002c274e1cc3793a3143d9e115783cad7616002",
+    "object_type": "commit",
+    "bytes": 66423,
+    "sha256": "07c730ed87641ddba89b3193029ac1427990e78d9f32f36c94ee790b2e5e26ae"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0112"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "capture_branch",
+      "layer20_mixer_post_hook",
+      "layer20_pre_hook",
+      "norm22_post_hook",
+      "norm22_pre_hook",
+      "resolve_runtime"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 15 removed/replaced lines and 185 added/replaced lines in 8 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "09499444e08891c53ff683702a914fa6d3779788",
+      "blob": "7670b5760db091b6149853041c700c0339007745"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 536,
+      "before_end_exclusive": 536,
+      "after_start": 536,
+      "after_end_exclusive": 570,
+      "before": [],
+      "after": [
+        "    deep_ctx = stack[\"stack\"][\"ctx\"]",
+        "    require(\"base\" in deep_ctx, \"DIRECT_FORWARD_BASE_MISSING\")",
+        "    base = deep_ctx[\"base\"]",
+        "    require(",
+        "        hasattr(base, \"direct_backbone_forward\"),",
+        "        \"DIRECT_BACKBONE_FORWARD_MISSING\",",
+        "    )",
+        "",
+        "    layer20 = backbone.layers[SOURCE_BLOCK]",
+        "    norm22 = backbone.layers[INTERVENTION_LAYER].norm",
+        "    require(",
+        "        runtime.get(\"layer20\") is layer20,",
+        "        \"LAYER20_RUNTIME_IDENTITY_MISMATCH\",",
+        "    )",
+        "    require(",
+        "        runtime.get(\"norm22\") is norm22,",
+        "        \"LAYER22_NORM_RUNTIME_IDENTITY_MISMATCH\",",
+        "    )",
+        "    require(",
+        "        runtime.get(\"mixer22\") is mixer22,",
+        "        \"LAYER22_MIXER_RUNTIME_IDENTITY_MISMATCH\",",
+        "    )",
+        "    require(",
+        "        float(norm22.variance_epsilon) == 1e-5,",
+        "        \"LAYER22_RMS_EPS_MISMATCH\",",
+        "    )",
+        "",
+        "    parent_layer_map = runtime.get(\"layer_map\")",
+        "    if parent_layer_map is not None:",
+        "        require(",
+        "            dict(parent_layer_map) == dict(layer_map),",
+        "            \"OBSERVER_PARENT_LAYER_MAP_MISMATCH\",",
+        "        )",
+        ""
+      ],
+      "before_context": [
+        "    require(len(layer_map) == LAYER_COUNT, \"OBSERVER_LAYER_MAP_COUNT_MISMATCH\")",
+        "    require(INTERVENTION_LAYER in set(layer_map.values()), \"LAYER22_NOT_REGISTERED\")",
+        "",
+        "    return {",
+        "        \"parent_runtime\": runtime,",
+        "        \"model\": model,"
+      ],
+      "after_context": [
+        "    require(len(layer_map) == LAYER_COUNT, \"OBSERVER_LAYER_MAP_COUNT_MISMATCH\")",
+        "    require(INTERVENTION_LAYER in set(layer_map.values()), \"LAYER22_NOT_REGISTERED\")",
+        "",
+        "    return {",
+        "        \"parent_runtime\": runtime,",
+        "        \"model\": model,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 540,
+      "before_end_exclusive": 540,
+      "after_start": 574,
+      "after_end_exclusive": 577,
+      "before": [],
+      "after": [
+        "        \"base\": base,",
+        "        \"layer20\": layer20,",
+        "        \"norm22\": norm22,"
+      ],
+      "before_context": [
+        "        \"parent_runtime\": runtime,",
+        "        \"model\": model,",
+        "        \"backbone\": backbone,",
+        "        \"mixer22\": mixer22,",
+        "        \"strong_mask\": strong_mask,",
+        "        \"observer\": observer,"
+      ],
+      "after_context": [
+        "        \"parent_runtime\": runtime,",
+        "        \"model\": model,",
+        "        \"backbone\": backbone,",
+        "        \"mixer22\": mixer22,",
+        "        \"strong_mask\": strong_mask,",
+        "        \"observer\": observer,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 937,
+      "before_end_exclusive": 937,
+      "after_start": 974,
+      "after_end_exclusive": 986,
+      "before": [],
+      "after": [
+        "    \"\"\"One physical model forward with all causal-falsification observers.",
+        "",
+        "    Important: do not call the frozen geometry parent's `run_branch` here.",
+        "    That branch recursively enters an authenticated parent capture chain whose",
+        "    write-factor collector installs its own CPython trace.  Nesting a second",
+        "    RawRecurrenceCollector outside that chain replaces the outer trace and",
+        "    loses the layer-22 recurrence record.  Instead, reuse the same authenticated",
+        "    `base.direct_backbone_forward` boundary used by the frozen native-state",
+        "    parents, while reproducing the frozen R20/Y20/X22 hook observations locally.",
+        "    \"\"\"",
+        "    import torch",
+        ""
+      ],
+      "before_context": [
+        "    delta_h=None,",
+        "    matched: bool | None = None,",
+        "):",
+        "    target_abs = int(row[\"anchor\"]) + TARGET_K",
+        "    collector = runtime[\"observer\"].RawRecurrenceCollector(",
+        "        runtime[\"observer_binding\"],"
+      ],
+      "after_context": [
+        "    delta_h=None,",
+        "    matched: bool | None = None,",
+        "):",
+        "    target_abs = int(row[\"anchor\"]) + TARGET_K",
+        "    collector = runtime[\"observer\"].RawRecurrenceCollector(",
+        "        runtime[\"observer_binding\"],"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 944,
+      "before_end_exclusive": 945,
+      "after_start": 993,
+      "after_end_exclusive": 1066,
+      "before": [
+        "    hook_handle = None"
+      ],
+      "after": [
+        "    layer20 = runtime[\"layer20\"]",
+        "    norm22 = runtime[\"norm22\"]",
+        "    holders: dict[str, Any] = {}",
+        "    counts = {",
+        "        \"layer20_pre\": 0,",
+        "        \"layer20_mixer_post\": 0,",
+        "        \"norm22_pre\": 0,",
+        "        \"norm22_post\": 0,",
+        "    }",
+        "",
+        "    def layer20_pre_hook(_module, args):",
+        "        counts[\"layer20_pre\"] += 1",
+        "        require(",
+        "            counts[\"layer20_pre\"] == 1,",
+        "            \"DUPLICATE_LAYER20_PRE_HOOK\",",
+        "        )",
+        "        require(len(args) >= 1, \"LAYER20_PRE_ARG_COUNT_MISMATCH\")",
+        "        full = args[0].detach().cpu().contiguous().clone()",
+        "        require(full.dtype == torch.float32, \"R20_DTYPE_MISMATCH\")",
+        "        require(",
+        "            full.ndim == 3 and full.shape[0] == 1 and full.shape[-1] == HIDDEN,",
+        "            \"R20_FULL_SHAPE_MISMATCH\",",
+        "        )",
+        "        require(0 <= target_abs < full.shape[1], \"R20_TARGET_OUT_OF_RANGE\")",
+        "        holders[\"R20\"] = full[0, target_abs, :].contiguous().clone()",
+        "",
+        "    def layer20_mixer_post_hook(_module, _args, output):",
+        "        counts[\"layer20_mixer_post\"] += 1",
+        "        require(",
+        "            counts[\"layer20_mixer_post\"] == 1,",
+        "            \"DUPLICATE_LAYER20_MIXER_POST_HOOK\",",
+        "        )",
+        "        full = output.detach().cpu().contiguous().clone()",
+        "        require(full.dtype == torch.float32, \"Y20_DTYPE_MISMATCH\")",
+        "        require(",
+        "            full.ndim == 3 and full.shape[0] == 1 and full.shape[-1] == HIDDEN,",
+        "            \"Y20_FULL_SHAPE_MISMATCH\",",
+        "        )",
+        "        require(0 <= target_abs < full.shape[1], \"Y20_TARGET_OUT_OF_RANGE\")",
+        "        holders[\"Y20\"] = full[0, target_abs, :].contiguous().clone()",
+        "",
+        "    def norm22_pre_hook(_module, args):",
+        "        counts[\"norm22_pre\"] += 1",
+        "        require(counts[\"norm22_pre\"] == 1, \"DUPLICATE_NORM22_PRE_HOOK\")",
+        "        require(len(args) == 1, \"NORM22_PRE_ARG_COUNT_MISMATCH\")",
+        "        full = args[0].detach().cpu().contiguous().clone()",
+        "        require(full.dtype == torch.float32, \"R22_DTYPE_MISMATCH\")",
+        "        require(",
+        "            full.ndim == 3 and full.shape[0] == 1 and full.shape[-1] == HIDDEN,",
+        "            \"R22_FULL_SHAPE_MISMATCH\",",
+        "        )",
+        "        require(0 <= target_abs < full.shape[1], \"R22_TARGET_OUT_OF_RANGE\")",
+        "        holders[\"R22\"] = full[0, target_abs, :].contiguous().clone()",
+        "",
+        "    def norm22_post_hook(_module, _args, output):",
+        "        counts[\"norm22_post\"] += 1",
+        "        require(counts[\"norm22_post\"] == 1, \"DUPLICATE_NORM22_POST_HOOK\")",
+        "        full = output.detach().cpu().contiguous().clone()",
+        "        require(full.dtype == torch.float32, \"X22_DTYPE_MISMATCH\")",
+        "        require(",
+        "            full.ndim == 3 and full.shape[0] == 1 and full.shape[-1] == HIDDEN,",
+        "            \"X22_FULL_SHAPE_MISMATCH\",",
+        "        )",
+        "        require(0 <= target_abs < full.shape[1], \"X22_TARGET_OUT_OF_RANGE\")",
+        "        holders[\"X22\"] = full[0, target_abs, :].contiguous().clone()",
+        "",
+        "    handles = [",
+        "        layer20.register_forward_pre_hook(layer20_pre_hook),",
+        "        layer20.mixer.register_forward_hook(layer20_mixer_post_hook),",
+        "        norm22.register_forward_pre_hook(norm22_pre_hook),",
+        "        norm22.register_forward_hook(norm22_post_hook),",
+        "    ]",
+        ""
+      ],
+      "before_context": [
+        "        (target_abs,),",
+        "    )",
+        "",
+        "    audit: dict[str, Any] | None = None",
+        "    if delta_h is not None:",
+        "        require(matched is not None, \"INTERVENTION_BRANCH_ROLE_REQUIRED\")"
+      ],
+      "after_context": [
+        "        (target_abs,),",
+        "    )",
+        "",
+        "    audit: dict[str, Any] | None = None",
+        "    if delta_h is not None:",
+        "        require(matched is not None, \"INTERVENTION_BRANCH_ROLE_REQUIRED\")"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 949,
+      "before_end_exclusive": 956,
+      "after_start": 1070,
+      "after_end_exclusive": 1079,
+      "before": [
+        "        hook_handle = install_inproj_hook(",
+        "            runtime[\"mixer22\"],",
+        "            token_index=target_abs,",
+        "            strong_mask=runtime[\"strong_mask\"],",
+        "            delta_h=delta_h,",
+        "            matched=bool(matched),",
+        "            audit=audit,"
+      ],
+      "after": [
+        "        handles.append(",
+        "            install_inproj_hook(",
+        "                runtime[\"mixer22\"],",
+        "                token_index=target_abs,",
+        "                strong_mask=runtime[\"strong_mask\"],",
+        "                delta_h=delta_h,",
+        "                matched=bool(matched),",
+        "                audit=audit,",
+        "            )"
+      ],
+      "before_context": [
+        "    if delta_h is not None:",
+        "        require(matched is not None, \"INTERVENTION_BRANCH_ROLE_REQUIRED\")",
+        "        audit = {}",
+        "        )",
+        "",
+        "    prior_trace = sys.gettrace()"
+      ],
+      "after_context": [
+        "    if delta_h is not None:",
+        "        require(matched is not None, \"INTERVENTION_BRANCH_ROLE_REQUIRED\")",
+        "        audit = {}",
+        "        )",
+        "",
+        "    prior_trace = sys.gettrace()"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 962,
+      "before_end_exclusive": 967,
+      "after_start": 1085,
+      "after_end_exclusive": 1087,
+      "before": [
+        "            outputs = ctx[\"geometry_parent\"].run_branch(",
+        "                row,",
+        "                ctx[\"geometry_immediate_parent\"],",
+        "                ctx[\"geometry_stack\"],",
+        "                runtime[\"parent_runtime\"],"
+      ],
+      "after": [
+        "            runtime[\"base\"].direct_backbone_forward(",
+        "                runtime[\"model\"],"
+      ],
+      "before_context": [
+        "    budget.consume(1)",
+        "    try:",
+        "        with collector.capture():",
+        "                token_ids,",
+        "            )",
+        "    finally:"
+      ],
+      "after_context": [
+        "    budget.consume(1)",
+        "    try:",
+        "        with collector.capture():",
+        "                token_ids,",
+        "            )",
+        "    finally:"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 970,
+      "before_end_exclusive": 972,
+      "after_start": 1090,
+      "after_end_exclusive": 1092,
+      "before": [
+        "        if hook_handle is not None:",
+        "            hook_handle.remove()"
+      ],
+      "after": [
+        "        for handle in reversed(handles):",
+        "            handle.remove()"
+      ],
+      "before_context": [
+        "                token_ids,",
+        "            )",
+        "    finally:",
+        "",
+        "    require(sys.gettrace() is prior_trace, \"TRACE_RESTORATION_FAILURE\")",
+        "    endpoint = _recurrence_record(runtime, target_abs, collector)"
+      ],
+      "after_context": [
+        "                token_ids,",
+        "            )",
+        "    finally:",
+        "",
+        "    require(sys.gettrace() is prior_trace, \"TRACE_RESTORATION_FAILURE\")",
+        "    require("
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 974,
+      "before_end_exclusive": 974,
+      "after_start": 1094,
+      "after_end_exclusive": 1144,
+      "before": [],
+      "after": [
+        "    require(",
+        "        counts",
+        "        == {",
+        "            \"layer20_pre\": 1,",
+        "            \"layer20_mixer_post\": 1,",
+        "            \"norm22_pre\": 1,",
+        "            \"norm22_post\": 1,",
+        "        },",
+        "        \"DIRECT_CAPTURE_HOOK_COUNT_FAILURE\",",
+        "    )",
+        "    require(",
+        "        set(holders) == {\"R20\", \"Y20\", \"R22\", \"X22\"},",
+        "        \"DIRECT_CAPTURE_MISSING\",",
+        "    )",
+        "",
+        "    r22 = holders[\"R22\"]",
+        "    variance32 = r22.pow(2).mean()",
+        "    scale32 = torch.rsqrt(variance32 + 1e-5).detach().cpu().clone()",
+        "    reconstructed32 = (",
+        "        runtime[\"norm22\"].weight.detach().cpu().contiguous()",
+        "        * (r22 * scale32)",
+        "    ).to(torch.float32).contiguous()",
+        "    rms_residual = float(",
+        "        torch.linalg.vector_norm(",
+        "            reconstructed32.to(torch.float64)",
+        "            - holders[\"X22\"].to(torch.float64)",
+        "        ).item()",
+        "    ) / max(",
+        "        float(",
+        "            torch.linalg.vector_norm(",
+        "                holders[\"X22\"].to(torch.float64)",
+        "            ).item()",
+        "        ),",
+        "        1e-12,",
+        "    )",
+        "    require(rms_residual <= 1e-6, \"DIRECT_RMS_RECONSTRUCTION_FAILURE\")",
+        "",
+        "    outputs = (",
+        "        None,",
+        "        {",
+        "            \"X32\": holders[\"X22\"],",
+        "            \"rms_scale32\": scale32,",
+        "            \"rms_branch_reconstruction_relative_residual\": rms_residual,",
+        "        },",
+        "        None,",
+        "        {",
+        "            \"R20\": holders[\"R20\"],",
+        "            \"Y20\": holders[\"Y20\"],",
+        "        },",
+        "    )"
+      ],
+      "before_context": [
+        "            hook_handle.remove()",
+        "",
+        "    require(sys.gettrace() is prior_trace, \"TRACE_RESTORATION_FAILURE\")",
+        "    endpoint = _recurrence_record(runtime, target_abs, collector)",
+        "",
+        "    if delta_h is not None:"
+      ],
+      "after_context": [
+        "            handle.remove()",
+        "",
+        "    require(sys.gettrace() is prior_trace, \"TRACE_RESTORATION_FAILURE\")",
+        "    endpoint = _recurrence_record(runtime, target_abs, collector)",
+        "",
+        "    if delta_h is not None:"
+      ]
+    }
+  ]
+}

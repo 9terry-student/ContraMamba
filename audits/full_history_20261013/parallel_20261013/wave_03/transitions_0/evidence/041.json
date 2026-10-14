@@ -1,0 +1,218 @@
+{
+  "shard_ordinal": 41,
+  "original_queue_id": "WORK-65e1a20044dce32f3308",
+  "original_source_ids": [
+    "HV000823"
+  ],
+  "original_source_identity": {
+    "commit": "5f5f4d6a80085ad8baf43445475d1c3049535c22",
+    "path": "scripts/longterm_k0_rvg_strong_alignment_causal_falsification.py",
+    "blob": "060d9ddd0c3dd72dc52871d10051dd2e407b31a5",
+    "object_type": "commit",
+    "bytes": 67508,
+    "sha256": "84a9f8ab1c3c36f4abc259961ea52f1603806ee0533b349dde7106bbc97cf6cd"
+  },
+  "before": {
+    "commit": "9e406738a62d32e98b9f9fe89b71100fe49f9b5a",
+    "path": "scripts/longterm_k0_rvg_strong_alignment_causal_falsification.py",
+    "blob": "d002c274e1cc3793a3143d9e115783cad7616002",
+    "object_type": "commit",
+    "bytes": 66423,
+    "sha256": "07c730ed87641ddba89b3193029ac1427990e78d9f32f36c94ee790b2e5e26ae"
+  },
+  "after": {
+    "commit": "5f5f4d6a80085ad8baf43445475d1c3049535c22",
+    "path": "scripts/longterm_k0_rvg_strong_alignment_causal_falsification.py",
+    "blob": "060d9ddd0c3dd72dc52871d10051dd2e407b31a5",
+    "object_type": "commit",
+    "bytes": 67508,
+    "sha256": "84a9f8ab1c3c36f4abc259961ea52f1603806ee0533b349dde7106bbc97cf6cd"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0113"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "_reject_private_payload",
+      "publish"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 12 removed/replaced lines and 41 added/replaced lines in 4 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "dcac03006a97079061d7955e287e1f8b54aa2853",
+      "blob": "060d9ddd0c3dd72dc52871d10051dd2e407b31a5"
+    }
+  ],
+  "immediate_parent_has_before_blob": false,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 144,
+      "before_end_exclusive": 144,
+      "after_start": 144,
+      "after_end_exclusive": 152,
+      "before": [],
+      "after": [
+        "",
+        "# These exact provenance booleans are intentionally public only when False.",
+        "# Their names contain otherwise-forbidden substrings, so the serializer must",
+        "# distinguish negative execution attestations from payload-bearing fields.",
+        "PUBLIC_NEGATIVE_BOOLEAN_FLAGS = frozenset({",
+        "    \"logits_read\",",
+        "    \"raw_vectors_persisted\",",
+        "})"
+      ],
+      "before_context": [
+        "    \"validate_frozen_strong_channel_mass_breadth_concentration_artifacts.py\",",
+        "    \"validate_frozen_strong_sign_contribution_itemwise_breadth_artifacts.py\",",
+        "}",
+        "",
+        "",
+        "class FalsificationError(RuntimeError):"
+      ],
+      "after_context": [
+        "    \"validate_frozen_strong_channel_mass_breadth_concentration_artifacts.py\",",
+        "    \"validate_frozen_strong_sign_contribution_itemwise_breadth_artifacts.py\",",
+        "}",
+        "",
+        "",
+        "class FalsificationError(RuntimeError):"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 1594,
+      "before_end_exclusive": 1597,
+      "after_start": 1602,
+      "after_end_exclusive": 1620,
+      "before": [
+        "            for forbidden in (\"raw_vector\", \"activation_vector\", \"logits\", \"checkpoint_bytes\"):",
+        "                require(forbidden not in lower, \"FORBIDDEN_PUBLIC_FIELD:\" + path + \".\" + str(key))",
+        "            _reject_private_payload(value, path + \".\" + str(key))"
+      ],
+      "after": [
+        "            field_path = path + \".\" + str(key)",
+        "            if lower in PUBLIC_NEGATIVE_BOOLEAN_FLAGS:",
+        "                require(",
+        "                    value is False,",
+        "                    \"PUBLIC_NEGATIVE_FLAG_NOT_FALSE:\" + field_path,",
+        "                )",
+        "            else:",
+        "                for forbidden in (",
+        "                    \"raw_vector\",",
+        "                    \"activation_vector\",",
+        "                    \"logits\",",
+        "                    \"checkpoint_bytes\",",
+        "                ):",
+        "                    require(",
+        "                        forbidden not in lower,",
+        "                        \"FORBIDDEN_PUBLIC_FIELD:\" + field_path,",
+        "                    )",
+        "            _reject_private_payload(value, field_path)"
+      ],
+      "before_context": [
+        "    if isinstance(obj, Mapping):",
+        "        for key, value in obj.items():",
+        "            lower = str(key).lower()",
+        "    elif isinstance(obj, (list, tuple)):",
+        "        for i, value in enumerate(obj):",
+        "            _reject_private_payload(value, f\"{path}[{i}]\")"
+      ],
+      "after_context": [
+        "    if isinstance(obj, Mapping):",
+        "        for key, value in obj.items():",
+        "            lower = str(key).lower()",
+        "    elif isinstance(obj, (list, tuple)):",
+        "        for i, value in enumerate(obj):",
+        "            _reject_private_payload(value, f\"{path}[{i}]\")"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 1631,
+      "before_end_exclusive": 1631,
+      "after_start": 1654,
+      "after_end_exclusive": 1666,
+      "before": [],
+      "after": [
+        "    # Validate and serialize the complete public payload before creating any",
+        "    # filesystem state.  A schema/privacy rejection must not leave a stale",
+        "    # `.partial` directory that blocks the next authenticated execution.",
+        "    metrics_bytes = _jsonl_bytes(rows)",
+        "    summary_bytes = _json_bytes(summary)",
+        "    m = dict(manifest)",
+        "    m[\"outputs\"] = {",
+        "        ITEM_FILE: sha256_bytes(metrics_bytes),",
+        "        SUMMARY_FILE: sha256_bytes(summary_bytes),",
+        "    }",
+        "    manifest_bytes = _json_bytes(m)",
+        ""
+      ],
+      "before_context": [
+        "    partial = Path(str(final) + \".partial\")",
+        "    require(not final.exists() and not partial.exists(), \"OUTPUT_OR_PARTIAL_EXISTS\")",
+        "",
+        "    partial.mkdir(parents=True, exist_ok=False)",
+        "    metrics = partial / ITEM_FILE",
+        "    summary_path = partial / SUMMARY_FILE"
+      ],
+      "after_context": [
+        "    partial = Path(str(final) + \".partial\")",
+        "    require(not final.exists() and not partial.exists(), \"OUTPUT_OR_PARTIAL_EXISTS\")",
+        "",
+        "    partial.mkdir(parents=True, exist_ok=False)",
+        "    metrics = partial / ITEM_FILE",
+        "    summary_path = partial / SUMMARY_FILE"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 1636,
+      "before_end_exclusive": 1645,
+      "after_start": 1671,
+      "after_end_exclusive": 1674,
+      "before": [
+        "    metrics.write_bytes(_jsonl_bytes(rows))",
+        "    summary_path.write_bytes(_json_bytes(summary))",
+        "",
+        "    m = dict(manifest)",
+        "    m[\"outputs\"] = {",
+        "        ITEM_FILE: sha256_file(metrics),",
+        "        SUMMARY_FILE: sha256_file(summary_path),",
+        "    }",
+        "    manifest_path.write_bytes(_json_bytes(m))"
+      ],
+      "after": [
+        "    metrics.write_bytes(metrics_bytes)",
+        "    summary_path.write_bytes(summary_bytes)",
+        "    manifest_path.write_bytes(manifest_bytes)"
+      ],
+      "before_context": [
+        "    summary_path = partial / SUMMARY_FILE",
+        "    manifest_path = partial / MANIFEST_FILE",
+        "",
+        "",
+        "    require(",
+        "        {p.name for p in partial.iterdir()}"
+      ],
+      "after_context": [
+        "    summary_path = partial / SUMMARY_FILE",
+        "    manifest_path = partial / MANIFEST_FILE",
+        "",
+        "",
+        "    require(",
+        "        {p.name for p in partial.iterdir()}"
+      ]
+    }
+  ]
+}

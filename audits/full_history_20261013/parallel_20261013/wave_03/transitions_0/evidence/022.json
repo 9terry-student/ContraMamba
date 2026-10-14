@@ -1,0 +1,1596 @@
+{
+  "shard_ordinal": 22,
+  "original_queue_id": "WORK-3dfc4a642ff38f87e652",
+  "original_source_ids": [
+    "HV001138"
+  ],
+  "original_source_identity": {
+    "commit": "8baf738223b91b5b0ba29671519712f251993647",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "62189cdf5d1f9217c4a3d66f180e4c75fed3b6c4",
+    "object_type": "commit",
+    "bytes": 228638,
+    "sha256": "99f8cb4a0164b3f162fa1461e912f47cdd6475826109fd0a8373ae32bc4d8dc2"
+  },
+  "before": {
+    "commit": "5e35feb85878afe4bc4f1017be952fa842c69121",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "98709b54d00dde1529eb95d9fae9c9118cb5cc02",
+    "object_type": "commit",
+    "bytes": 218880,
+    "sha256": "a188a173d1746deaa83f535cc0a61197c2e9746e6a7c19edc1fc8b43e3c88e72"
+  },
+  "after": {
+    "commit": "8baf738223b91b5b0ba29671519712f251993647",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "62189cdf5d1f9217c4a3d66f180e4c75fed3b6c4",
+    "object_type": "commit",
+    "bytes": 228638,
+    "sha256": "99f8cb4a0164b3f162fa1461e912f47cdd6475826109fd0a8373ae32bc4d8dc2"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0151"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "_avg_epoch_dicts",
+      "main",
+      "run_training_v6b"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate trainer objectives, gradient ownership, data/evaluation selection, ablation defaults and historical authority from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 77 removed/replaced lines and 235 added/replaced lines in 46 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "5e35feb85878afe4bc4f1017be952fa842c69121",
+      "blob": "98709b54d00dde1529eb95d9fae9c9118cb5cc02"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "replace",
+      "before_start": 2425,
+      "before_end_exclusive": 2438,
+      "after_start": 2425,
+      "after_end_exclusive": 2429,
+      "before": [
+        "        _audit_loss_sums: dict[str, float] = {",
+        "            \"total_loss\": 0.0,",
+        "            \"ce_loss\": 0.0,",
+        "            \"ranking_loss\": 0.0,",
+        "            \"intervention_loss\": 0.0,",
+        "            \"boundary_loss\": 0.0,",
+        "            \"frame_violation_loss\": 0.0,",
+        "            \"pair_contrastive_frame_loss\": 0.0,",
+        "            \"predicate_isolation_loss\": 0.0,",
+        "            \"preservation_entitlement_loss\": 0.0,",
+        "            \"temporal_diagnostic_loss\": 0.0,",
+        "            \"temporal_adapter_loss\": 0.0,",
+        "        }"
+      ],
+      "after": [
+        "        # Per-epoch raw (pre-weight) and weighted (actual contribution to total_loss) loss values.",
+        "        # Both lists grow one entry per epoch and are indexed by epoch-1 at ledger build time.",
+        "        _audit_per_epoch_raw: list[dict] = []",
+        "        _audit_per_epoch_weighted: list[dict] = []"
+      ],
+      "before_context": [
+        "        _tc_td_final_binary_accuracy: float = float(\"nan\")",
+        "",
+        "        # ── Audit ledger: loss accumulators (reporting only; no effect on training) ──────────────",
+        "        _audit_epoch_count: int = 0",
+        "",
+        "        for epoch in range(1, epochs + 1):"
+      ],
+      "after_context": [
+        "        _tc_td_final_binary_accuracy: float = float(\"nan\")",
+        "",
+        "        # ── Audit ledger: loss accumulators (reporting only; no effect on training) ──────────────",
+        "        _audit_epoch_count: int = 0",
+        "",
+        "        for epoch in range(1, epochs + 1):"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 2696,
+      "before_end_exclusive": 2699,
+      "after_start": 2687,
+      "after_end_exclusive": 2705,
+      "before": [
+        "            _audit_loss_sums[\"total_loss\"] += float(total_loss.item())",
+        "            _audit_loss_sums[\"ce_loss\"] += float(losses[\"label\"].item())",
+        "            _ai_val = float(active_intervention_loss.item()) if hasattr(active_intervention_loss, \"item\") else float(active_intervention_loss)"
+      ],
+      "after": [
+        "            # raw = loss value before weight multiplication; weighted = actual total_loss contribution",
+        "            _ep_ce_raw = float(losses[\"label\"].item())",
+        "            _ep_ai_val = (",
+        "                float(active_intervention_loss.item())",
+        "                if hasattr(active_intervention_loss, \"item\")",
+        "                else float(active_intervention_loss)",
+        "            )",
+        "            _ep_bdry_raw = float(_bdry_loss.item()) if hasattr(_bdry_loss, \"item\") else 0.0",
+        "            _ep_fv_raw = float(_fv_loss.item()) if hasattr(_fv_loss, \"item\") else 0.0",
+        "            _ep_pc_raw = float(_pc_loss.item()) if hasattr(_pc_loss, \"item\") else 0.0",
+        "            _ep_pi_raw = float(_pi_loss.item()) if hasattr(_pi_loss, \"item\") else 0.0",
+        "            _ep_pe_raw = float(_pe_loss.item()) if hasattr(_pe_loss, \"item\") else 0.0",
+        "            _ep_td_raw = float(_td_loss.item()) if hasattr(_td_loss, \"item\") else 0.0",
+        "            _ep_ta_raw = float(_ta_loss.item()) if hasattr(_ta_loss, \"item\") else 0.0",
+        "            _ep_total = float(total_loss.item())",
+        "            # For ranking path: active_intervention_loss = ranking_weight * raw_ranking.",
+        "            # Recover raw by dividing. For intervention path: pairwise_losses[\"total\"] is",
+        "            # already a weighted composite; report raw == weighted (no scalar unwinding)."
+      ],
+      "before_context": [
+        "                    total_loss = total_loss + pc_loss_weight * _pc_loss",
+        "",
+        "            # ── Audit ledger accumulation (reporting only; does not affect gradients) ─────────",
+        "            if use_intervention_loss:",
+        "                _audit_loss_sums[\"intervention_loss\"] += _ai_val",
+        "            else:"
+      ],
+      "after_context": [
+        "                    total_loss = total_loss + pc_loss_weight * _pc_loss",
+        "",
+        "            # ── Audit ledger accumulation (reporting only; does not affect gradients) ─────────",
+        "            if use_intervention_loss:",
+        "                _ep_ranking_raw, _ep_ranking_w = 0.0, 0.0",
+        "                _ep_intervention_raw = _ep_ai_val"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 2700,
+      "before_end_exclusive": 2701,
+      "after_start": 2706,
+      "after_end_exclusive": 2709,
+      "before": [
+        "                _audit_loss_sums[\"intervention_loss\"] += _ai_val"
+      ],
+      "after": [
+        "                _ep_ranking_raw, _ep_ranking_w = 0.0, 0.0",
+        "                _ep_intervention_raw = _ep_ai_val",
+        "                _ep_intervention_w = _ep_ai_val"
+      ],
+      "before_context": [
+        "            _audit_loss_sums[\"ce_loss\"] += float(losses[\"label\"].item())",
+        "            _ai_val = float(active_intervention_loss.item()) if hasattr(active_intervention_loss, \"item\") else float(active_intervention_loss)",
+        "            if use_intervention_loss:",
+        "            else:",
+        "                _audit_loss_sums[\"ranking_loss\"] += _ai_val",
+        "            _audit_loss_sums[\"boundary_loss\"] += float(_bdry_loss.item()) if hasattr(_bdry_loss, \"item\") else 0.0"
+      ],
+      "after_context": [
+        "            # Recover raw by dividing. For intervention path: pairwise_losses[\"total\"] is",
+        "            # already a weighted composite; report raw == weighted (no scalar unwinding).",
+        "            if use_intervention_loss:",
+        "            else:",
+        "                _ep_ranking_raw = (_ep_ai_val / ranking_weight) if ranking_weight > 0.0 else 0.0",
+        "                _ep_ranking_w = _ep_ai_val  # = ranking_weight * _ep_ranking_raw"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 2702,
+      "before_end_exclusive": 2710,
+      "after_start": 2710,
+      "after_end_exclusive": 2739,
+      "before": [
+        "                _audit_loss_sums[\"ranking_loss\"] += _ai_val",
+        "            _audit_loss_sums[\"boundary_loss\"] += float(_bdry_loss.item()) if hasattr(_bdry_loss, \"item\") else 0.0",
+        "            _audit_loss_sums[\"frame_violation_loss\"] += float(_fv_loss.item()) if hasattr(_fv_loss, \"item\") else 0.0",
+        "            _audit_loss_sums[\"pair_contrastive_frame_loss\"] += float(_pc_loss.item()) if hasattr(_pc_loss, \"item\") else 0.0",
+        "            _audit_loss_sums[\"predicate_isolation_loss\"] += float(_pi_loss.item()) if hasattr(_pi_loss, \"item\") else 0.0",
+        "            _audit_loss_sums[\"preservation_entitlement_loss\"] += float(_pe_loss.item()) if hasattr(_pe_loss, \"item\") else 0.0",
+        "            _audit_loss_sums[\"temporal_diagnostic_loss\"] += float(_td_loss.item()) if hasattr(_td_loss, \"item\") else 0.0",
+        "            _audit_loss_sums[\"temporal_adapter_loss\"] += float(_ta_loss.item()) if hasattr(_ta_loss, \"item\") else 0.0"
+      ],
+      "after": [
+        "                _ep_ranking_raw = (_ep_ai_val / ranking_weight) if ranking_weight > 0.0 else 0.0",
+        "                _ep_ranking_w = _ep_ai_val  # = ranking_weight * _ep_ranking_raw",
+        "                _ep_intervention_raw, _ep_intervention_w = 0.0, 0.0",
+        "            _audit_per_epoch_raw.append({",
+        "                \"ce_loss\": _ep_ce_raw,",
+        "                \"ranking_loss\": _ep_ranking_raw,",
+        "                \"intervention_loss\": _ep_intervention_raw,",
+        "                \"boundary_loss\": _ep_bdry_raw,",
+        "                \"frame_violation_loss\": _ep_fv_raw,",
+        "                \"pair_contrastive_frame_loss\": _ep_pc_raw,",
+        "                \"predicate_isolation_loss\": _ep_pi_raw,",
+        "                \"preservation_entitlement_loss\": _ep_pe_raw,",
+        "                \"temporal_diagnostic_loss\": _ep_td_raw,",
+        "                \"temporal_adapter_loss\": _ep_ta_raw,",
+        "                \"total_loss\": _ep_total,",
+        "            })",
+        "            _audit_per_epoch_weighted.append({",
+        "                \"ce_loss\": _ep_ce_raw,  # CE weight = 1.0",
+        "                \"ranking_loss\": _ep_ranking_w,",
+        "                \"intervention_loss\": _ep_intervention_w,",
+        "                \"boundary_loss\": boundary_loss_weight * _ep_bdry_raw,",
+        "                \"frame_violation_loss\": fv_loss_weight * _ep_fv_raw,",
+        "                \"pair_contrastive_frame_loss\": pc_loss_weight * _ep_pc_raw,",
+        "                \"predicate_isolation_loss\": pi_loss_weight * _ep_pi_raw,",
+        "                \"preservation_entitlement_loss\": pe_loss_weight * _ep_pe_raw,",
+        "                \"temporal_diagnostic_loss\": td_loss_weight * _ep_td_raw,",
+        "                \"temporal_adapter_loss\": ta_loss_weight * _ep_ta_raw,",
+        "                \"total_loss\": _ep_total,",
+        "            })"
+      ],
+      "before_context": [
+        "            if use_intervention_loss:",
+        "                _audit_loss_sums[\"intervention_loss\"] += _ai_val",
+        "            else:",
+        "            _audit_epoch_count += 1",
+        "            # ── end audit accumulation ────────────────────────────────────────────────────────",
+        ""
+      ],
+      "after_context": [
+        "                _ep_intervention_raw = _ep_ai_val",
+        "                _ep_intervention_w = _ep_ai_val",
+        "            else:",
+        "            _audit_epoch_count += 1",
+        "            # ── end audit accumulation ────────────────────────────────────────────────────────",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3187,
+      "before_end_exclusive": 3193,
+      "after_start": 3216,
+      "after_end_exclusive": 3245,
+      "before": [
+        "        _loss_epoch_avg: dict[str, Any] = {",
+        "            k: round(v / _n, 6) for k, v in _audit_loss_sums.items()",
+        "        }",
+        "        _ce_avg = _loss_epoch_avg[\"ce_loss\"]",
+        "        _aux_avg = round(_loss_epoch_avg[\"total_loss\"] - _ce_avg, 6)",
+        "        _aux_to_ce = round(_aux_avg / _ce_avg, 4) if _ce_avg > 0.0 else None"
+      ],
+      "after": [
+        "",
+        "        def _avg_epoch_dicts(dicts: list[dict]) -> dict[str, float]:",
+        "            if not dicts:",
+        "                return {}",
+        "            keys = list(dicts[0].keys())",
+        "            return {k: round(sum(d[k] for d in dicts) / len(dicts), 6) for k in keys}",
+        "",
+        "        _loss_epoch_avg_raw = _avg_epoch_dicts(_audit_per_epoch_raw)",
+        "        _loss_epoch_avg_weighted = _avg_epoch_dicts(_audit_per_epoch_weighted)",
+        "",
+        "        # selected_epoch_loss: the epoch that was actually checkpointed (best_epoch, post-selector)",
+        "        # final_epoch_loss: the last epoch of training (index -1)",
+        "        _sel_idx = (best_epoch - 1) if 0 <= best_epoch - 1 < len(_audit_per_epoch_raw) else None",
+        "        _fin_idx = len(_audit_per_epoch_raw) - 1 if _audit_per_epoch_raw else None",
+        "        _selected_epoch_raw = _audit_per_epoch_raw[_sel_idx] if _sel_idx is not None else None",
+        "        _selected_epoch_weighted = _audit_per_epoch_weighted[_sel_idx] if _sel_idx is not None else None",
+        "        _final_epoch_raw = _audit_per_epoch_raw[_fin_idx] if _fin_idx is not None else None",
+        "        _final_epoch_weighted = _audit_per_epoch_weighted[_fin_idx] if _fin_idx is not None else None",
+        "",
+        "        # Ratios using weighted values (weighted matches what total_loss actually accumulated)",
+        "        _ce_avg_w = _loss_epoch_avg_weighted.get(\"ce_loss\", 0.0)",
+        "        _total_avg_w = _loss_epoch_avg_weighted.get(\"total_loss\", 0.0)",
+        "        _aux_weighted_sum = round(_total_avg_w - _ce_avg_w, 6)",
+        "        _aux_to_ce_w = round(_aux_weighted_sum / _ce_avg_w, 4) if _ce_avg_w > 0.0 else None",
+        "",
+        "        _ce_avg_r = _loss_epoch_avg_raw.get(\"ce_loss\", 0.0)",
+        "        _total_avg_r = _loss_epoch_avg_raw.get(\"total_loss\", 0.0)",
+        "        _aux_raw_sum = round(_total_avg_r - _ce_avg_r, 6)",
+        "        _aux_to_ce_r = round(_aux_raw_sum / _ce_avg_r, 4) if _ce_avg_r > 0.0 else None"
+      ],
+      "before_context": [
+        "",
+        "        # ── Build run-level audit ledger (reporting only; no model/loss/logit change) ──────────",
+        "        _n = max(_audit_epoch_count, 1)",
+        "",
+        "        _active_training_losses: dict[str, Any] = {",
+        "            \"main_ce\": {"
+      ],
+      "after_context": [
+        "",
+        "        # ── Build run-level audit ledger (reporting only; no model/loss/logit change) ──────────",
+        "        _n = max(_audit_epoch_count, 1)",
+        "",
+        "        _active_training_losses: dict[str, Any] = {",
+        "            \"main_ce\": {"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3197,
+      "before_end_exclusive": 3197,
+      "after_start": 3249,
+      "after_end_exclusive": 3250,
+      "before": [],
+      "after": [
+        "                \"weight\": 1.0,"
+      ],
+      "before_context": [
+        "        _active_training_losses: dict[str, Any] = {",
+        "            \"main_ce\": {",
+        "                \"enabled\": True,",
+        "                \"target\": \"output['logits'] (final_logits)\",",
+        "                \"note\": \"always active; CE on sampled indices\",",
+        "            },"
+      ],
+      "after_context": [
+        "        _active_training_losses: dict[str, Any] = {",
+        "            \"main_ce\": {",
+        "                \"enabled\": True,",
+        "                \"target\": \"output['logits'] (final_logits)\",",
+        "                \"diagnostic_head_only\": False,",
+        "                \"raw_loss_key\": \"ce_loss\","
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3198,
+      "before_end_exclusive": 3199,
+      "after_start": 3251,
+      "after_end_exclusive": 3255,
+      "before": [
+        "                \"note\": \"always active; CE on sampled indices\","
+      ],
+      "after": [
+        "                \"diagnostic_head_only\": False,",
+        "                \"raw_loss_key\": \"ce_loss\",",
+        "                \"weighted_loss_key\": \"ce_loss\",",
+        "                \"note\": \"always active; weight=1.0 so raw == weighted\","
+      ],
+      "before_context": [
+        "            \"main_ce\": {",
+        "                \"enabled\": True,",
+        "                \"target\": \"output['logits'] (final_logits)\",",
+        "            },",
+        "            \"ranking_loss\": {",
+        "                \"enabled\": not use_intervention_loss,"
+      ],
+      "after_context": [
+        "                \"enabled\": True,",
+        "                \"weight\": 1.0,",
+        "                \"target\": \"output['logits'] (final_logits)\",",
+        "            },",
+        "            \"ranking_loss\": {",
+        "                \"enabled\": not use_intervention_loss,"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3203,
+      "before_end_exclusive": 3204,
+      "after_start": 3259,
+      "after_end_exclusive": 3260,
+      "before": [
+        "                \"target\": \"output['logits'] (ranking objective)\","
+      ],
+      "after": [
+        "                \"target\": \"output['logits'] (ranking objective via v5.intervention_objective)\","
+      ],
+      "before_context": [
+        "            \"ranking_loss\": {",
+        "                \"enabled\": not use_intervention_loss,",
+        "                \"weight\": ranking_weight if not use_intervention_loss else 0.0,",
+        "                \"diagnostic_head_only\": False,",
+        "                \"note\": \"simple ranking objective; disabled when --use-intervention-loss\",",
+        "            },"
+      ],
+      "after_context": [
+        "            \"ranking_loss\": {",
+        "                \"enabled\": not use_intervention_loss,",
+        "                \"weight\": ranking_weight if not use_intervention_loss else 0.0,",
+        "                \"diagnostic_head_only\": False,",
+        "                \"raw_loss_key\": \"ranking_loss\",",
+        "                \"weighted_loss_key\": \"ranking_loss\","
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3205,
+      "before_end_exclusive": 3206,
+      "after_start": 3261,
+      "after_end_exclusive": 3268,
+      "before": [
+        "                \"note\": \"simple ranking objective; disabled when --use-intervention-loss\","
+      ],
+      "after": [
+        "                \"raw_loss_key\": \"ranking_loss\",",
+        "                \"weighted_loss_key\": \"ranking_loss\",",
+        "                \"note\": (",
+        "                    f\"ranking_weight={ranking_weight}; weighted_loss = ranking_weight * raw_loss. \"",
+        "                    \"Baseline is NOT CE-only when this is enabled — ranking loss is active by default.\"",
+        "                    if not use_intervention_loss else \"disabled; use_intervention_loss=True\"",
+        "                ),"
+      ],
+      "before_context": [
+        "                \"weight\": ranking_weight if not use_intervention_loss else 0.0,",
+        "                \"target\": \"output['logits'] (ranking objective)\",",
+        "                \"diagnostic_head_only\": False,",
+        "            },",
+        "            \"intervention_loss\": {",
+        "                \"enabled\": use_intervention_loss,"
+      ],
+      "after_context": [
+        "                \"weight\": ranking_weight if not use_intervention_loss else 0.0,",
+        "                \"target\": \"output['logits'] (ranking objective via v5.intervention_objective)\",",
+        "                \"diagnostic_head_only\": False,",
+        "            },",
+        "            \"intervention_loss\": {",
+        "                \"enabled\": use_intervention_loss,"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3210,
+      "before_end_exclusive": 3211,
+      "after_start": 3272,
+      "after_end_exclusive": 3273,
+      "before": [
+        "                \"target\": \"output['logits'] (structured pairwise)\","
+      ],
+      "after": [
+        "                \"target\": \"output['logits'] (structured pairwise via intervention_pairwise_losses)\","
+      ],
+      "before_context": [
+        "            \"intervention_loss\": {",
+        "                \"enabled\": use_intervention_loss,",
+        "                \"weight\": 1.0 if use_intervention_loss else 0.0,",
+        "                \"diagnostic_head_only\": False,",
+        "                \"note\": \"structured pairwise loss; enabled with --use-intervention-loss\",",
+        "            },"
+      ],
+      "after_context": [
+        "            \"intervention_loss\": {",
+        "                \"enabled\": use_intervention_loss,",
+        "                \"weight\": 1.0 if use_intervention_loss else 0.0,",
+        "                \"diagnostic_head_only\": False,",
+        "                \"raw_loss_key\": \"intervention_loss\",",
+        "                \"weighted_loss_key\": \"intervention_loss\","
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3212,
+      "before_end_exclusive": 3213,
+      "after_start": 3274,
+      "after_end_exclusive": 3281,
+      "before": [
+        "                \"note\": \"structured pairwise loss; enabled with --use-intervention-loss\","
+      ],
+      "after": [
+        "                \"raw_loss_key\": \"intervention_loss\",",
+        "                \"weighted_loss_key\": \"intervention_loss\",",
+        "                \"note\": (",
+        "                    \"pairwise_losses['total']; internally weighted composite — \"",
+        "                    \"raw and weighted are identical in the audit (no outer scalar)\"",
+        "                    if use_intervention_loss else \"disabled; use_intervention_loss=False\"",
+        "                ),"
+      ],
+      "before_context": [
+        "                \"weight\": 1.0 if use_intervention_loss else 0.0,",
+        "                \"target\": \"output['logits'] (structured pairwise)\",",
+        "                \"diagnostic_head_only\": False,",
+        "            },",
+        "            \"boundary_loss\": {",
+        "                \"enabled\": boundary_loss_weight > 0.0,"
+      ],
+      "after_context": [
+        "                \"weight\": 1.0 if use_intervention_loss else 0.0,",
+        "                \"target\": \"output['logits'] (structured pairwise via intervention_pairwise_losses)\",",
+        "                \"diagnostic_head_only\": False,",
+        "            },",
+        "            \"boundary_loss\": {",
+        "                \"enabled\": boundary_loss_weight > 0.0,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3220,
+      "before_end_exclusive": 3220,
+      "after_start": 3288,
+      "after_end_exclusive": 3290,
+      "before": [],
+      "after": [
+        "                \"raw_loss_key\": \"boundary_loss\",",
+        "                \"weighted_loss_key\": \"boundary_loss\","
+      ],
+      "before_context": [
+        "                \"pos_weight\": boundary_loss_pos_weight,",
+        "                \"target\": \"boundary_logit\",",
+        "                \"diagnostic_head_only\": True,",
+        "            },",
+        "            \"frame_violation_loss\": {",
+        "                \"enabled\": fv_loss_weight > 0.0,"
+      ],
+      "after_context": [
+        "                \"pos_weight\": boundary_loss_pos_weight,",
+        "                \"target\": \"boundary_logit\",",
+        "                \"diagnostic_head_only\": True,",
+        "            },",
+        "            \"frame_violation_loss\": {",
+        "                \"enabled\": fv_loss_weight > 0.0,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3227,
+      "before_end_exclusive": 3227,
+      "after_start": 3297,
+      "after_end_exclusive": 3299,
+      "before": [],
+      "after": [
+        "                \"raw_loss_key\": \"frame_violation_loss\",",
+        "                \"weighted_loss_key\": \"frame_violation_loss\","
+      ],
+      "before_context": [
+        "                \"pos_weight\": fv_loss_pos_weight,",
+        "                \"target\": \"frame_violation_logit\",",
+        "                \"diagnostic_head_only\": True,",
+        "            },",
+        "            \"pair_contrastive_frame_loss\": {",
+        "                \"enabled\": pc_loss_weight > 0.0,"
+      ],
+      "after_context": [
+        "                \"pos_weight\": fv_loss_pos_weight,",
+        "                \"target\": \"frame_violation_logit\",",
+        "                \"diagnostic_head_only\": True,",
+        "            },",
+        "            \"pair_contrastive_frame_loss\": {",
+        "                \"enabled\": pc_loss_weight > 0.0,"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3231,
+      "before_end_exclusive": 3232,
+      "after_start": 3303,
+      "after_end_exclusive": 3304,
+      "before": [
+        "                \"target\": \"frame_violation_logit (margin ranking)\","
+      ],
+      "after": [
+        "                \"target\": \"frame_violation_logit (margin ranking between pres/frame pairs)\","
+      ],
+      "before_context": [
+        "            \"pair_contrastive_frame_loss\": {",
+        "                \"enabled\": pc_loss_weight > 0.0,",
+        "                \"weight\": pc_loss_weight,",
+        "                \"diagnostic_head_only\": True,",
+        "            },",
+        "            \"predicate_isolation_loss\": {"
+      ],
+      "after_context": [
+        "            \"pair_contrastive_frame_loss\": {",
+        "                \"enabled\": pc_loss_weight > 0.0,",
+        "                \"weight\": pc_loss_weight,",
+        "                \"diagnostic_head_only\": True,",
+        "                \"raw_loss_key\": \"pair_contrastive_frame_loss\",",
+        "                \"weighted_loss_key\": \"pair_contrastive_frame_loss\","
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3233,
+      "before_end_exclusive": 3233,
+      "after_start": 3305,
+      "after_end_exclusive": 3307,
+      "before": [],
+      "after": [
+        "                \"raw_loss_key\": \"pair_contrastive_frame_loss\",",
+        "                \"weighted_loss_key\": \"pair_contrastive_frame_loss\","
+      ],
+      "before_context": [
+        "                \"weight\": pc_loss_weight,",
+        "                \"target\": \"frame_violation_logit (margin ranking)\",",
+        "                \"diagnostic_head_only\": True,",
+        "            },",
+        "            \"predicate_isolation_loss\": {",
+        "                \"enabled\": pi_loss_weight > 0.0,"
+      ],
+      "after_context": [
+        "                \"weight\": pc_loss_weight,",
+        "                \"target\": \"frame_violation_logit (margin ranking between pres/frame pairs)\",",
+        "                \"diagnostic_head_only\": True,",
+        "            },",
+        "            \"predicate_isolation_loss\": {",
+        "                \"enabled\": pi_loss_weight > 0.0,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3240,
+      "before_end_exclusive": 3240,
+      "after_start": 3314,
+      "after_end_exclusive": 3316,
+      "before": [],
+      "after": [
+        "                \"raw_loss_key\": \"predicate_isolation_loss\",",
+        "                \"weighted_loss_key\": \"predicate_isolation_loss\","
+      ],
+      "before_context": [
+        "                \"pos_weight\": pi_loss_pos_weight,",
+        "                \"target\": \"predicate_noncoverage_logit\",",
+        "                \"diagnostic_head_only\": True,",
+        "            },",
+        "            \"preservation_entitlement_loss\": {",
+        "                \"enabled\": pe_loss_weight > 0.0,"
+      ],
+      "after_context": [
+        "                \"pos_weight\": pi_loss_pos_weight,",
+        "                \"target\": \"predicate_noncoverage_logit\",",
+        "                \"diagnostic_head_only\": True,",
+        "            },",
+        "            \"preservation_entitlement_loss\": {",
+        "                \"enabled\": pe_loss_weight > 0.0,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3247,
+      "before_end_exclusive": 3247,
+      "after_start": 3323,
+      "after_end_exclusive": 3325,
+      "before": [],
+      "after": [
+        "                \"raw_loss_key\": \"preservation_entitlement_loss\",",
+        "                \"weighted_loss_key\": \"preservation_entitlement_loss\","
+      ],
+      "before_context": [
+        "                \"pos_weight\": pe_loss_pos_weight,",
+        "                \"target\": \"preservation_entitlement_logit\",",
+        "                \"diagnostic_head_only\": True,",
+        "            },",
+        "            \"temporal_diagnostic_loss\": {",
+        "                \"enabled\": td_loss_weight > 0.0,"
+      ],
+      "after_context": [
+        "                \"pos_weight\": pe_loss_pos_weight,",
+        "                \"target\": \"preservation_entitlement_logit\",",
+        "                \"diagnostic_head_only\": True,",
+        "            },",
+        "            \"temporal_diagnostic_loss\": {",
+        "                \"enabled\": td_loss_weight > 0.0,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3254,
+      "before_end_exclusive": 3254,
+      "after_start": 3332,
+      "after_end_exclusive": 3334,
+      "before": [],
+      "after": [
+        "                \"raw_loss_key\": \"temporal_diagnostic_loss\",",
+        "                \"weighted_loss_key\": \"temporal_diagnostic_loss\","
+      ],
+      "before_context": [
+        "                \"pos_weight\": td_loss_pos_weight,",
+        "                \"target\": \"temporal_diagnostic_logit\",",
+        "                \"diagnostic_head_only\": True,",
+        "                \"note\": (",
+        "                    \"WARNING: supervised via frame_pair_repr (shared); \"",
+        "                    \"gradient coupling risk identified in Stage23\""
+      ],
+      "after_context": [
+        "                \"pos_weight\": td_loss_pos_weight,",
+        "                \"target\": \"temporal_diagnostic_logit\",",
+        "                \"diagnostic_head_only\": True,",
+        "                \"note\": (",
+        "                    \"WARNING: supervised via frame_pair_repr (shared); \"",
+        "                    \"gradient coupling risk confirmed in Stage23 at weight >= 0.05\""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3256,
+      "before_end_exclusive": 3257,
+      "after_start": 3336,
+      "after_end_exclusive": 3337,
+      "before": [
+        "                    \"gradient coupling risk identified in Stage23\""
+      ],
+      "after": [
+        "                    \"gradient coupling risk confirmed in Stage23 at weight >= 0.05\""
+      ],
+      "before_context": [
+        "                \"diagnostic_head_only\": True,",
+        "                \"note\": (",
+        "                    \"WARNING: supervised via frame_pair_repr (shared); \"",
+        "                    if td_loss_weight > 0.0 else \"disabled\"",
+        "                ),",
+        "            },"
+      ],
+      "after_context": [
+        "                \"weighted_loss_key\": \"temporal_diagnostic_loss\",",
+        "                \"note\": (",
+        "                    \"WARNING: supervised via frame_pair_repr (shared); \"",
+        "                    if td_loss_weight > 0.0 else \"disabled\"",
+        "                ),",
+        "            },"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3267,
+      "before_end_exclusive": 3267,
+      "after_start": 3347,
+      "after_end_exclusive": 3349,
+      "before": [],
+      "after": [
+        "                \"raw_loss_key\": \"temporal_adapter_loss\",",
+        "                \"weighted_loss_key\": \"temporal_adapter_loss\","
+      ],
+      "before_context": [
+        "                \"target\": \"temporal_adapter_logit\",",
+        "                \"diagnostic_head_only\": True,",
+        "                \"gradient_isolated\": True,",
+        "                \"note\": (",
+        "                    \"adapter input detached by default; no gradient to frame_pair_repr\"",
+        "                    if ta_loss_weight > 0.0 else \"disabled\""
+      ],
+      "after_context": [
+        "                \"target\": \"temporal_adapter_logit\",",
+        "                \"diagnostic_head_only\": True,",
+        "                \"gradient_isolated\": True,",
+        "                \"note\": (",
+        "                    \"adapter input is frame_pair_repr.detach(); no gradient to FrameGate\"",
+        "                    if ta_loss_weight > 0.0 else \"disabled\""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3268,
+      "before_end_exclusive": 3269,
+      "after_start": 3350,
+      "after_end_exclusive": 3351,
+      "before": [
+        "                    \"adapter input detached by default; no gradient to frame_pair_repr\""
+      ],
+      "after": [
+        "                    \"adapter input is frame_pair_repr.detach(); no gradient to FrameGate\""
+      ],
+      "before_context": [
+        "                \"diagnostic_head_only\": True,",
+        "                \"gradient_isolated\": True,",
+        "                \"note\": (",
+        "                    if ta_loss_weight > 0.0 else \"disabled\"",
+        "                ),",
+        "            },"
+      ],
+      "after_context": [
+        "                \"raw_loss_key\": \"temporal_adapter_loss\",",
+        "                \"weighted_loss_key\": \"temporal_adapter_loss\",",
+        "                \"note\": (",
+        "                    if ta_loss_weight > 0.0 else \"disabled\"",
+        "                ),",
+        "            },"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3274,
+      "before_end_exclusive": 3274,
+      "after_start": 3356,
+      "after_end_exclusive": 3359,
+      "before": [],
+      "after": [
+        "        # True post-hoc final-logit modifiers only.",
+        "        # Comparator alphas are learned architectural parameters inside model.forward() and are",
+        "        # recorded separately under active_architectural_logit_components."
+      ],
+      "before_context": [
+        "            },",
+        "        }",
+        "",
+        "        _active_final_logit_modifiers: dict[str, Any] = {",
+        "            \"temporal_comparator_alpha\": {",
+        "                \"enabled\": bool(getattr(model, \"use_temporal_comparator\", False)),"
+      ],
+      "after_context": [
+        "            },",
+        "        }",
+        "",
+        "        _active_final_logit_modifiers: dict[str, Any] = {",
+        "            \"temporal_adapter_final_penalty\": {",
+        "                \"enabled\": ta_final_penalty_scale > 0.0,"
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 3275,
+      "before_end_exclusive": 3287,
+      "after_start": 3360,
+      "after_end_exclusive": 3360,
+      "before": [
+        "            \"temporal_comparator_alpha\": {",
+        "                \"enabled\": bool(getattr(model, \"use_temporal_comparator\", False)),",
+        "                \"scope\": \"local (temporal_mismatch_flags-gated per-example)\",",
+        "                \"stage15_used\": False,",
+        "                \"note\": \"learned scalar; applied to flagged examples only\",",
+        "            },",
+        "            \"predicate_comparator_alpha\": {",
+        "                \"enabled\": bool(getattr(model, \"use_predicate_comparator\", False)),",
+        "                \"scope\": \"local (predicate_mismatch_flags-gated per-example)\",",
+        "                \"stage15_used\": False,",
+        "                \"note\": \"learned scalar; applied to flagged examples only\",",
+        "            },"
+      ],
+      "after": [],
+      "before_context": [
+        "        }",
+        "",
+        "        _active_final_logit_modifiers: dict[str, Any] = {",
+        "            \"temporal_adapter_final_penalty\": {",
+        "                \"enabled\": ta_final_penalty_scale > 0.0,",
+        "                \"scale\": ta_final_penalty_scale,"
+      ],
+      "after_context": [
+        "        # Comparator alphas are learned architectural parameters inside model.forward() and are",
+        "        # recorded separately under active_architectural_logit_components.",
+        "        _active_final_logit_modifiers: dict[str, Any] = {",
+        "            \"temporal_adapter_final_penalty\": {",
+        "                \"enabled\": ta_final_penalty_scale > 0.0,",
+        "                \"scale\": ta_final_penalty_scale,"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3290,
+      "before_end_exclusive": 3292,
+      "after_start": 3363,
+      "after_end_exclusive": 3365,
+      "before": [
+        "                \"scope\": \"local (per-example; proportional to adapter prob)\",",
+        "                \"stage15_used\": False,"
+      ],
+      "after": [
+        "                \"type\": \"local_example_dependent\",",
+        "                \"stage15_used_for_selection_or_calibration\": False,"
+      ],
+      "before_context": [
+        "            \"temporal_adapter_final_penalty\": {",
+        "                \"enabled\": ta_final_penalty_scale > 0.0,",
+        "                \"scale\": ta_final_penalty_scale,",
+        "                \"note\": (",
+        "                    \"per-example NOT_ENTITLED boost; adapter logit detached from gradient path. \"",
+        "                    \"NOT OOD calibration. Stage15 never used to set scale.\""
+      ],
+      "after_context": [
+        "            \"temporal_adapter_final_penalty\": {",
+        "                \"enabled\": ta_final_penalty_scale > 0.0,",
+        "                \"scale\": ta_final_penalty_scale,",
+        "                \"note\": (",
+        "                    \"per-example NOT_ENTITLED boost proportional to sigmoid(adapter_logit).detach(). \"",
+        "                    \"Scale is a fixed hyperparameter — not OOD-calibrated. Stage15 never used.\""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3293,
+      "before_end_exclusive": 3295,
+      "after_start": 3366,
+      "after_end_exclusive": 3368,
+      "before": [
+        "                    \"per-example NOT_ENTITLED boost; adapter logit detached from gradient path. \"",
+        "                    \"NOT OOD calibration. Stage15 never used to set scale.\""
+      ],
+      "after": [
+        "                    \"per-example NOT_ENTITLED boost proportional to sigmoid(adapter_logit).detach(). \"",
+        "                    \"Scale is a fixed hyperparameter — not OOD-calibrated. Stage15 never used.\""
+      ],
+      "before_context": [
+        "                \"scope\": \"local (per-example; proportional to adapter prob)\",",
+        "                \"stage15_used\": False,",
+        "                \"note\": (",
+        "                    if ta_final_penalty_scale > 0.0 else \"disabled\"",
+        "                ),",
+        "            },"
+      ],
+      "after_context": [
+        "                \"type\": \"local_example_dependent\",",
+        "                \"stage15_used_for_selection_or_calibration\": False,",
+        "                \"note\": (",
+        "                    if ta_final_penalty_scale > 0.0 else \"disabled\"",
+        "                ),",
+        "            },"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3301,
+      "before_end_exclusive": 3303,
+      "after_start": 3374,
+      "after_end_exclusive": 3375,
+      "before": [
+        "                \"scope\": \"global post-hoc shift on NE logit (unflagged records)\",",
+        "                \"stage15_used\": False,"
+      ],
+      "after": [
+        "                \"type\": \"global_shift\","
+      ],
+      "before_context": [
+        "            \"dev_calibrated_ne_shift\": {",
+        "                \"enabled\": args.dev_calibrated_ne_shift_candidates is not None,",
+        "                \"candidates\": args.dev_calibrated_ne_shift_candidates,",
+        "                \"calibration_source\": (",
+        "                    f\"controlled_{args.dev_calibrated_ne_calibration_source}_only\"",
+        "                    if args.dev_calibrated_ne_shift_candidates is not None else None"
+      ],
+      "after_context": [
+        "            \"dev_calibrated_ne_shift\": {",
+        "                \"enabled\": args.dev_calibrated_ne_shift_candidates is not None,",
+        "                \"candidates\": args.dev_calibrated_ne_shift_candidates,",
+        "                \"calibration_source\": (",
+        "                    f\"controlled_{args.dev_calibrated_ne_calibration_source}_only\"",
+        "                    if args.dev_calibrated_ne_shift_candidates is not None else None"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3307,
+      "before_end_exclusive": 3307,
+      "after_start": 3379,
+      "after_end_exclusive": 3380,
+      "before": [],
+      "after": [
+        "                \"stage15_used_for_selection_or_calibration\": False,"
+      ],
+      "before_context": [
+        "                    f\"controlled_{args.dev_calibrated_ne_calibration_source}_only\"",
+        "                    if args.dev_calibrated_ne_shift_candidates is not None else None",
+        "                ),",
+        "                \"note\": (",
+        "                    \"post-hoc; selected on controlled dev only — not Stage15. \"",
+        "                    \"Diagnostic method only; not a final-model component.\""
+      ],
+      "after_context": [
+        "                    f\"controlled_{args.dev_calibrated_ne_calibration_source}_only\"",
+        "                    if args.dev_calibrated_ne_shift_candidates is not None else None",
+        "                ),",
+        "                \"note\": (",
+        "                    \"post-hoc global NE logit shift; selected on controlled data only — not Stage15. \"",
+        "                    \"Diagnostic method; not a validated final-model component.\""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3308,
+      "before_end_exclusive": 3310,
+      "after_start": 3381,
+      "after_end_exclusive": 3383,
+      "before": [
+        "                    \"post-hoc; selected on controlled dev only — not Stage15. \"",
+        "                    \"Diagnostic method only; not a final-model component.\""
+      ],
+      "after": [
+        "                    \"post-hoc global NE logit shift; selected on controlled data only — not Stage15. \"",
+        "                    \"Diagnostic method; not a validated final-model component.\""
+      ],
+      "before_context": [
+        "                    if args.dev_calibrated_ne_shift_candidates is not None else None",
+        "                ),",
+        "                \"note\": (",
+        "                    if args.dev_calibrated_ne_shift_candidates is not None else \"disabled\"",
+        "                ),",
+        "            },"
+      ],
+      "after_context": [
+        "                ),",
+        "                \"stage15_used_for_selection_or_calibration\": False,",
+        "                \"note\": (",
+        "                    if args.dev_calibrated_ne_shift_candidates is not None else \"disabled\"",
+        "                ),",
+        "            },"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3315,
+      "before_end_exclusive": 3317,
+      "after_start": 3388,
+      "after_end_exclusive": 3392,
+      "before": [
+        "                \"scope\": \"global post-hoc OOD eval sweep only\",",
+        "                \"stage15_used\": True if args.ood_unflagged_ne_shift_sweep is not None else False,"
+      ],
+      "after": [
+        "                \"type\": \"ood_tuned_eval_only\",",
+        "                \"stage15_used_for_selection_or_calibration\": (",
+        "                    args.ood_unflagged_ne_shift_sweep is not None",
+        "                ),"
+      ],
+      "before_context": [
+        "            },",
+        "            \"ood_unflagged_ne_shift\": {",
+        "                \"enabled\": args.ood_unflagged_ne_shift_sweep is not None,",
+        "                \"note\": (",
+        "                    \"OOD-tuned shift — NOT valid as final-model component. \"",
+        "                    \"Diagnostic/upper-bound only.\""
+      ],
+      "after_context": [
+        "            },",
+        "            \"ood_unflagged_ne_shift\": {",
+        "                \"enabled\": args.ood_unflagged_ne_shift_sweep is not None,",
+        "                \"note\": (",
+        "                    \"OOD-tuned global NE shift — Stage15 is consulted to select the shift. \"",
+        "                    \"NOT a valid final-model component. Diagnostic upper bound only.\""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3318,
+      "before_end_exclusive": 3320,
+      "after_start": 3393,
+      "after_end_exclusive": 3395,
+      "before": [
+        "                    \"OOD-tuned shift — NOT valid as final-model component. \"",
+        "                    \"Diagnostic/upper-bound only.\""
+      ],
+      "after": [
+        "                    \"OOD-tuned global NE shift — Stage15 is consulted to select the shift. \"",
+        "                    \"NOT a valid final-model component. Diagnostic upper bound only.\""
+      ],
+      "before_context": [
+        "                \"scope\": \"global post-hoc OOD eval sweep only\",",
+        "                \"stage15_used\": True if args.ood_unflagged_ne_shift_sweep is not None else False,",
+        "                \"note\": (",
+        "                    if args.ood_unflagged_ne_shift_sweep is not None else \"disabled\"",
+        "                ),",
+        "            },"
+      ],
+      "after_context": [
+        "                    args.ood_unflagged_ne_shift_sweep is not None",
+        "                ),",
+        "                \"note\": (",
+        "                    if args.ood_unflagged_ne_shift_sweep is not None else \"disabled\"",
+        "                ),",
+        "            },"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3325,
+      "before_end_exclusive": 3327,
+      "after_start": 3400,
+      "after_end_exclusive": 3404,
+      "before": [
+        "                \"scope\": \"selective post-hoc OOD eval sweep only\",",
+        "                \"stage15_used\": True if args.ood_selective_ne_shift_sweep is not None else False,"
+      ],
+      "after": [
+        "                \"type\": \"ood_tuned_eval_only\",",
+        "                \"stage15_used_for_selection_or_calibration\": (",
+        "                    args.ood_selective_ne_shift_sweep is not None",
+        "                ),"
+      ],
+      "before_context": [
+        "            },",
+        "            \"ood_selective_ne_shift\": {",
+        "                \"enabled\": args.ood_selective_ne_shift_sweep is not None,",
+        "                \"note\": (",
+        "                    \"OOD-tuned shift — NOT valid as final-model component. \"",
+        "                    \"Diagnostic/upper-bound only.\""
+      ],
+      "after_context": [
+        "            },",
+        "            \"ood_selective_ne_shift\": {",
+        "                \"enabled\": args.ood_selective_ne_shift_sweep is not None,",
+        "                \"note\": (",
+        "                    \"OOD-tuned selective NE shift — Stage15 is consulted to select the shift. \"",
+        "                    \"NOT a valid final-model component. Diagnostic upper bound only.\""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3328,
+      "before_end_exclusive": 3330,
+      "after_start": 3405,
+      "after_end_exclusive": 3407,
+      "before": [
+        "                    \"OOD-tuned shift — NOT valid as final-model component. \"",
+        "                    \"Diagnostic/upper-bound only.\""
+      ],
+      "after": [
+        "                    \"OOD-tuned selective NE shift — Stage15 is consulted to select the shift. \"",
+        "                    \"NOT a valid final-model component. Diagnostic upper bound only.\""
+      ],
+      "before_context": [
+        "                \"scope\": \"selective post-hoc OOD eval sweep only\",",
+        "                \"stage15_used\": True if args.ood_selective_ne_shift_sweep is not None else False,",
+        "                \"note\": (",
+        "                    if args.ood_selective_ne_shift_sweep is not None else \"disabled\"",
+        "                ),",
+        "            },"
+      ],
+      "after_context": [
+        "                    args.ood_selective_ne_shift_sweep is not None",
+        "                ),",
+        "                \"note\": (",
+        "                    if args.ood_selective_ne_shift_sweep is not None else \"disabled\"",
+        "                ),",
+        "            },"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3332,
+      "before_end_exclusive": 3332,
+      "after_start": 3409,
+      "after_end_exclusive": 3433,
+      "before": [],
+      "after": [
+        "            },",
+        "        }",
+        "",
+        "        # Architectural logit components: learned parameters inside model.forward().",
+        "        # These modify final_logits as part of the model graph — they are trained through",
+        "        # backprop and gated on external flag inputs, NOT post-hoc fixed-scale modifiers.",
+        "        _active_architectural_logit_components: dict[str, Any] = {",
+        "            \"temporal_comparator_alpha\": {",
+        "                \"enabled\": bool(getattr(model, \"use_temporal_comparator\", False)),",
+        "                \"type\": \"learned_gated_scalar\",",
+        "                \"gating\": \"temporal_mismatch_flags (per-example; flagged examples only)\",",
+        "                \"effect\": \"shifts final_logits[active, NOT_ENTITLED] by +alpha; SUPPORT/REFUTE by -alpha\",",
+        "                \"trained_via_backprop\": True,",
+        "                \"stage15_used\": False,",
+        "                \"note\": \"learned scalar alpha_temporal(); applies to flagged examples; not a post-hoc modifier\",",
+        "            },",
+        "            \"predicate_comparator_alpha\": {",
+        "                \"enabled\": bool(getattr(model, \"use_predicate_comparator\", False)),",
+        "                \"type\": \"learned_gated_scalar\",",
+        "                \"gating\": \"predicate_mismatch_flags (per-example; flagged examples only)\",",
+        "                \"effect\": \"shifts final_logits[active, NOT_ENTITLED] by +alpha; SUPPORT/REFUTE by -alpha\",",
+        "                \"trained_via_backprop\": True,",
+        "                \"stage15_used\": False,",
+        "                \"note\": \"learned scalar alpha_predicate(); applies to flagged examples; not a post-hoc modifier\","
+      ],
+      "before_context": [
+        "                    \"Diagnostic/upper-bound only.\"",
+        "                    if args.ood_selective_ne_shift_sweep is not None else \"disabled\"",
+        "                ),",
+        "            },",
+        "        }",
+        ""
+      ],
+      "after_context": [
+        "                    \"NOT a valid final-model component. Diagnostic upper bound only.\"",
+        "                    if args.ood_selective_ne_shift_sweep is not None else \"disabled\"",
+        "                ),",
+        "            },",
+        "        }",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3369,
+      "before_end_exclusive": 3370,
+      "after_start": 3470,
+      "after_end_exclusive": 3471,
+      "before": [
+        "        # Audit warnings (reporting only)"
+      ],
+      "after": [
+        "        # Audit warnings (reporting only; using weighted ratios as primary signal)"
+      ],
+      "before_context": [
+        "            },",
+        "        }",
+        "",
+        "        _audit_warnings: list[str] = []",
+        "        if _aux_to_ce is not None and _aux_to_ce > 0.5:",
+        "            _audit_warnings.append("
+      ],
+      "after_context": [
+        "            },",
+        "        }",
+        "",
+        "        _audit_warnings: list[str] = []",
+        "        if _aux_to_ce_w is not None and _aux_to_ce_w > 0.5:",
+        "            _audit_warnings.append("
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3371,
+      "before_end_exclusive": 3372,
+      "after_start": 3472,
+      "after_end_exclusive": 3473,
+      "before": [
+        "        if _aux_to_ce is not None and _aux_to_ce > 0.5:"
+      ],
+      "after": [
+        "        if _aux_to_ce_w is not None and _aux_to_ce_w > 0.5:"
+      ],
+      "before_context": [
+        "",
+        "        # Audit warnings (reporting only)",
+        "        _audit_warnings: list[str] = []",
+        "            _audit_warnings.append(",
+        "                f\"aux_to_ce_loss_ratio={_aux_to_ce:.3f} > 0.5: \"",
+        "                \"auxiliary losses dominate CE; verify intended weighting\""
+      ],
+      "after_context": [
+        "",
+        "        # Audit warnings (reporting only; using weighted ratios as primary signal)",
+        "        _audit_warnings: list[str] = []",
+        "            _audit_warnings.append(",
+        "                f\"aux_to_ce_loss_ratio_weighted={_aux_to_ce_w:.3f} > 0.5: \"",
+        "                \"weighted auxiliary losses exceed 50% of CE — total_loss is not CE-dominated\""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3373,
+      "before_end_exclusive": 3375,
+      "after_start": 3474,
+      "after_end_exclusive": 3476,
+      "before": [
+        "                f\"aux_to_ce_loss_ratio={_aux_to_ce:.3f} > 0.5: \"",
+        "                \"auxiliary losses dominate CE; verify intended weighting\""
+      ],
+      "after": [
+        "                f\"aux_to_ce_loss_ratio_weighted={_aux_to_ce_w:.3f} > 0.5: \"",
+        "                \"weighted auxiliary losses exceed 50% of CE — total_loss is not CE-dominated\""
+      ],
+      "before_context": [
+        "        _audit_warnings: list[str] = []",
+        "        if _aux_to_ce is not None and _aux_to_ce > 0.5:",
+        "            _audit_warnings.append(",
+        "            )",
+        "        _active_modifier_count = sum(",
+        "            1 for _mod in _active_final_logit_modifiers.values() if _mod.get(\"enabled\")"
+      ],
+      "after_context": [
+        "        _audit_warnings: list[str] = []",
+        "        if _aux_to_ce_w is not None and _aux_to_ce_w > 0.5:",
+        "            _audit_warnings.append(",
+        "            )",
+        "        if not use_intervention_loss and ranking_weight > 2.0:",
+        "            _audit_warnings.append("
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3376,
+      "before_end_exclusive": 3376,
+      "after_start": 3477,
+      "after_end_exclusive": 3488,
+      "before": [],
+      "after": [
+        "        if not use_intervention_loss and ranking_weight > 2.0:",
+        "            _audit_warnings.append(",
+        "                f\"ranking_loss enabled with large weight={ranking_weight}: \"",
+        "                \"baseline is not CE-only; ranking loss contributes substantially to total_loss\"",
+        "            )",
+        "        elif not use_intervention_loss and ranking_weight > 0.0:",
+        "            _audit_warnings.append(",
+        "                f\"ranking_loss is active (ranking_weight={ranking_weight}): \"",
+        "                \"baseline is not CE-only; see loss_component_epoch_avg_weighted['ranking_loss']\"",
+        "            )",
+        "        # Count only true post-hoc modifiers (not architectural components)"
+      ],
+      "before_context": [
+        "                f\"aux_to_ce_loss_ratio={_aux_to_ce:.3f} > 0.5: \"",
+        "                \"auxiliary losses dominate CE; verify intended weighting\"",
+        "            )",
+        "        _active_modifier_count = sum(",
+        "            1 for _mod in _active_final_logit_modifiers.values() if _mod.get(\"enabled\")",
+        "        )"
+      ],
+      "after_context": [
+        "                f\"aux_to_ce_loss_ratio_weighted={_aux_to_ce_w:.3f} > 0.5: \"",
+        "                \"weighted auxiliary losses exceed 50% of CE — total_loss is not CE-dominated\"",
+        "            )",
+        "        _active_modifier_count = sum(",
+        "            1 for _mod in _active_final_logit_modifiers.values() if _mod.get(\"enabled\")",
+        "        )"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3381,
+      "before_end_exclusive": 3382,
+      "after_start": 3493,
+      "after_end_exclusive": 3494,
+      "before": [
+        "                f\"{_active_modifier_count} final-logit modifiers enabled simultaneously; \""
+      ],
+      "after": [
+        "                f\"{_active_modifier_count} post-hoc final-logit modifiers enabled simultaneously; \""
+      ],
+      "before_context": [
+        "        )",
+        "        if _active_modifier_count > 1:",
+        "            _audit_warnings.append(",
+        "                \"verify priority and interaction: \"",
+        "                + \", \".join(",
+        "                    k for k, v in _active_final_logit_modifiers.items() if v.get(\"enabled\")"
+      ],
+      "after_context": [
+        "        )",
+        "        if _active_modifier_count > 1:",
+        "            _audit_warnings.append(",
+        "                \"verify priority and interaction: \"",
+        "                + \", \".join(",
+        "                    k for k, v in _active_final_logit_modifiers.items() if v.get(\"enabled\")"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3395,
+      "before_end_exclusive": 3396,
+      "after_start": 3507,
+      "after_end_exclusive": 3509,
+      "before": [
+        "                \"this is a diagnostic upper bound, NOT a valid final-model method\""
+      ],
+      "after": [
+        "                \"this is a diagnostic upper bound, NOT a valid final-model method. \"",
+        "                \"Stage15 was used to select or sweep the shift value.\""
+      ],
+      "before_context": [
+        "        if args.ood_unflagged_ne_shift_sweep is not None or args.ood_selective_ne_shift_sweep is not None:",
+        "            _audit_warnings.append(",
+        "                \"OOD-tuned NE shift is active during OOD eval: \"",
+        "            )",
+        "        if td_loss_weight > 0.0:",
+        "            _audit_warnings.append("
+      ],
+      "after_context": [
+        "        if args.ood_unflagged_ne_shift_sweep is not None or args.ood_selective_ne_shift_sweep is not None:",
+        "            _audit_warnings.append(",
+        "                \"OOD-tuned NE shift is active during OOD eval: \"",
+        "            )",
+        "        if td_loss_weight > 0.0:",
+        "            _audit_warnings.append("
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3404,
+      "before_end_exclusive": 3406,
+      "after_start": 3517,
+      "after_end_exclusive": 3519,
+      "before": [
+        "                \"temporal_adapter_final_penalty is enabled but temporal_adapter_loss is disabled: \"",
+        "                \"adapter was not trained this run; penalty applies untrained adapter probs\""
+      ],
+      "after": [
+        "                \"temporal_adapter_final_penalty is enabled but temporal_adapter_loss=0: \"",
+        "                \"adapter was not trained this run; penalty applies untrained adapter probabilities\""
+      ],
+      "before_context": [
+        "            )",
+        "        if ta_final_penalty_scale > 0.0 and ta_loss_weight <= 0.0:",
+        "            _audit_warnings.append(",
+        "            )",
+        "        if _tc_fallback_used:",
+        "            _audit_warnings.append("
+      ],
+      "after_context": [
+        "            )",
+        "        if ta_final_penalty_scale > 0.0 and ta_loss_weight <= 0.0:",
+        "            _audit_warnings.append(",
+        "            )",
+        "        if _tc_fallback_used:",
+        "            _audit_warnings.append("
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3421,
+      "before_end_exclusive": 3421,
+      "after_start": 3534,
+      "after_end_exclusive": 3535,
+      "before": [],
+      "after": [
+        "            \"active_architectural_logit_components\": _active_architectural_logit_components,"
+      ],
+      "before_context": [
+        "        _run_audit_ledger: dict[str, Any] = {",
+        "            \"active_training_losses\": _active_training_losses,",
+        "            \"active_final_logit_modifiers\": _active_final_logit_modifiers,",
+        "            \"active_selection_rules\": _active_selection_rules,",
+        "            \"loss_component_epoch_avg\": _loss_epoch_avg,",
+        "            \"aux_to_ce_loss_ratio\": _aux_to_ce,"
+      ],
+      "after_context": [
+        "        _run_audit_ledger: dict[str, Any] = {",
+        "            \"active_training_losses\": _active_training_losses,",
+        "            \"active_final_logit_modifiers\": _active_final_logit_modifiers,",
+        "            \"active_selection_rules\": _active_selection_rules,",
+        "            # Loss component averages — raw (pre-weight) and weighted (contribution to total_loss)",
+        "            \"loss_component_epoch_avg_raw\": _loss_epoch_avg_raw,"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3422,
+      "before_end_exclusive": 3424,
+      "after_start": 3536,
+      "after_end_exclusive": 3555,
+      "before": [
+        "            \"loss_component_epoch_avg\": _loss_epoch_avg,",
+        "            \"aux_to_ce_loss_ratio\": _aux_to_ce,"
+      ],
+      "after": [
+        "            # Loss component averages — raw (pre-weight) and weighted (contribution to total_loss)",
+        "            \"loss_component_epoch_avg_raw\": _loss_epoch_avg_raw,",
+        "            \"loss_component_epoch_avg_weighted\": _loss_epoch_avg_weighted,",
+        "            \"loss_component_epoch_avg\": _loss_epoch_avg_weighted,   # backward-compat alias",
+        "            \"loss_component_epoch_avg_semantics\": \"weighted\",",
+        "            # Selected epoch loss (epoch actually checkpointed, after all selectors ran)",
+        "            \"selected_epoch_loss_component_avg_raw\": _selected_epoch_raw,",
+        "            \"selected_epoch_loss_component_avg_weighted\": _selected_epoch_weighted,",
+        "            \"selected_epoch_loss_component_avg\": _selected_epoch_weighted,",
+        "            # Final epoch loss (last epoch of training)",
+        "            \"final_epoch_loss_component_avg_raw\": _final_epoch_raw,",
+        "            \"final_epoch_loss_component_avg_weighted\": _final_epoch_weighted,",
+        "            \"final_epoch_loss_component_avg\": _final_epoch_weighted,",
+        "            # Ratios — weighted is primary; raw is supplemental",
+        "            \"aux_weighted_loss_sum\": _aux_weighted_sum,",
+        "            \"aux_to_ce_loss_ratio_weighted\": _aux_to_ce_w,",
+        "            \"aux_raw_loss_sum\": _aux_raw_sum,",
+        "            \"aux_to_ce_loss_ratio_raw\": _aux_to_ce_r,",
+        "            \"aux_to_ce_loss_ratio\": _aux_to_ce_w,   # backward-compat alias; equals _weighted"
+      ],
+      "before_context": [
+        "            \"active_training_losses\": _active_training_losses,",
+        "            \"active_final_logit_modifiers\": _active_final_logit_modifiers,",
+        "            \"active_selection_rules\": _active_selection_rules,",
+        "            \"audit_warnings\": _audit_warnings,",
+        "            \"audit_epoch_count\": _audit_epoch_count,",
+        "            # Static provenance"
+      ],
+      "after_context": [
+        "            \"active_final_logit_modifiers\": _active_final_logit_modifiers,",
+        "            \"active_architectural_logit_components\": _active_architectural_logit_components,",
+        "            \"active_selection_rules\": _active_selection_rules,",
+        "            \"audit_warnings\": _audit_warnings,",
+        "            \"audit_epoch_count\": _audit_epoch_count,",
+        "            \"selected_epoch\": best_epoch,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3426,
+      "before_end_exclusive": 3426,
+      "after_start": 3557,
+      "after_end_exclusive": 3559,
+      "before": [],
+      "after": [
+        "            \"selected_epoch\": best_epoch,",
+        "            \"final_epoch\": epochs,"
+      ],
+      "before_context": [
+        "            \"aux_to_ce_loss_ratio\": _aux_to_ce,",
+        "            \"audit_warnings\": _audit_warnings,",
+        "            \"audit_epoch_count\": _audit_epoch_count,",
+        "            # Static provenance",
+        "            \"stage15_used_for_training\": False,",
+        "            \"stage15_used_for_loss_selection\": False,"
+      ],
+      "after_context": [
+        "            \"aux_to_ce_loss_ratio\": _aux_to_ce_w,   # backward-compat alias; equals _weighted",
+        "            \"audit_warnings\": _audit_warnings,",
+        "            \"audit_epoch_count\": _audit_epoch_count,",
+        "            # Static provenance",
+        "            \"stage15_used_for_training\": False,",
+        "            \"stage15_used_for_loss_selection\": False,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3751,
+      "before_end_exclusive": 3751,
+      "after_start": 3884,
+      "after_end_exclusive": 3892,
+      "before": [],
+      "after": [
+        "            \"loss_component_epoch_avg_semantics\": \"weighted\",",
+        "            \"audit_ledger_note\": (",
+        "                \"active_training_losses, active_final_logit_modifiers, \"",
+        "                \"active_architectural_logit_components, active_selection_rules, \"",
+        "                \"loss_component_epoch_avg_raw/weighted, selected/final_epoch_loss_component_avg, \"",
+        "                \"aux_to_ce_loss_ratio_weighted/raw available in runs[*].audit_ledger and lifted \"",
+        "                \"to top-level when len(runs)==1\"",
+        "            ),"
+      ],
+      "before_context": [
+        "            \"stage15_used_for_final_logit_modifier_selection\": False,",
+        "            \"stage15_used_for_checkpoint_selection\": False,",
+        "            \"time_swap_used_in_main_clean_data\": False,",
+        "        },",
+        "        \"runs\": reports,",
+        "    }"
+      ],
+      "after_context": [
+        "            \"stage15_used_for_final_logit_modifier_selection\": False,",
+        "            \"stage15_used_for_checkpoint_selection\": False,",
+        "            \"time_swap_used_in_main_clean_data\": False,",
+        "        },",
+        "        \"runs\": reports,",
+        "    }"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3851,
+      "before_end_exclusive": 3851,
+      "after_start": 3992,
+      "after_end_exclusive": 4005,
+      "before": [],
+      "after": [
+        "            \"loss_component_epoch_avg_raw\",",
+        "            \"loss_component_epoch_avg_weighted\",",
+        "            \"loss_component_epoch_avg_semantics\",",
+        "            \"selected_epoch_loss_component_avg\",",
+        "            \"selected_epoch_loss_component_avg_raw\",",
+        "            \"selected_epoch_loss_component_avg_weighted\",",
+        "            \"final_epoch_loss_component_avg\",",
+        "            \"final_epoch_loss_component_avg_raw\",",
+        "            \"final_epoch_loss_component_avg_weighted\",",
+        "            \"aux_weighted_loss_sum\",",
+        "            \"aux_to_ce_loss_ratio_weighted\",",
+        "            \"aux_raw_loss_sum\",",
+        "            \"aux_to_ce_loss_ratio_raw\","
+      ],
+      "before_context": [
+        "        _single_ledger = single.get(\"audit_ledger\", {})",
+        "        for _audit_key in (",
+        "            \"loss_component_epoch_avg\",",
+        "            \"aux_to_ce_loss_ratio\",",
+        "            \"audit_warnings\",",
+        "            \"stage15_used_for_training\","
+      ],
+      "after_context": [
+        "        _single_ledger = single.get(\"audit_ledger\", {})",
+        "        for _audit_key in (",
+        "            \"loss_component_epoch_avg\",",
+        "            \"aux_to_ce_loss_ratio\",",
+        "            \"active_training_losses\",",
+        "            \"active_final_logit_modifiers\","
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3852,
+      "before_end_exclusive": 3852,
+      "after_start": 4006,
+      "after_end_exclusive": 4010,
+      "before": [],
+      "after": [
+        "            \"active_training_losses\",",
+        "            \"active_final_logit_modifiers\",",
+        "            \"active_architectural_logit_components\",",
+        "            \"active_selection_rules\","
+      ],
+      "before_context": [
+        "        for _audit_key in (",
+        "            \"loss_component_epoch_avg\",",
+        "            \"aux_to_ce_loss_ratio\",",
+        "            \"audit_warnings\",",
+        "            \"stage15_used_for_training\",",
+        "            \"stage15_used_for_loss_selection\","
+      ],
+      "after_context": [
+        "            \"aux_raw_loss_sum\",",
+        "            \"aux_to_ce_loss_ratio_raw\",",
+        "            \"aux_to_ce_loss_ratio\",",
+        "            \"audit_warnings\",",
+        "            \"stage15_used_for_training\",",
+        "            \"stage15_used_for_loss_selection\","
+      ]
+    }
+  ]
+}

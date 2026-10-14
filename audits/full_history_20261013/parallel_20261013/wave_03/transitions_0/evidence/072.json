@@ -1,0 +1,354 @@
+{
+  "shard_ordinal": 72,
+  "original_queue_id": "WORK-a7112e961d45d2b54297",
+  "original_source_ids": [
+    "HV000800"
+  ],
+  "original_source_identity": {
+    "commit": "e2abf980f3bc3826edc01c6ef052237a0674a809",
+    "path": "scripts/kaggle_bootstrap.py",
+    "blob": "db4c9869d54286cda03579949a2b71a3005d70f3",
+    "object_type": "commit",
+    "bytes": 21249,
+    "sha256": "b6d55f02060baadb71cf4030b12c211e1134a7e67d9c030fb90a806b574e1c1b"
+  },
+  "before": {
+    "commit": "31bf411a946b2d7950e380cd0a299b138247bb67",
+    "path": "scripts/kaggle_bootstrap.py",
+    "blob": "335dd1f97d86c55c0314fa7918a62361d57798c0",
+    "object_type": "commit",
+    "bytes": 17895,
+    "sha256": "0938939b53856803578e282920777a12719ff4a0a27ec260a8e2ca8c70c4506e"
+  },
+  "after": {
+    "commit": "e2abf980f3bc3826edc01c6ef052237a0674a809",
+    "path": "scripts/kaggle_bootstrap.py",
+    "blob": "db4c9869d54286cda03579949a2b71a3005d70f3",
+    "object_type": "commit",
+    "bytes": 21249,
+    "sha256": "b6d55f02060baadb71cf4030b12c211e1134a7e67d9c030fb90a806b574e1c1b"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0104"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "load_restore_manifest",
+      "package_wheel_entries",
+      "parse_requirement_line",
+      "validate_restore_inputs",
+      "wheel_entries"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 8 removed/replaced lines and 72 added/replaced lines in 8 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "31bf411a946b2d7950e380cd0a299b138247bb67",
+      "blob": "335dd1f97d86c55c0314fa7918a62361d57798c0"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 33,
+      "before_end_exclusive": 33,
+      "after_start": 33,
+      "after_end_exclusive": 37,
+      "before": [],
+      "after": [
+        "}",
+        "ALLOWED_PACKAGE_VERSIONS = {",
+        "    line.split(\"==\", 1)[0]: line.split(\"==\", 1)[1]",
+        "    for line in ALLOWED_REQUIREMENT_LINES"
+      ],
+      "before_context": [
+        "    \"quack-kernels==0.6.4\",",
+        "    \"torch-c-dlpack-ext==0.1.5\",",
+        "    \"z3-solver==4.15.4.0\",",
+        "}",
+        "",
+        ""
+      ],
+      "after_context": [
+        "    \"quack-kernels==0.6.4\",",
+        "    \"torch-c-dlpack-ext==0.1.5\",",
+        "    \"z3-solver==4.15.4.0\",",
+        "}",
+        "",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 152,
+      "before_end_exclusive": 153,
+      "after_start": 156,
+      "after_end_exclusive": 157,
+      "before": [
+        "    wheels = payload.get(\"wheels\")"
+      ],
+      "after": [
+        "    restore_packages = payload.get(\"restore_packages\")"
+      ],
+      "before_context": [
+        "    marker = payload.get(\"marker\")",
+        "    boundary = payload.get(\"evidence_boundary\")",
+        "    missing_wheels = payload.get(\"missing_wheels\")",
+        "    checks.append(CheckResult(\"restore_manifest_marker\", \"PASS\" if marker == RESTORE_MARKER else \"FAIL\", f\"observed={marker!r}\"))",
+        "    checks.append(CheckResult(\"restore_manifest_boundary\", \"PASS\" if boundary == EVIDENCE_BOUNDARY else \"FAIL\", f\"observed={boundary!r}\"))",
+        "    checks.append(CheckResult(\"restore_manifest_missing_wheels\", \"PASS\" if missing_wheels == [] else \"FAIL\", f\"observed={missing_wheels!r}\"))"
+      ],
+      "after_context": [
+        "    marker = payload.get(\"marker\")",
+        "    boundary = payload.get(\"evidence_boundary\")",
+        "    missing_wheels = payload.get(\"missing_wheels\")",
+        "    checks.append(CheckResult(\"restore_manifest_marker\", \"PASS\" if marker == RESTORE_MARKER else \"FAIL\", f\"observed={marker!r}\"))",
+        "    checks.append(CheckResult(\"restore_manifest_boundary\", \"PASS\" if boundary == EVIDENCE_BOUNDARY else \"FAIL\", f\"observed={boundary!r}\"))",
+        "    checks.append(CheckResult(\"restore_manifest_missing_wheels\", \"PASS\" if missing_wheels == [] else \"FAIL\", f\"observed={missing_wheels!r}\"))"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 156,
+      "before_end_exclusive": 157,
+      "after_start": 160,
+      "after_end_exclusive": 161,
+      "before": [
+        "    checks.append(CheckResult(\"restore_manifest_wheels\", \"PASS\" if isinstance(wheels, list) else \"FAIL\", \"wheels list\"))"
+      ],
+      "after": [
+        "    checks.append(CheckResult(\"restore_manifest_restore_packages\", \"PASS\" if isinstance(restore_packages, list) else \"FAIL\", \"restore_packages list\"))"
+      ],
+      "before_context": [
+        "    checks.append(CheckResult(\"restore_manifest_marker\", \"PASS\" if marker == RESTORE_MARKER else \"FAIL\", f\"observed={marker!r}\"))",
+        "    checks.append(CheckResult(\"restore_manifest_boundary\", \"PASS\" if boundary == EVIDENCE_BOUNDARY else \"FAIL\", f\"observed={boundary!r}\"))",
+        "    checks.append(CheckResult(\"restore_manifest_missing_wheels\", \"PASS\" if missing_wheels == [] else \"FAIL\", f\"observed={missing_wheels!r}\"))",
+        "    return payload, checks",
+        "",
+        ""
+      ],
+      "after_context": [
+        "    checks.append(CheckResult(\"restore_manifest_marker\", \"PASS\" if marker == RESTORE_MARKER else \"FAIL\", f\"observed={marker!r}\"))",
+        "    checks.append(CheckResult(\"restore_manifest_boundary\", \"PASS\" if boundary == EVIDENCE_BOUNDARY else \"FAIL\", f\"observed={boundary!r}\"))",
+        "    checks.append(CheckResult(\"restore_manifest_missing_wheels\", \"PASS\" if missing_wheels == [] else \"FAIL\", f\"observed={missing_wheels!r}\"))",
+        "    return payload, checks",
+        "",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 160,
+      "before_end_exclusive": 165,
+      "after_start": 164,
+      "after_end_exclusive": 213,
+      "before": [
+        "def wheel_entries(payload: dict[str, Any]) -> list[dict[str, Any]]:",
+        "    entries = payload.get(\"wheels\", [])",
+        "    if not isinstance(entries, list):",
+        "        return []",
+        "    return [entry for entry in entries if isinstance(entry, dict)]"
+      ],
+      "after": [
+        "def parse_requirement_line(line: str) -> tuple[str, str] | None:",
+        "    if \"==\" not in line:",
+        "        return None",
+        "    name, version = line.split(\"==\", 1)",
+        "    if not name or not version:",
+        "        return None",
+        "    return name, version",
+        "",
+        "",
+        "def package_wheel_entries(payload: dict[str, Any]) -> tuple[list[tuple[str, str, dict[str, Any]]], list[CheckResult]]:",
+        "    checks: list[CheckResult] = []",
+        "    flattened: list[tuple[str, str, dict[str, Any]]] = []",
+        "    packages = payload.get(\"restore_packages\")",
+        "    if not isinstance(packages, list):",
+        "        return flattened, [CheckResult(\"restore_packages\", \"FAIL\", \"missing or non-list\")]",
+        "    seen: dict[str, str] = {}",
+        "    for index, package in enumerate(packages):",
+        "        if not isinstance(package, dict):",
+        "            checks.append(CheckResult(f\"restore_package_{index}\", \"FAIL\", \"package entry is not object\"))",
+        "            continue",
+        "        name = package.get(\"name\")",
+        "        version = package.get(\"version\")",
+        "        wheels = package.get(\"wheels\")",
+        "        if not isinstance(name, str) or not name:",
+        "            checks.append(CheckResult(f\"restore_package_{index}_name\", \"FAIL\", f\"observed={name!r}\"))",
+        "            continue",
+        "        if not isinstance(version, str) or not version:",
+        "            checks.append(CheckResult(f\"{name}_version\", \"FAIL\", f\"observed={version!r}\"))",
+        "            continue",
+        "        allowed_version = ALLOWED_PACKAGE_VERSIONS.get(name)",
+        "        if allowed_version != version:",
+        "            checks.append(CheckResult(f\"{name}_allowed_version\", \"FAIL\", f\"expected={allowed_version!r} observed={version!r}\"))",
+        "        else:",
+        "            checks.append(CheckResult(f\"{name}_allowed_version\", \"PASS\", version))",
+        "        if name in seen:",
+        "            status = \"FAIL\"",
+        "            detail = f\"duplicate package previous={seen[name]!r} observed={version!r}\"",
+        "            checks.append(CheckResult(f\"{name}_duplicate\", status, detail))",
+        "        seen[name] = version",
+        "        if not isinstance(wheels, list) or not wheels:",
+        "            checks.append(CheckResult(f\"{name}_wheels\", \"FAIL\", \"missing or empty wheels\"))",
+        "            continue",
+        "        checks.append(CheckResult(f\"{name}_wheels\", \"PASS\", f\"count={len(wheels)}\"))",
+        "        for wheel in wheels:",
+        "            if not isinstance(wheel, dict):",
+        "                checks.append(CheckResult(f\"{name}_wheel\", \"FAIL\", \"wheel entry is not object\"))",
+        "                continue",
+        "            flattened.append((name, version, wheel))",
+        "    return flattened, checks"
+      ],
+      "before_context": [
+        "    return payload, checks",
+        "",
+        "",
+        "",
+        "",
+        "def wheel_name(entry: dict[str, Any]) -> str | None:"
+      ],
+      "after_context": [
+        "    return payload, checks",
+        "",
+        "",
+        "",
+        "",
+        "def wheel_name(entry: dict[str, Any]) -> str | None:"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 193,
+      "before_end_exclusive": 193,
+      "after_start": 241,
+      "after_end_exclusive": 242,
+      "before": [],
+      "after": [
+        "    requirement_pairs: set[tuple[str, str]] = set()"
+      ],
+      "before_context": [
+        "",
+        "def validate_restore_inputs(wheelhouse: Path) -> tuple[Path | None, list[CheckResult]]:",
+        "    checks: list[CheckResult] = []",
+        "    requirements = wheelhouse / RESTORE_REQUIREMENTS",
+        "    manifest_path = wheelhouse / RESTORE_MANIFEST",
+        "    if requirements.is_file():"
+      ],
+      "after_context": [
+        "",
+        "def validate_restore_inputs(wheelhouse: Path) -> tuple[Path | None, list[CheckResult]]:",
+        "    checks: list[CheckResult] = []",
+        "    requirements = wheelhouse / RESTORE_REQUIREMENTS",
+        "    manifest_path = wheelhouse / RESTORE_MANIFEST",
+        "    if requirements.is_file():"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 203,
+      "before_end_exclusive": 203,
+      "after_start": 252,
+      "after_end_exclusive": 258,
+      "before": [],
+      "after": [
+        "        malformed = [line for line in requirement_lines if parse_requirement_line(line) is None]",
+        "        requirement_pairs = {",
+        "            parsed",
+        "            for line in requirement_lines",
+        "            if (parsed := parse_requirement_line(line)) is not None",
+        "        }"
+      ],
+      "before_context": [
+        "            if line.strip() and not line.strip().startswith(\"#\")",
+        "        ]",
+        "        unexpected = [line for line in requirement_lines if line not in ALLOWED_REQUIREMENT_LINES]",
+        "        if unexpected:",
+        "            checks.append(CheckResult(\"restore_requirements_allowlist\", \"FAIL\", f\"unexpected={unexpected!r}\"))",
+        "        else:"
+      ],
+      "after_context": [
+        "            if line.strip() and not line.strip().startswith(\"#\")",
+        "        ]",
+        "        unexpected = [line for line in requirement_lines if line not in ALLOWED_REQUIREMENT_LINES]",
+        "        if unexpected:",
+        "            checks.append(CheckResult(\"restore_requirements_allowlist\", \"FAIL\", f\"unexpected={unexpected!r}\"))",
+        "        elif malformed:"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 205,
+      "before_end_exclusive": 205,
+      "after_start": 260,
+      "after_end_exclusive": 262,
+      "before": [],
+      "after": [
+        "        elif malformed:",
+        "            checks.append(CheckResult(\"restore_requirements_allowlist\", \"FAIL\", f\"malformed={malformed!r}\"))"
+      ],
+      "before_context": [
+        "        unexpected = [line for line in requirement_lines if line not in ALLOWED_REQUIREMENT_LINES]",
+        "        if unexpected:",
+        "            checks.append(CheckResult(\"restore_requirements_allowlist\", \"FAIL\", f\"unexpected={unexpected!r}\"))",
+        "        else:",
+        "            checks.append(CheckResult(\"restore_requirements_allowlist\", \"PASS\", f\"count={len(requirement_lines)}\"))",
+        "    else:"
+      ],
+      "after_context": [
+        "        }",
+        "        if unexpected:",
+        "            checks.append(CheckResult(\"restore_requirements_allowlist\", \"FAIL\", f\"unexpected={unexpected!r}\"))",
+        "        else:",
+        "            checks.append(CheckResult(\"restore_requirements_allowlist\", \"PASS\", f\"count={len(requirement_lines)}\"))",
+        "    else:"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 213,
+      "before_end_exclusive": 214,
+      "after_start": 270,
+      "after_end_exclusive": 278,
+      "before": [
+        "    for index, entry in enumerate(wheel_entries(manifest)):"
+      ],
+      "after": [
+        "    package_wheels, package_checks = package_wheel_entries(manifest)",
+        "    checks.extend(package_checks)",
+        "    manifest_pairs = {(name, version) for name, version, _wheel in package_wheels}",
+        "    if requirement_pairs == manifest_pairs:",
+        "        checks.append(CheckResult(\"restore_requirements_manifest_match\", \"PASS\", f\"count={len(requirement_pairs)}\"))",
+        "    else:",
+        "        checks.append(CheckResult(\"restore_requirements_manifest_match\", \"FAIL\", f\"requirements={sorted(requirement_pairs)!r} manifest={sorted(manifest_pairs)!r}\"))",
+        "    for index, (_package_name, _version, entry) in enumerate(package_wheels):"
+      ],
+      "before_context": [
+        "    checks.extend(manifest_checks)",
+        "    if manifest is None:",
+        "        return None, checks",
+        "        name = wheel_name(entry)",
+        "        if name is None:",
+        "            checks.append(CheckResult(f\"wheel_{index}\", \"FAIL\", \"missing wheel filename\"))"
+      ],
+      "after_context": [
+        "    checks.extend(manifest_checks)",
+        "    if manifest is None:",
+        "        return None, checks",
+        "        name = wheel_name(entry)",
+        "        if name is None:",
+        "            checks.append(CheckResult(f\"wheel_{index}\", \"FAIL\", \"missing wheel filename\"))"
+      ]
+    }
+  ]
+}

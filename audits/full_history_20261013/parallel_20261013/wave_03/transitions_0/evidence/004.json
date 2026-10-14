@@ -1,0 +1,194 @@
+{
+  "shard_ordinal": 4,
+  "original_queue_id": "WORK-0a9663e578d3d76b5c1d",
+  "original_source_ids": [
+    "HV000813"
+  ],
+  "original_source_identity": {
+    "commit": "5f5f4d6a80085ad8baf43445475d1c3049535c22",
+    "path": "scripts/longterm_k0_rvg_layer22_recurrent_readout_factorization_audit.py",
+    "blob": "1542e38646a99229dde80510a0be135dc072d46e",
+    "object_type": "commit",
+    "bytes": 41187,
+    "sha256": "b9a307b031f085f454203e7cd3c3bbe06b26552f6389d072d68f9996f6f182b0"
+  },
+  "before": {
+    "commit": "9bb444b32a30cb3935d33d5c4a80f1d7f0059f1a",
+    "path": "scripts/longterm_k0_rvg_layer22_recurrent_readout_factorization_audit.py",
+    "blob": "25896ca5be6625eb04611aa12646c5c1db40cdfe",
+    "object_type": "commit",
+    "bytes": 39940,
+    "sha256": "c09e6e2364a28d0b71c79693f34347390b5bfe84b2a49188573f94871943244f"
+  },
+  "after": {
+    "commit": "5f5f4d6a80085ad8baf43445475d1c3049535c22",
+    "path": "scripts/longterm_k0_rvg_layer22_recurrent_readout_factorization_audit.py",
+    "blob": "1542e38646a99229dde80510a0be135dc072d46e",
+    "object_type": "commit",
+    "bytes": 41187,
+    "sha256": "b9a307b031f085f454203e7cd3c3bbe06b26552f6389d072d68f9996f6f182b0"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0109"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "capture_readout_operands",
+      "composite_trace",
+      "traced_direct_backbone_forward"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 23 removed/replaced lines and 58 added/replaced lines in 2 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "dcac03006a97079061d7955e287e1f8b54aa2853",
+      "blob": "1542e38646a99229dde80510a0be135dc072d46e"
+    }
+  ],
+  "immediate_parent_has_before_blob": false,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "replace",
+      "before_start": 296,
+      "before_end_exclusive": 319,
+      "after_start": 296,
+      "after_end_exclusive": 303,
+      "before": [
+        "    with collector.capture():",
+        "        records = parent.capture_ck(",
+        "            gate_parent,",
+        "            output_parent,",
+        "            residual_parent,",
+        "            rms_parent,",
+        "            hidden_parent,",
+        "            four_tap,",
+        "            postconv,",
+        "            dt_projection,",
+        "            secant,",
+        "            base,",
+        "            model,",
+        "            binding,",
+        "            layer_map,",
+        "            layer22,",
+        "            layer23,",
+        "            norm23,",
+        "            mixer23,",
+        "            mixer22,",
+        "            out_proj,",
+        "            token_ids,",
+        "            targets,"
+      ],
+      "after": [
+        "    original_direct_backbone_forward = base.direct_backbone_forward",
+        "",
+        "    def traced_direct_backbone_forward(*args: Any, **kwargs: Any):",
+        "        inner_trace = sys.gettrace()",
+        "        require(",
+        "            inner_trace is not None,",
+        "            \"INNER_TRACE_MISSING_AT_DIRECT_FORWARD\","
+      ],
+      "before_context": [
+        "    prior_trace = sys.gettrace()",
+        "    collector = ReadoutOperandCollector(binding, layer_map, targets)",
+        "",
+        "        )",
+        "",
+        "    require(sys.gettrace() is prior_trace, \"TRACE_RESTORATION_FAILURE\")"
+      ],
+      "after_context": [
+        "    prior_trace = sys.gettrace()",
+        "    collector = ReadoutOperandCollector(binding, layer_map, targets)",
+        "",
+        "        )",
+        "",
+        "        same_as_outer = ("
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 321,
+      "before_end_exclusive": 321,
+      "after_start": 305,
+      "after_end_exclusive": 356,
+      "before": [],
+      "after": [
+        "        same_as_outer = (",
+        "            getattr(inner_trace, \"__self__\", None) is collector",
+        "            and",
+        "            getattr(inner_trace, \"__func__\", None)",
+        "            is getattr(collector._trace, \"__func__\", None)",
+        "        )",
+        "        require(",
+        "            not same_as_outer,",
+        "            \"NESTED_PARENT_TRACE_NOT_INSTALLED\",",
+        "        )",
+        "",
+        "        def composite_trace(frame: Any, event: str, arg: Any):",
+        "            inner_trace(frame, event, arg)",
+        "            collector._trace(frame, event, arg)",
+        "            return composite_trace",
+        "",
+        "        sys.settrace(composite_trace)",
+        "        try:",
+        "            return original_direct_backbone_forward(*args, **kwargs)",
+        "        finally:",
+        "            sys.settrace(inner_trace)",
+        "",
+        "    base.direct_backbone_forward = traced_direct_backbone_forward",
+        "    try:",
+        "        with collector.capture():",
+        "            records = parent.capture_ck(",
+        "                gate_parent,",
+        "                output_parent,",
+        "                residual_parent,",
+        "                rms_parent,",
+        "                hidden_parent,",
+        "                four_tap,",
+        "                postconv,",
+        "                dt_projection,",
+        "                secant,",
+        "                base,",
+        "                model,",
+        "                binding,",
+        "                layer_map,",
+        "                layer22,",
+        "                layer23,",
+        "                norm23,",
+        "                mixer23,",
+        "                mixer22,",
+        "                out_proj,",
+        "                token_ids,",
+        "                targets,",
+        "            )",
+        "",
+        "    finally:",
+        "        base.direct_backbone_forward = original_direct_backbone_forward"
+      ],
+      "before_context": [
+        "            targets,",
+        "        )",
+        "",
+        "    require(sys.gettrace() is prior_trace, \"TRACE_RESTORATION_FAILURE\")",
+        "    require(collector.records is not None, \"RECURRENCE_RECORDS_MISSING\")",
+        "    require(set(records) == set(targets), \"PARENT_TARGET_SET_MISMATCH\")"
+      ],
+      "after_context": [
+        "            \"INNER_TRACE_MISSING_AT_DIRECT_FORWARD\",",
+        "        )",
+        "",
+        "    require(sys.gettrace() is prior_trace, \"TRACE_RESTORATION_FAILURE\")",
+        "    require(collector.records is not None, \"RECURRENCE_RECORDS_MISSING\")",
+        "    require(set(records) == set(targets), \"PARENT_TARGET_SET_MISMATCH\")"
+      ]
+    }
+  ]
+}

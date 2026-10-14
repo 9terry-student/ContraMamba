@@ -1,0 +1,72 @@
+{
+  "shard_ordinal": 31,
+  "original_queue_id": "WORK-4d5a179b62f483da55c3",
+  "original_source_ids": [
+    "HV000117"
+  ],
+  "original_source_identity": {
+    "commit": "048fb78258bbe0dac29f0dfbe0310b9023ecc672",
+    "path": "paper/iclr2027/figures/fig3_five_scale_recurrence_reorganization.png",
+    "blob": "0187009ff695d6331fb34d7d77721c64d7c00fca",
+    "object_type": "commit",
+    "bytes": 277813,
+    "sha256": "49727ec818b226ca83af7a371ea6a39c631f50fabc167a015acb94c76ae83b34"
+  },
+  "before": {
+    "commit": "ef1806bef9e4a7f55e1f7e77f7a0f08592fb4abe",
+    "path": "paper/iclr2027/figures/fig3_five_scale_recurrence_reorganization.png",
+    "blob": "fd84130901bc32f56105ef1f3f9e75b822420722",
+    "object_type": "commit",
+    "bytes": 296791,
+    "sha256": "80ec094f6bf96d80957e81f95e1734ce40783f362ab852a578db85ff1342fcc3"
+  },
+  "after": {
+    "commit": "048fb78258bbe0dac29f0dfbe0310b9023ecc672",
+    "path": "paper/iclr2027/figures/fig3_five_scale_recurrence_reorganization.png",
+    "blob": "0187009ff695d6331fb34d7d77721c64d7c00fca",
+    "object_type": "commit",
+    "bytes": 277813,
+    "sha256": "49727ec818b226ca83af7a371ea6a39c631f50fabc167a015acb94c76ae83b34"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "versions_shard_0/semantic_revision_records.jsonl",
+      "jsonl_line": 22,
+      "record": {
+        "after_commit": "048fb78258bbe0dac29f0dfbe0310b9023ecc672",
+        "before_commit": "ef1806bef9e4a7f55e1f7e77f7a0f08592fb4abe",
+        "categories": [],
+        "evidence": [
+          {
+            "byte_sha256_after": "49727ec818b226ca83af7a371ea6a39c631f50fabc167a015acb94c76ae83b34",
+            "byte_sha256_before": "80ec094f6bf96d80957e81f95e1734ce40783f362ab852a578db85ff1342fcc3"
+          }
+        ],
+        "from_blob": "fd84130901bc32f56105ef1f3f9e75b822420722",
+        "from_kind": "BINARY",
+        "from_size_bytes": 296791,
+        "id": "SR000022",
+        "interpretation": "UNRESOLVED_BINARY_CONTENT",
+        "path": "paper/iclr2027/figures/fig3_five_scale_recurrence_reorganization.png",
+        "relationship": "ANCESTRAL_PATH_EVENT_TRANSITION",
+        "selected_target_ids": [
+          "HV000117"
+        ],
+        "to_blob": "0187009ff695d6331fb34d7d77721c64d7c00fca",
+        "to_kind": "BINARY",
+        "to_size_bytes": 277813
+      }
+    }
+  ],
+  "prior_interpretation": null,
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "8423ef9d1325c007ecd31849a668131197e2214d",
+      "blob": "fd84130901bc32f56105ef1f3f9e75b822420722"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "image",
+  "changes": []
+}

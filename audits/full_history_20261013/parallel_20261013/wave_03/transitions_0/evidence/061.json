@@ -1,0 +1,361 @@
+{
+  "shard_ordinal": 61,
+  "original_queue_id": "WORK-9363206bb8998b585d04",
+  "original_source_ids": [
+    "HV000700"
+  ],
+  "original_source_identity": {
+    "commit": "c1ea7ce4a4e7ea5b3a30df70466496560a86b82c",
+    "path": "scripts/audit_native_downstream_functional_reconvergence_raw_write_transport.py",
+    "blob": "14576fa5f51d399e314f6120f616a03fd55fca6e",
+    "object_type": "commit",
+    "bytes": 57196,
+    "sha256": "b0db7c356b9b761a680924c32a2b3aced12acb51ec15c4f5b34934df6ab9d80a"
+  },
+  "before": {
+    "commit": "91059619de34416943094a53c8d63f3856f468c1",
+    "path": "scripts/audit_native_downstream_functional_reconvergence_raw_write_transport.py",
+    "blob": "0f23f31ada7e35e7c6f017af1a2250df17285dd6",
+    "object_type": "commit",
+    "bytes": 56592,
+    "sha256": "4c21943ba7196791cf82dd0385fffcc96cd0bde07498b92744f2ad41b1d14539"
+  },
+  "after": {
+    "commit": "c1ea7ce4a4e7ea5b3a30df70466496560a86b82c",
+    "path": "scripts/audit_native_downstream_functional_reconvergence_raw_write_transport.py",
+    "blob": "14576fa5f51d399e314f6120f616a03fd55fca6e",
+    "object_type": "commit",
+    "bytes": 57196,
+    "sha256": "b0db7c356b9b761a680924c32a2b3aced12acb51ec15c4f5b34934df6ab9d80a"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0082"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "_offload_stage_map",
+      "run_worker"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 11 removed/replaced lines and 27 added/replaced lines in 10 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "91059619de34416943094a53c8d63f3856f468c1",
+      "blob": "0f23f31ada7e35e7c6f017af1a2250df17285dd6"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 709,
+      "before_end_exclusive": 709,
+      "after_start": 709,
+      "after_end_exclusive": 719,
+      "before": [],
+      "after": [
+        "def _offload_stage_map(",
+        "    stages: Mapping[str, torch.Tensor],",
+        ") -> dict[str, torch.Tensor]:",
+        "    \"\"\"Detach completed stage tensors and move them off CUDA immediately.\"\"\"",
+        "    return {",
+        "        name: value.detach().to(device=\"cpu\")",
+        "        for name, value in stages.items()",
+        "    }",
+        "",
+        ""
+      ],
+      "before_context": [
+        "    )",
+        "",
+        "",
+        "def _expected_counts() -> dict[str, Any]:",
+        "    batches = math.ceil(DEV_ROWS / BATCH_ROWS)",
+        "    result = {\"batch_rows\": BATCH_ROWS, \"batches_per_worker\": batches, \"workers\": {}}"
+      ],
+      "after_context": [
+        "    )",
+        "",
+        "",
+        "def _expected_counts() -> dict[str, Any]:",
+        "    batches = math.ceil(DEV_ROWS / BATCH_ROWS)",
+        "    result = {\"batch_rows\": BATCH_ROWS, \"batches_per_worker\": batches, \"workers\": {}}"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 831,
+      "before_end_exclusive": 831,
+      "after_start": 841,
+      "after_end_exclusive": 842,
+      "before": [],
+      "after": [
+        "        batch_mask_cpu = batch_mask.detach().to(device=\"cpu\")"
+      ],
+      "before_context": [
+        "        stop = min(start + BATCH_ROWS, DEV_ROWS)",
+        "        batch_features = legacy._phase_b_batch_features(features, start, stop)",
+        "        batch_mask = batch_features[\"attention_mask\"]",
+        "        valid_token_seen += int(torch.count_nonzero(batch_mask).item())",
+        "",
+        "        context = legacy._phase_b_prepare_common_context("
+      ],
+      "after_context": [
+        "        stop = min(start + BATCH_ROWS, DEV_ROWS)",
+        "        batch_features = legacy._phase_b_batch_features(features, start, stop)",
+        "        batch_mask = batch_features[\"attention_mask\"]",
+        "        valid_token_seen += int(torch.count_nonzero(batch_mask).item())",
+        "",
+        "        context = legacy._phase_b_prepare_common_context("
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 862,
+      "before_end_exclusive": 863,
+      "after_start": 873,
+      "after_end_exclusive": 873,
+      "before": [
+        "                actual_stages[cell] = {k: v.detach() for k, v in stages.items()}"
+      ],
+      "after": [],
+      "before_context": [
+        "                    context=context,",
+        "                    raw_write=raw,",
+        "                )",
+        "                actual_logits[cell] = _stage_final_logits(",
+        "                    model=model,",
+        "                    wrapper=wrapper,"
+      ],
+      "after_context": [
+        "                    context=context,",
+        "                    raw_write=raw,",
+        "                )",
+        "                actual_logits[cell] = _stage_final_logits(",
+        "                    model=model,",
+        "                    wrapper=wrapper,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 870,
+      "before_end_exclusive": 870,
+      "after_start": 880,
+      "after_end_exclusive": 882,
+      "before": [],
+      "after": [
+        "                actual_stages[cell] = _offload_stage_map(stages)",
+        "                del stages"
+      ],
+      "before_context": [
+        "                    context=context,",
+        "                    stages=stages,",
+        "                ).detach()",
+        "",
+        "        source_gradients: dict[",
+        "            tuple[int, int],"
+      ],
+      "after_context": [
+        "                    context=context,",
+        "                    stages=stages,",
+        "                ).detach()",
+        "",
+        "        source_gradients: dict[",
+        "            tuple[int, int],"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 921,
+      "before_end_exclusive": 922,
+      "after_start": 933,
+      "after_end_exclusive": 934,
+      "before": [
+        "                visible_stages = legacy.temporal_mechanism_stage_chain("
+      ],
+      "after": [
+        "                visible_stages_gpu = legacy.temporal_mechanism_stage_chain("
+      ],
+      "before_context": [
+        "            require(recon_error <= RAW_RECON_ATOL, f\"RAW_RECON:{recon_error}\")",
+        "",
+        "            with torch.no_grad():",
+        "                    wrapper=wrapper,",
+        "                    context=context,",
+        "                    raw_write=raw_source + visible,"
+      ],
+      "after_context": [
+        "            require(recon_error <= RAW_RECON_ATOL, f\"RAW_RECON:{recon_error}\")",
+        "",
+        "            with torch.no_grad():",
+        "                    wrapper=wrapper,",
+        "                    context=context,",
+        "                    raw_write=raw_source + visible,"
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 926,
+      "before_end_exclusive": 932,
+      "after_start": 938,
+      "after_end_exclusive": 938,
+      "before": [
+        "                complement_stages = legacy.temporal_mechanism_stage_chain(",
+        "                    wrapper=wrapper,",
+        "                    context=context,",
+        "                    raw_write=raw_source + complement,",
+        "                )",
+        ""
+      ],
+      "after": [],
+      "before_context": [
+        "                    context=context,",
+        "                    raw_write=raw_source + visible,",
+        "                )",
+        "                visible_logits = _stage_final_logits(",
+        "                    model=model,",
+        "                    wrapper=wrapper,"
+      ],
+      "after_context": [
+        "                    context=context,",
+        "                    raw_write=raw_source + visible,",
+        "                )",
+        "                visible_logits = _stage_final_logits(",
+        "                    model=model,",
+        "                    wrapper=wrapper,"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 937,
+      "before_end_exclusive": 938,
+      "after_start": 943,
+      "after_end_exclusive": 952,
+      "before": [
+        "                    stages=visible_stages,"
+      ],
+      "after": [
+        "                    stages=visible_stages_gpu,",
+        "                )",
+        "                visible_stages = _offload_stage_map(visible_stages_gpu)",
+        "                del visible_stages_gpu",
+        "",
+        "                complement_stages_gpu = legacy.temporal_mechanism_stage_chain(",
+        "                    wrapper=wrapper,",
+        "                    context=context,",
+        "                    raw_write=raw_source + complement,"
+      ],
+      "before_context": [
+        "                    wrapper=wrapper,",
+        "                    features=batch_features,",
+        "                    context=context,",
+        "                )",
+        "                complement_logits = _stage_final_logits(",
+        "                    model=model,"
+      ],
+      "after_context": [
+        "                    wrapper=wrapper,",
+        "                    features=batch_features,",
+        "                    context=context,",
+        "                )",
+        "                complement_logits = _stage_final_logits(",
+        "                    model=model,"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 944,
+      "before_end_exclusive": 945,
+      "after_start": 958,
+      "after_end_exclusive": 959,
+      "before": [
+        "                    stages=complement_stages,"
+      ],
+      "after": [
+        "                    stages=complement_stages_gpu,"
+      ],
+      "before_context": [
+        "                    wrapper=wrapper,",
+        "                    features=batch_features,",
+        "                    context=context,",
+        "                )",
+        "",
+        "            for stage in STAGE_ORDER:"
+      ],
+      "after_context": [
+        "                    wrapper=wrapper,",
+        "                    features=batch_features,",
+        "                    context=context,",
+        "                )",
+        "                complement_stages = _offload_stage_map(complement_stages_gpu)",
+        "                del complement_stages_gpu"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 946,
+      "before_end_exclusive": 946,
+      "after_start": 960,
+      "after_end_exclusive": 962,
+      "before": [],
+      "after": [
+        "                complement_stages = _offload_stage_map(complement_stages_gpu)",
+        "                del complement_stages_gpu"
+      ],
+      "before_context": [
+        "                    context=context,",
+        "                    stages=complement_stages,",
+        "                )",
+        "",
+        "            for stage in STAGE_ORDER:",
+        "                sums = _stage_energy_sums("
+      ],
+      "after_context": [
+        "                    context=context,",
+        "                    stages=complement_stages_gpu,",
+        "                )",
+        "",
+        "            for stage in STAGE_ORDER:",
+        "                sums = _stage_energy_sums("
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 953,
+      "before_end_exclusive": 954,
+      "after_start": 969,
+      "after_end_exclusive": 970,
+      "before": [
+        "                    attention_mask=batch_mask,"
+      ],
+      "after": [
+        "                    attention_mask=batch_mask_cpu,"
+      ],
+      "before_context": [
+        "                    full=actual_stages[target][stage],",
+        "                    visible=visible_stages[stage],",
+        "                    complement=complement_stages[stage],",
+        "                )",
+        "                for key, value in sums.items():",
+        "                    acc[\"stage\"][stage][key] += value"
+      ],
+      "after_context": [
+        "                    full=actual_stages[target][stage],",
+        "                    visible=visible_stages[stage],",
+        "                    complement=complement_stages[stage],",
+        "                )",
+        "                for key, value in sums.items():",
+        "                    acc[\"stage\"][stage][key] += value"
+      ]
+    }
+  ]
+}

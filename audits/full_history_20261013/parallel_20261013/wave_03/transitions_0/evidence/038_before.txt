@@ -1,0 +1,1721 @@
+PAGE 1
+000
+001
+002
+003
+004
+005
+006
+007
+008
+009
+010
+011
+012
+013
+014
+015
+016
+017
+018
+019
+020
+021
+022
+023
+024
+025
+026
+027
+028
+029
+030
+031
+032
+033
+034
+035
+036
+037
+038
+039
+040
+041
+042
+043
+044
+045
+046
+047
+048
+049
+050
+051
+052
+053
+Under review as a conference paper at ICLR 2027
+CAUSAL-ROLERECURRENCE, GEOMETRICVARI-
+ATION,ANDOBJECTIVE-CONDITIONEDREADOUT
+ACROSSMAMBA-1 SCALES
+Anonymous authors
+Paper under double-blind review
+ABSTRACT
+Mechanistic comparisons across model scales can conflate three questions:
+whether independently reconstructed components play an operationally matched
+causal role, whether their nativegeometryis preserved, and how anobjective
+reads them. We separate these questions in pretrained Mamba-1 models from
+130M to 2.8B parameters.
+At 130M, prospective transport, response-independent specificity, matched neces-
+sity, and restoration establish a recurrent-state mechanism on disjoint populations.
+At larger scales, a frozen discover-then-confirm protocol selects one of five lo-
+cal planes on a discovery cohort, fixes a response-blind geometric control, and
+evaluates the pair on a disjoint confirmation cohort. The selected-restored versus
+matched-control contrast is positive under each scale’s frozen confirmation, while
+a distinct historical 370M residual criterion remains failed.
+Coordinate-insensitive comparison of matched response-blind XG2/XG4 popu-
+lations yields heterogeneous, intermediate cross-scale similarity (centered linear
+CKA: XG20.34–0.74; XG40.39–0.59), with the same qualitative pattern under
+cosine-RSM. For the primary frozen native contrasts, downstream task and pre-
+trained next-token objectives give opposed five-scale point-estimate sign vectors.
+Pair-resampling intervals exclude zero in 8 of 10 scale-by-objective cells, and a
+1.4B sensitivity contrast changes the pretrained-LM sign, showing that the aggre-
+gate orientation is contrast-conditioned.
+Thus a scale-local interventional role can recur without shared plane identity or
+exact geometric invariance, while functional readout depends on both objective
+and the frozen native contrast. We frame this as a controlled Mamba-1 case study
+rather than a universal scaling law.
+1 INTRODUCTION
+When mechanistic structure is compared across model sizes, “the same mechanism” can refer to
+different objects. We distinguishcausal role(what changes under a matched intervention),geo-
+metric realization(how that role is represented in native state space), andobjective-conditioned
+functional meaning(how a particular objective reads the state). Throughout,recurrencemeans
+recurrence of an operationally matched causal role: independently reconstructed scale-local compo-
+nents satisfy the same selected-restored versus matched-control intervention contrast on fresh con-
+firmation data. It does not mean shared coordinates, principal-plane identity, or semantic homology
+across models.
+We study five pretrained Mamba-1 models: 130M, 370M, 790M, 1.4B, and 2.8B. We first establish
+one recurrent-state mechanism deeply at 130M using prospective transport, response-independent
+geometric specificity, matched necessity, and restoration. Larger scales then use a frozen discover-
+then-confirm protocol rather than reusing the 130M plane identity.
+The first cross-scale result is a separation. A scale-local causal role survives its own frozen matched-
+control confirmation at every tested size even though the selected principal-plane rank changes. In
+contrast, response-blind alignment geometry shows heterogeneous, intermediate cross-scale con-
+servation: centered linear CKA spans0.34–0.74for XG2 and0.39–0.59for XG4, with secondary
+1
+PAGE 2
+054
+055
+056
+057
+058
+059
+060
+061
+062
+063
+064
+065
+066
+067
+068
+069
+070
+071
+072
+073
+074
+075
+076
+077
+078
+079
+080
+081
+082
+083
+084
+085
+086
+087
+088
+089
+090
+091
+092
+093
+094
+095
+096
+097
+098
+099
+100
+101
+102
+103
+104
+105
+106
+107
+Under review as a conference paper at ICLR 2027
+A Deep causal establishment at Mamba-130M
+Native susceptibility mechanism Task-functional bridge
+Controlled
+contrasts
+Native-state
+localization
+Geometry
+specificity
+Matched
+necessity
+Restoration
+sufficiency
+Task-margin
+consequence
+B Five scales: causal role recurs; geometry is only partially conserved
+130M
+P3 / P5
+Supported
+370M
+P3 / P5
+Supported
+790M
+P2 / P5
+Supported
+1.4B
+P5 / P4
+Supported
+2.8B
+P3 / P5
+Supported
+Selected / control are scale-local ranks; equal rank numbers do not imply semantic homology.
+C Objective-conditioned functional readout
+Within each scale
+same frozen native
+Mamba substrate
+Structured downstream task objective
+Point-estimate signs: + + + − −
+Vanilla Mamba pretrained next-token LM objective
+Point-estimate signs: − − − + +
+Causal role | Native geometry | Objective-conditioned readout
+Figure 1: Study design. Native geometry is reconstructed independently within each scale. At
+130M, plane selection is response-blind; at later scales a dedicated discovery cohort selects one of
+five planes before an untouched matched-control confirmation. The frozen primary contrast is then
+read under downstream and pretrained objectives. Arrows indicate study order, not shared plane
+identity or a continuous scaling law.
+cosine-RSM giving the same qualitative picture. We therefore test and rejectexact CKA-level in-
+variance, not the stronger claim that cross-scale similarity is absent or unexpectedly low under a
+calibrated null.
+The second result concerns functional use. For each scale’s primary frozen native contrast, the
+downstream task and pretrained next-token objectives yield opposed five-scale point-estimate sign
+vectors. Eight of ten scale-by-objective cells are individually sign-stable under pair resampling; the
+two smallest-magnitude cells are not. A sensitivity contrast at 1.4B also changes the pretrained-
+LM sign, so the objective result is explicitly contrast-conditioned rather than a universal scale-level
+orientation.
+These findings motivate three contributions:
+1.Operational causal-role recurrence.Independently reconstructed scale-local compo-
+nents survive a common selected-restored versus matched-control criterion on fresh confir-
+mations; the recurring object is procedural and interventional, not a fixed plane.
+2.Geometric variation with partial conservation.Response-blind CKA and cosine-RSM
+show stable, heterogeneous intermediate cross-scale similarity rather than exact invariance.
+3.Contrast-conditioned objective readout.Fixed primary native contrasts exhibit different
+point-estimate aggregate orientations under downstream and pretrained objectives, with
+uncertainty concentrated in the smallest-magnitude cells and explicit sensitivity to contrast
+choice.
+Behavioral and external-transfer experiments bound how far these mechanistic findings extend be-
+yond the local state.
+2
+PAGE 3
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+Under review as a conference paper at ICLR 2027
+2 RELATEDWORK
+Mechanistic interpretability of Mamba and state-space models.Mamba replaces attention with
+input-dependent selective state-space dynamics, making recurrent state a natural object for mecha-
+nistic analysis (Gu & Dao, 2024). Ensign and Garriga-Alonso partially reverse-engineer the indirect-
+object-identification circuit in Mamba, identifying a key bottleneck, convolution-mediated token
+shifting, and linear storage of name information in the SSM state (Ensign & Garriga-Alonso, 2024).
+Wang et al. compare Transformers and Mambas using sparse autoencoders and circuit analysis,
+finding substantial feature similarity and structurally analogous induction mechanisms while also
+identifying Mamba-specific differences (Wang et al., 2025). More recent work identifies activation-
+subspace bottlenecks across several state-space models and tests their causal relevance through in-
+terventions and steering (Mohan et al., 2026).
+Our question is complementary. Rather than asking whether Mamba contains an interpretable fea-
+ture or circuit for a particular benchmark, or whether two architectures implement analogous al-
+gorithms, we ask whether acausal role identified inside one Mamba scale recurs after native
+geometry is independently reconstructed at larger scales. We then separate that recurrence from
+both geometric invariance and downstream functional interpretation.
+Representation similarity and cross-model recurrence.Representational-similarity methods
+such as centered kernel alignment provide coordinate-insensitive tools for comparing neural rep-
+resentations (Kornblith et al., 2019). The Platonic Representation Hypothesis further argues that
+representations may become increasingly aligned across models and modalities as capability grows
+(Huh et al., 2024). At the same time, recent work shows that representational-similarity conclusions
+can depend strongly on objectives and evaluation datasets (Ciernik et al., 2025), and formal work
+on linear representations emphasizes that geometric interpretation itself depends on the structure
+used to compare representational spaces (Park et al., 2024). Sun and Toneva formalizeinterpre-
+tive equivalenceacross neural networks and derive conditions relating representations, circuits, and
+algorithmic interpretations (Sun & Toneva, 2026).
+Our empirical question is narrower and complementary. We do not require two models to share
+a direction, a principal-plane rank, a globally aligned coordinate system, or an interpretation in
+the formal equivalence sense. We ask whether independently reconstructed components can sat-
+isfy the sameoperational interventional role, and then test whether response-blind geometry and
+objective-conditioned readout recur with it.
+Causal interventions and functional interpretation.Mechanistic interpretability increasingly
+distinguishes correlational localization from causal evidence. Prior work has used interventions and
+causal tracing to localize model computations, edit factual associations, and formalize mechanistic
+claims using causal abstractions (Dai et al., 2022; Meng et al., 2022; Geiger et al., 2023). Our pro-
+tocol follows the same general principle that localization alone is insufficient, but places additional
+emphasis on prospective matched controls. At 130M, a localized component must transport to fresh
+data, outperform a response-independent geometric control, show selective necessity, and recover
+the response under matched restoration before serving as the basis for cross-scale comparison.
+Finally, representation and causal role do not uniquely determine how a state is used by a particular
+objective. Our setting permits a controlled comparison: within each Mamba scale, the native contrast
+and source population are held fixed while its local functional readout is evaluated under either the
+structured downstream task objective or the original pretrained next-token objective. We therefore
+distinguishobjective-conditioned functional meaningfrom both native geometry and causal-role
+recurrence.
+3
+PAGE 4
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+Under review as a conference paper at ICLR 2027
+3 RESULTS
+Notation at a glance
+Notation Meaning
+XG1 Controlled causal-response and behavioral holdout family.
+XG2/XG4 Response-blind geometry generator families.
+Pk,PP k Within-model principal-plane rank; labels are model-local.
+QInternal recurrent-state causal endpoint.
+∆LLocal downstream task-margin readout.
+All three controlled families use the same six-cell title/name/role/predicate slot-substitution design
+over synthetic structured records. XG1 is an independently generated record family reserved for
+causal-response and behavioral holdouts. XG2 and XG4 are disjoint response-blind generator fami-
+lies with different controlled record templates and lexicons (bulletin-style versus register-style) used
+to reconstruct native geometry. ThusQ=E XG2 −E XG4 denotes relative squared local suscep-
+tibility to these two controlled generator families; it is not claimed to encode a natural semantic
+dichotomy.
+3.1 DEEP CAUSAL ESTABLISHMENT ATMAMBA-130M
+We first establish the local recurrent-state mechanism in Mamba-130M before asking whether any
+part of it recurs at larger scales. Here, acausal rolemeans that manipulating a scale-local native-
+state component changes a pre-specified recurrent-state endpoint relative to matched controls, and
+that restoring the component recovers that endpoint.
+Starting from controlled semantic contrasts, we localized a dominant native-state component, PP3,
+and evaluated it through prospective experiments on disjoint XG1 controlled-generator holdouts
+(Fig. 2A). PP3 denotes the third principal plane of the independently reconstructed 130M geometry;
+its rank label is local to this model and does not denote a globally shared semantic feature.
+The localized PP3 effect first transported to an independent 300-pair population. A second holdout
+then compared PP3 against PP5, selected independently from response values as a geometric control,
+and showed that PP3 retained the stronger effect. Subsequent matched interventions established
+both necessity and restoration sufficiency: neutralizing PP3 attenuated the endpoint more strongly
+than the control intervention, while restoring the exact PP3 component recovered the endpoint more
+strongly than an equal-norm PP5 replacement. All four pre-specified tests supported their respective
+hypotheses. Exact test statistics are reported in Appendix A.
+The 130M intervention also reached the downstream task computation. Restoring PP3 instead of
+the matched PP5 replacement increased the downstream task margin by0.00833on average over
+300 paired items (Fig. 2B). This was a small continuous margin effect rather than an accuracy gain;
+discrete prediction changes were negligible. The10 −8-scaleQmeans reported for the local causal
+tests are in the internal endpoint’s native units and should not be read as downstream behavioral-
+effect magnitudes; their very smallp-values reflect consistency relative to paired variation. Across
+source pairs, the local task-functional readout tracked the behavioral restoration effect with Pearson
+r= 0.618, Spearmanρ= 0.832, and 82.3% sign agreement (Fig. 2C). These associations are
+descriptive and were not used to select the mechanism.
+The object carried into the scale study is therefore not “PP3” as a fixed semantic plane. It is an
+operationally matched, scale-local recurrent-state causal role under a frozen scientific procedure.
+3.2 OPERATIONAL CAUSAL-ROLE RECURRENCE WITH PARTIAL GEOMETRIC CONSERVATION
+We next ask two questions:does an operationally matched causal role survive at larger scales, and
+how much of the response-blind geometry is conserved?
+The selected/control pairs are P3/P5 at 130M, P3/P5 at 370M, P2/P5 at 790M, P5/P4 at 1.4B, and
+P3/P5 at 2.8B (Fig. 3A). These are scale-local identities, not same-numbered-plane homologies.
+At 130M, P3 was localized from response-blind XG2/XG4 geometry before XG1 outcomes. At
+later scales, all five reconstructed planes were evaluated only on a dedicated discovery cohort; the
+4
+PAGE 5
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+Under review as a conference paper at ICLR 2027
+A Prospective evidence chain at 130M
+Four independent holdouts test distinct causal requirements.
+Transport
+Supported
+N = 300
+Specificity
+Supported
+N = 300
+Necessity
+Supported
+N = 300
+Restoration
+sufficiency
+Supported
+N = 300
+B Behavioral restoration
+selected restoration
+− matched control
+Mean task-margin shift
++0.00833
+N = 300 paired items
+Continuous margin
+consequence; not an
+accuracy-improvement claim.
+C Local readout tracks behavioral effect
+Pearson
+0.618
+Spearman
+0.832
+Sign agreement
+0.823
+−0.01 0 0.01 0.02
+−0.02
+0
+0.04
+0.08
+Local task readout
+Behavioral margin shift
+All 300 pairs retained; associations are frozen descriptive results.
+Figure 2: Deep 130M causal foundation. (A) Independent holdouts support transport, response-
+blind specificity, matched necessity, and restoration; their distinct endpoints are not comparable as
+raw magnitudes. (B) Restoration reaches a continuous task margin, without an accuracy claim. (C)
+Local readout and behavioral effects covary descriptively.
+unique mean-response argmax was frozen, a non-selected control was chosen from frozen geometry
+alone, and the pair was then evaluated on a disjoint confirmation cohort. The discovery winner
+is therefore a selection rule rather than confirmatory evidence, and the primary claim is matched-
+control confirmation rather than omnibus superiority over every other plane.
+Under the common algebraic contrastQ selected restored −Q matched control, each scale’s frozen con-
+firmation is positive. At 370M, however, a distinct historical positive aggregate-residual criterion
+failed; later core confirmations do not retroactively alter that failed criterion (Appendix A.4). Raw
+Qmagnitudes are endpoint-specific internal units and are not treated as a scaling series.
+For each scale and response-blind family (XG2 and XG4), the frozen geometry preparation provides
+300alignment_delta_hvectors on the same ordered source-pair population. Row-normalized
+vectors define sample Gram matrices, which we compare across scales using centered linear CKA;
+cosine-RSM is secondary. The off-diagonal CKA values are heterogeneous and intermediate rather
+than near either identity or zero: XG2 spans0.34–0.74and XG40.39–0.59. Joint source-pair re-
+sampling preserves this qualitative structure, while split halves show stronger fine-grained ordering
+stability for XG2 than XG4 (Appendix A.7).
+These values establish lack ofexactinvariance under the stated CKA comparison while retaining
+nonzero cross-scale conservation. We do not estimate a within-model noise ceiling or a cross-model
+null distribution, and therefore do not claim that the observed similarities are unexpectedly low
+relative to such a baseline. The analysis also does not establish non-equivalence under arbitrary
+invertible transformations or characterize the complete hidden-state representation.
+5
+PAGE 6
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+Under review as a conference paper at ICLR 2027
+A The causal role recurs across all five Mamba-1 scales
+130M 370M 790M 1.4B 2.8B
+Selected / control
+Causal role
+P3/P5
+Supported
+P3/P5
+Supported
+P2/P5
+Supported
+P5/P4
+Supported
+P3/P5
+Supported
+Common scale-local contrast: selected restoration minus coefficient-matched control.
+Historical endpoint labels and inferential-family details are retained in Appendix A.4.
+B XG2 centered linear CKA
+130M
+130M
+370M
+370M
+790M
+790M
+1.4B
+1.4B
+2.8B
+2.8B
+1.00 0.74 0.44 0.34 0.56
+0.74 1.00 0.56 0.50 0.65
+0.44 0.56 1.00 0.66 0.64
+0.34 0.50 0.66 1.00 0.53
+0.56 0.65 0.64 0.53 1.00
+C XG4 centered linear CKA
+130M
+130M
+370M
+370M
+790M
+790M
+1.4B
+1.4B
+2.8B
+2.8B
+1.00 0.54 0.45 0.48 0.54
+0.54 1.00 0.56 0.44 0.59
+0.45 0.56 1.00 0.44 0.39
+0.48 0.44 0.44 1.00 0.46
+0.54 0.59 0.39 0.46 1.00
+Same 300 response-blind pairs per family. CKA = 1 denotes identical centered sample
+geometry; off-diagonal values show partial, not invariant, cross-scale geometry.
+Cosine-RSM: Appendix A.2.
+Figure 3: Operational causal-role recurrence with partial geometric conservation. (A) Frozen se-
+lected/control pairs differ by scale and are confirmed on held-out populations; rank labels are local,
+not semantic homologies. (B–C) Centered linear CKA on matched response-blind XG2/XG4 pop-
+ulations shows heterogeneous intermediate cross-scale similarity, with secondary cosine-RSM and
+resampling checks reported in the appendix.
+3.3 TASK-FUNCTIONAL COUPLING REORGANIZES ACROSS SCALE
+Even though the causal role recurs, the downstream task does not use the selected component in
+the same aggregate way at every scale. The mean forward-equivalent readout is positive at 130M,
+370M, and 790M and negative at 1.4B and 2.8B:
+(+0.00224,+0.00102,+0.00455,−0.00239,−0.00015).
+We treat these point-estimate aggregate signs+,+,+,−,−as a descriptive five-scale pattern, not
+as a parameter threshold or monotonic scaling law.
+For pairi, the local readout is
+∆Li =g ⊤
+i (csel,i −c ctrl,i),
+whereg i is the gradient of the downstream task margin with respect to the frozen local recurrent-
+state value. This makes∆Lexplicitly objective-conditioned rather than an intrinsic property of the
+pretrained state.
+The exact decomposition in Appendix A.5 separates gradient magnitude, component magnitude,
+angular alignment, and their dependence terms. It shows that no single geometric scalar explains
+the aggregate signs: at 370M dependence terms overcome a slightly negative mean alignment gap;
+at 1.4B negative task-gradient alignment dominates; and at 2.8B adverse dependence outweighs a
+positive mean gap. The same recurring native causal role can therefore couple differently to the
+downstream objective across scale.
+3.4 FUNCTIONAL READOUT IS OBJECTIVE-AND CONTRAST-CONDITIONED
+The task-objective pattern could still reflect a functional organization already present under Mamba’s
+pretrained objective. We test that alternative by keeping each scale’s source population, target site,
+selected component, and matched control fixed while replacing the downstream task margin with
+the pretrained next-token log-probability objective.
+6
+PAGE 7
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377
+Under review as a conference paper at ICLR 2027
+A Downstream task objective
+Mean ΔL (forward-equivalent)
+−0.002
+0
+0.002
+0.004
+0.006
+130M
++
+370M
++
+790M
++
+1.4B
+−
+2.8B
+−
+Point-estimate sign
+B Vanilla next-token LM objective
+Mean TASK_MATCHED readout
+−0.06
+−0.04
+−0.02
+0
+0.02
+130M
+−
+370M
+−
+790M
+−
+1.4B
++
+2.8B
++
+Point-estimate sign
+Separate y-scales; bars and signs are point means, whiskers are percentile 95% pair intervals.
+C Pair-level associations remain mixed
+130M 370M 790M 1.4B 2.8B
+Pearson +0.3208 −0.4593 +0.1862 −0.3664 +0.1330
+Spearman +0.2044 +0.0346 −0.0379 −0.1827 +0.0966
+Pair sign agreement 0.5567 0.6033 0.4433 0.4567 0.5733
+All five scales are shown descriptively; the 130M LM cell is the later completeness
+extension (Appendix A.6).
+Figure 4: Objective-conditioned readouts of the primary frozen scale-local contrasts. Bars are frozen
+point means; whiskers are percentile 95% pair-resampling intervals. Eight of ten scale-by-objective
+cells are individually sign-stable; pair-level associations exclude simple rowwise inversion. The
+aggregate comparison is contrast-conditioned, with sensitivity reported in Appendix A.6.
+For the primary task-matched native contrasts, point-estimate aggregate signs are+,+,+,−,−
+under the task objective and−,−,−,+,+under the pretrained next-token objective (Fig. 4). Pair-
+resampling intervals exclude zero in 8 of 10 scale-by-objective cells; the 370M pretrained-LM and
+2.8B task readouts cross zero and therefore lack individual sign stability under this analysis (Ap-
+pendix A.7). The prospective LM-control family covered the four larger scales; the later 130M
+completeness extension is not retroactively pooled into it (Appendix A.6).
+The opposed point-estimate means do not imply rowwise inversion: pair-level Pearson and Spear-
+man associations vary in sign, and sign agreement remains near the middle of its range. More impor-
+tantly, the aggregate result iscontrast-conditioned. In the common-P3/P5 sensitivity comparison,
+the 1.4B pretrained-LM mean is negative whereas its primary task-matched P5/P4 pretrained-LM
+mean is positive (Appendix A.6). We therefore interpret the evidence as objective dependence of
+each frozen native contrast, not as a universal scale-level orientation or a contrast-invariant sign
+reversal.
+3.5 FUNCTIONAL CONSEQUENCES EXTEND BEYOND THE LOCAL READOUT,BUT REMAIN
+BOUNDED
+We finally ask how far the local mechanism propagates beyond the controlled recurrent-state analy-
+sis. These experiments serve as scope tests rather than a third headline contribution.
+At 130M, the mechanism reaches the learned task computation: restoring PP3 relative to the matched
+PP5 replacement shifts the downstream task margin and tracks the local functional readout across
+7
+PAGE 8
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388
+389
+390
+391
+392
+393
+394
+395
+396
+397
+398
+399
+400
+401
+402
+403
+404
+405
+406
+407
+408
+409
+410
+411
+412
+413
+414
+415
+416
+417
+418
+419
+420
+421
+422
+423
+424
+425
+426
+427
+428
+429
+430
+431
+Under review as a conference paper at ICLR 2027
+pairs, as established in Sec. 3.1. The effect is primarily margin-level rather than a discrete prediction
+improvement.
+We additionally evaluate external transfer on the official A VeriTeC development set (Schlichtkrull
+et al., 2023) using a common 462-example three-label gold-evidence cohort. This experiment is
+available at 130M, 370M, and 1.4B only. The selected-versus-control intervention produces small
+positive correct-class margin shifts at 130M (2.31×10 −4,d z = 0.120) and 370M (4.56×10 −5,
+dz = 0.106); both positive-transfer hypotheses are supported under their frozen prospective family.
+At 1.4B, the point estimate changes sign to−7.85×10 −5, but the pre-specified one-sided negative
+test does not pass the alpha gate (p= 0.0757). We therefore do not claim an established external
+sign reversal. The 1.4B intervention also changes no argmax predictions among the 462 examples,
+and all intervention conditions retain the same accuracy.
+Because the frozen downstream model was not trained on A VeriTeC and this is not a benchmark-
+performance study, we use the experiment only as an out-of-distribution natural-language margin
+probe. The external evidence therefore supports a bounded conclusion: the native-state intervention
+can propagate to continuous task and natural-language decision margins, but the available evidence
+does not establish uniform behavioral improvement, scale-invariant external transfer, or benchmark-
+level correction.
+4 METHODS
+Design, sites, and native geometry.We analyze fixed pretrained Mamba-1 backbones from 130M
+to 2.8B. Principal-plane ranks are model-local. The 130M causal study froze intervention layer 17
+of 24. Larger-scale target sites were not re-localized from XG1 outcomes: the intervention layer
+is mapped by relative depth,ℓ s = round[(17/(24−1))(L s −1)], giving layer 35 for the 48-layer
+370M/790M/1.4B models and layer 47 for the 64-layer 2.8B model, while preserving source/target-
+residual offsets(−2,−1). Geometry preparation uses native Mamba activations without XG1 out-
+comes, downstream task logits or gradients, or backward passes.
+Each scale supplies frozen 300-row XG2/XG4alignment_delta_hmatrices. Row-normalized
+vectors give sample GramsK s =U sU ⊤
+s ; normalized Frobenius products of centered Grams give
+linear CKA, while Pearson correlation of the strict upper cosine-Gram triangles gives secondary
+cosine-RSM. These frozen static values are transcribed without figure-builder recomputation; prove-
+nance and scalar measurements are in Appendix A.2.
+Plane selection and causal confirmation.At 130M, P3 was selected from response-blind
+XG2/XG4 geometry before XG1 response inspection, and P5 was frozen independently as the
+maximum-projector-separation geometric control. For the later dominant-component protocol, all
+five reconstructed planes are evaluated on a dedicated discovery population and the selected rank is
+frozen ask ∗
+s = unique argmaxk [Qrestored(k)−Q neutralized(k)]. No positivity gate or inferential
+p-value is used in discovery. The control is selected separately from frozen geometry among non-
+selected planes,c ∗
+s = arg maxk̸=k∗s λ+
+s,k. The selected/control pair is then frozen before a disjoint
+confirmation population is opened, where the pre-specified selected-restored versus matched-control
+endpoint is tested once. Confirmation responses cannot reselect the plane, control, tail, layer, off-
+set, or epsilon. This design prevents same-sample argmax confirmation, while making no omnibus
+claim that the selected plane is superior to every alternative plane. Historical endpoints and the failed
+370M residual criterion are retained rather than harmonized away (Appendix A.3–A.4).
+Task-functional readout.The separately trained structured downstream model supplies a correct-
+class task margin. At each frozen native state, its local gradient defines∆L i =g ⊤
+i (csel,i −c ctrl,i).
+Selected and control components have numerically equal norms. The frozen branch-ownership con-
+vention gives∆L forward = 2∆Lowned, preserving signs and correlations. The exact algebraic de-
+composition is reported in Appendix A.5.
+Pretrained-objective control.Within each scale, the native contrast, source population, and target
+site remain fixed while the objective becomes the original next-token log probability. The original
+prospective control covers 370M–2.8B; the already-studied 130M cell was completed later under
+8
+PAGE 9
+432
+433
+434
+435
+436
+437
+438
+439
+440
+441
+442
+443
+444
+445
+446
+447
+448
+449
+450
+451
+452
+453
+454
+455
+456
+457
+458
+459
+460
+461
+462
+463
+464
+465
+466
+467
+468
+469
+470
+471
+472
+473
+474
+475
+476
+477
+478
+479
+480
+481
+482
+483
+484
+485
+Under review as a conference paper at ICLR 2027
+a separate frozen extension. The five-scale display and pair-level associations are descriptive (Ap-
+pendix A.6).
+Behavior, external transfer, and inference.At 130M, restoration and control are compared on a
+continuous task margin. External transfer uses the fixed three-label A VeriTeC subset (N= 462) at
+130M, 370M, and 1.4B. The 130M/370M positive tests form one frozen family; the later 1.4B neg-
+ative test is separate. We neither pool them nor estimate a cross-scale zero crossing (Appendix A.8
+gives serialization, tokenizer, and inference details).
+5 DISCUSSION
+The strongest conclusion is procedural: across five Mamba-1 checkpoints, a scale-local compo-
+nent selected under a frozen protocol survives a pre-specified matched-control confirmation, despite
+changing principal-plane rank. This is recurrence of an operational interventional role, not evidence
+that the models contain one coordinate-identical or semantically homologous “same mechanism.”
+The 370M aggregate-residual criterion remains a genuine historical failure and is not rescued by
+later confirmations.
+Response-blind alignment geometry is neither identical nor absent across scales. Centered linear
+CKA and cosine-RSM show heterogeneous intermediate conservation, and source-pair resampling
+preserves that structure. Because we do not estimate a noise ceiling or cross-model null, the geomet-
+ric claim is limited to lack of exact invariance under the stated comparison; it does not quantify how
+surprising the observed CKA range should be for independently reconstructed models of different
+sizes.
+Functional readout is likewise conditional. The primary frozen contrasts have opposed task-versus-
+pretrained point-estimate sign vectors, with pair-resampling support in 8 of 10 scale-by-objective
+cells, but the 1.4B pretrained-LM sign changes under the common-P3/P5 sensitivity contrast. We
+therefore useobjective-conditioned functionalizationonly to mean that a fixed native contrast can be
+read differently by different objectives; we do not claim a contrast-invariant or universal scale-level
+orientation.
+The intervention reaches a continuous task margin at 130M and small external A VeriTeC margins
+at 130M/370M, while the 1.4B external negative point estimate misses its prospective gate. These
+scope tests do not establish benchmark improvement. More broadly, five checkpoints from one
+Mamba-1 family and one controlled mechanism constitute a carefully staged case study, not an
+architecture-general scaling law. Comparison with Mamba-2 or Transformer families remains future
+work.
+Within these bounds, the study provides an empirical separation among three notions that are often
+conflated in cross-model mechanistic comparison: recurrence of an operational causal role, conser-
+vation of response-blind geometry, and objective-conditioned use of a frozen native contrast.
+REPRODUCIBILITY STATEMENT
+Frozen revisions, populations, sites, statistics, and figure sources are specified in the appendix.
+AIUSE STATEMENT
+Generative AI tools assisted literature discovery, experimental planning and methodology design,
+code development and debugging, artifact verification, result interpretation, figure preparation, and
+manuscript drafting and editing. The authors reviewed all AI-assisted outputs and take responsibility
+for the final methods, results, citations, and claims.
+REFERENCES
+Laure Ciernik, Lorenz Linhardt, Marco Morik, Jonas Dippel, Simon Kornblith, and Lukas Mutten-
+thaler. Objective drives the consistency of representational similarity across datasets. InProceed-
+9
+PAGE 10
+486
+487
+488
+489
+490
+491
+492
+493
+494
+495
+496
+497
+498
+499
+500
+501
+502
+503
+504
+505
+506
+507
+508
+509
+510
+511
+512
+513
+514
+515
+516
+517
+518
+519
+520
+521
+522
+523
+524
+525
+526
+527
+528
+529
+530
+531
+532
+533
+534
+535
+536
+537
+538
+539
+Under review as a conference paper at ICLR 2027
+ings of the 42nd International Conference on Machine Learning, volume 267 ofProceedings of
+Machine Learning Research, pp. 10920–10948, 2025. URLhttps://proceedings.mlr.
+press/v267/ciernik25a.html.
+Damai Dai, Li Dong, Yaru Hao, Zhifang Sui, Baobao Chang, and Furu Wei. Knowledge neurons
+in pretrained transformers. InProceedings of the 60th Annual Meeting of the Association for
+Computational Linguistics, pp. 8493–8502, 2022. doi: 10.18653/v1/2022.acl-long.581. URL
+https://aclanthology.org/2022.acl-long.581/.
+Danielle Ensign and Adrià Garriga-Alonso. Investigating the indirect object identification circuit in
+Mamba, 2024. URLhttps://arxiv.org/abs/2407.14008.
+Atticus Geiger, Duligur Ibeling, Amir Zur, Maheep Chaudhary, Sonakshi Chauhan, Jing Huang,
+Aryaman Arora, Zhengxuan Wu, Noah Goodman, Christopher Potts, and Thomas Icard. Causal
+abstraction: A theoretical foundation for mechanistic interpretability, 2023. URLhttps://ar
+xiv.org/abs/2301.04709.
+Albert Gu and Tri Dao. Mamba: Linear-time sequence modeling with selective state spaces. In
+Proceedings of the First Conference on Language Modeling, 2024. URLhttps://openrevi
+ew.net/forum?id=tEYskw1VY2.
+Minyoung Huh, Brian Cheung, Tongzhou Wang, and Phillip Isola. Position: The platonic repre-
+sentation hypothesis. InProceedings of the 41st International Conference on Machine Learn-
+ing, volume 235 ofProceedings of Machine Learning Research, pp. 20617–20642, 2024. URL
+https://proceedings.mlr.press/v235/huh24a.html.
+Simon Kornblith, Mohammad Norouzi, Honglak Lee, and Geoffrey Hinton. Similarity of neural
+network representations revisited. InProceedings of the 36th International Conference on Ma-
+chine Learning, volume 97 ofProceedings of Machine Learning Research, pp. 3519–3529, 2019.
+URLhttps://proceedings.mlr.press/v97/kornblith19a.html.
+Kevin Meng, David Bau, Alex Andonian, and Yonatan Belinkov. Locating and editing factual
+associations in GPT. InAdvances in Neural Information Processing Systems, 2022. URLhttp
+s://proceedings.neurips.cc/paper_files/paper/2022/hash/6f1d43d5a
+82a37e89b0665b33bf3a182-Abstract-Conference.html.
+Vamshi Sunku Mohan, Kaustubh Gupta, Aneesha Das, and Chandan Singh. Interpreting and steering
+state-space models via activation subspace bottlenecks. InInternational Conference on Machine
+Learning, 2026. URLhttps://arxiv.org/abs/2602.22719.
+Kiho Park, Yo Joong Choe, and Victor Veitch. The linear representation hypothesis and the geom-
+etry of large language models. InProceedings of the 41st International Conference on Machine
+Learning, volume 235 ofProceedings of Machine Learning Research, pp. 39643–39666, 2024.
+URLhttps://proceedings.mlr.press/v235/park24c.html.
+Michael Schlichtkrull, Zhijiang Guo, and Andreas Vlachos. A VeriTeC: A dataset for real-world
+claim verification with evidence from the web. InAdvances in Neural Information Processing
+Systems: Datasets and Benchmarks Track, 2023. URLhttps://proceedings.neurip
+s.cc/paper_files/paper/2023/hash/cd86a30526cd1aff61d6f89f107634e
+4-Abstract-Datasets_and_Benchmarks.html.
+Alan Sun and Mariya Toneva. Tracking equivalent mechanistic interpretations across neural net-
+works. InInternational Conference on Learning Representations, 2026. URLhttps:
+//proceedings.iclr.cc/paper_files/paper/2026/hash/412e7a0143
+cb33d3a7a9b6abe8d90470-Abstract-Conference.html.
+Junxuan Wang, Xuyang Ge, Wentao Shu, Qiong Tang, Yunhua Zhou, Zhengfu He, and Xipeng Qiu.
+Towards universality: Studying mechanistic similarity across language model architectures. In
+International Conference on Learning Representations, 2025. URLhttps://openreview
+.net/forum?id=2J18i8T0oI.
+10
+PAGE 11
+540
+541
+542
+543
+544
+545
+546
+547
+548
+549
+550
+551
+552
+553
+554
+555
+556
+557
+558
+559
+560
+561
+562
+563
+564
+565
+566
+567
+568
+569
+570
+571
+572
+573
+574
+575
+576
+577
+578
+579
+580
+581
+582
+583
+584
+585
+586
+587
+588
+589
+590
+591
+592
+593
+Under review as a conference paper at ICLR 2027
+A REPRODUCIBILITY DETAILS
+This appendix records the frozen experimental results and static robustness analyses. Figure source
+classes are mapped in Appendix A.9. No additional model execution is involved; Appendix A.7
+reports CPU-only resampling analyses of already frozen artifacts.
+A.1 MODEL IDENTITIES,SITES,AND POPULATIONS
+The five pretrained backbones are from thestate-spaces/Hugging Face repositories shown in
+Table 1. Full revisions in scale order are40e5d2bd7452abb3ca8fadbafe9131ee0e2c
+2f37,589179554943157be31701edd8b4558889276674,9822dd4b76af2bd909
+9b6ce2f19efd8329189a7e,6e46eae61c27280517feef46f536d16b91076f08,
+and96c48e0292b63f5346b6d30061af2551f7101e26. The broader study covered five
+scales before the pretrained-LM control. Its initial prospective plan instantiated 370M–2.8B; the
+already-studied 130M cell was later frozen and completed as a separate extension. The five-scale
+LM vector is descriptive, not one prospective inferential family.
+Table 1: Frozen backbone identities and functional-readout cohorts. Each cohort has 300 pairs with
+two cells per pair. The layer is the mixer intervention layer.
+Scale Repository suffix Revision prefix Layer XG1 pairs
+130M mamba-130m-hf 40e5d2bd7452 17 2701–3000
+370M mamba-370m-hf 589179554943 35 4801–5100
+790M mamba-790m-hf 9822dd4b76af 35 7501–7800
+1.4B mamba-1.4b-hf 6e46eae61c27 35 4801–5100
+2.8B mamba-2.8b-hf 96c48e0292b6 47 6601–6900
+The larger-scale source-block, target-residual, and intervention-layer triplets are(33,34,35)for
+370M–1.4B and(45,46,47)for 2.8B. At 130M the intervention is at layer 17. The frozen target
+position is the absolute event anchor plus offset 2, withA_IDENTITYat 130M. The pretrained-LM
+measurement reuses each task-readout row, its tokenization, and its target index; both token posi-
+tionstandt+1must be active. The frozen protocol fails closed rather than dropping a token-invalid
+row. At the mixerin_proj, the native content branch is replaced by an equal-valued differentiable
+leaf while the gate branch is preserved.
+The structured downstream task model is a separately trained three-way evidence-entitlement model
+used for the local correct-class margin. The 130M downstream model is the seed-181, selected-
+epoch-19 checkpoint. Each larger scale uses its corresponding frozen downstream checkpoint. The
+frozen 130M, 790M, 1.4B, and 2.8B training reports identify the frozen Mamba encoder, seed 181,
+pair-group split seed 8192, 2,880 expected clean training rows, clean-development checkpoint se-
+lection, and no external data used for training. Their selected epochs are 19, 20, 20, and 20 re-
+spectively. The 370M checkpoint is identified separately by its compact checkpoint manifest; these
+training-report details are not inferred for it. Under the frozen branch-ownership convention the
+owned local derivative is one half of the forward-equivalent derivative:∆L forward = 2∆L owned.
+This conversion preserves sign, rank, and correlation. The pretrained-LM control loads the pinned
+causal LM directly, without a downstream task checkpoint, router, or task head.
+A.2 NATIVE GEOMETRY AND INTERVENTION
+XG2/XG4 response-free directions define independent native geometry within each model’s strong-
+channel mask. Geometry preparation uses Mamba-side activations without XG1 response access,
+downstream task logits or gradients, or backward passes. The inputs belong to the controlled re-
+search families and therefore do not characterize all natural language.
+The historical scalar geometry measurements remain useful supporting evidence. Fork j =
+conv_weight[j,0,lag0],µ k2 = mean j k2
+j andstrong ={j:k 2
+j > µ k2 }. At 130M,
+µk2 = 0.027899337798707836, 395 of 1536 channels are strong, and the response-blind projec-
+tor reconstruction has leading positive eigenvalueλ 1 = 0.8706181418918275. The later matched
+11
+PAGE 12
+594
+595
+596
+597
+598
+599
+600
+601
+602
+603
+604
+605
+606
+607
+608
+609
+610
+611
+612
+613
+614
+615
+616
+617
+618
+619
+620
+621
+622
+623
+624
+625
+626
+627
+628
+629
+630
+631
+632
+633
+634
+635
+636
+637
+638
+639
+640
+641
+642
+643
+644
+645
+646
+647
+Under review as a conference paper at ICLR 2027
+370M–2.8B scalar series is reported in Appendix A.4. These measurements are no longer the main
+evidence for cross-scale geometric non-invariance.
+The primary coordinate-insensitive comparison uses the already frozenalignment_delta_h
+matrices. For each scalesand family, letD s ∈R 300×ds contain the 300 ordered pair vectors and
+row-normalize it toU s. Define
+Ks =U sU ⊤
+s , H=I− 1
+300 11⊤, eKs =HK sH.
+For scaless, t, centered linear CKA is
+CKA(s, t) = ⟨ eKs, eKt⟩F
+∥ eKs∥F ∥ eKt∥F
+.
+XG2 and XG4 are analyzed independently. Every scale uses the same ordered source-pair IDs 301–
+600 within its family. The 130M matrices have historical provenance; 370M–2.8B come from the
+later homogeneous geometry-preparation series. No model forward, tokenizer, training, evaluation,
+backward pass, permutation test, threshold, or scaling-law fit is involved in this static comparison.
+Table 2: Frozen coordinate-insensitive pairwise geometry. CKA is the primary centered-linear
+comparison. RSM is the secondary Pearson correlation between strict upper triangles of the row-
+normalized cosine Gram matrices. Values are descriptive.
+Scale pair XG2 CKA XG4 CKA XG2 RSM XG4 RSM
+130M–370M .742546 .542295 .716312 .509857
+130M–790M .435747 .451862 .398941 .431574
+130M–1.4B .342510 .481304 .295730 .452640
+130M–2.8B .555414 .544277 .522254 .511619
+370M–790M .564059 .558569 .541258 .533989
+370M–1.4B .504483 .436834 .474489 .403381
+370M–2.8B .649344 .590983 .634246 .545762
+790M–1.4B .663678 .444332 .640851 .412623
+790M–2.8B .639963 .392717 .620152 .337620
+1.4B–2.8B .532185 .455698 .504037 .382808
+Linear CKA is insensitive to orthogonal feature rotations and isotropic scaling, but not to arbitrary
+invertible transformations. The result therefore establishes non-invariance of this response-blind
+alignment geometry under the stated comparison, not global non-equivalence of complete hidden-
+state representations.
+For a unit directionw, local susceptibility is
+Ji(w) = Fi(+ϵ;w)−F i(−ϵ;w)
+2ϵ , ϵ= 0.025.(1)
+At 130M, the projector-contrast contribution of planekisC k(i) =s k[Ji(Pk+)2 −J i(Pk−)2]/5.
+The broader XG2-versus-XG4 endpoint isQ i(c) =E XG2(i, c)−E XG4(i, c), where eachEis the
+mean squared susceptibility over its five frozen directions under conditionc. XG1 outcomes do not
+refit the basis.
+A.3 PROSPECTIVE130MCAUSAL CHAIN
+Static XG2/XG4 localization selected P3 before XG1 response inspection. P5 was frozen indepen-
+dently as the maximum-projector-separation geometric control. Four disjoint 300-pair XG1 holdouts
+tested the distinct endpoints in Table 3. Every directional hypothesis was frozen before its population
+was opened.
+For restoration, from native statehand P3 componentc 3,B=h−c 3,R 3 =B+c 3 =h, andR 5 =
+B+c 5. The P5 replacement uses the same P3-derived coefficients, so additions are norm matched.
+The result is local restoration relative to the control, not global behavioral sufficiency. Later P3-
+excluded residual-template transport and residual necessity/restoration studies are documented in
+the frozen causal synthesis and did not redefine P3. The historical restoration-sufficiency endpoint
+12
+PAGE 13
+648
+649
+650
+651
+652
+653
+654
+655
+656
+657
+658
+659
+660
+661
+662
+663
+664
+665
+666
+667
+668
+669
+670
+671
+672
+673
+674
+675
+676
+677
+678
+679
+680
+681
+682
+683
+684
+685
+686
+687
+688
+689
+690
+691
+692
+693
+694
+695
+696
+697
+698
+699
+700
+701
+Under review as a conference paper at ICLR 2027
+Table 3: Frozen 130M paired-item tests. Endpoint magnitudes are not interchangeable effect sizes.
+Test XG1 pair range Meant(299)One-sidedp
+TransportC P3 001–3007.12028×10 −8 18.9741.52×10 −53
+SpecificityC P3 −C P5 301–6002.30407×10 −8 7.6561.34×10 −13
+NecessityQ P5 −Q P3 601–9004.74144×10 −8 23.9846.22×10 −72
+RestorationQ R 3 −Q R 5 901–12004.07887×10 −8 20.1059.01×10 −58
+reduces exactly to the common selected-restored versus matched-control contrast:
+DSUF = (QR3 −Q B)−(Q R5 −Q B)
+=Q R3 −Q R5
+=Q selected restored −Q matched control.
+(2)
+On the separate seed-181 behavioral/readout cohortxg1_fact_2701..3000, the mean task-
+margin restoration effect is0.008332191656033197. Descriptive pair-level readout–behavior as-
+sociation is Pearson0.617548086733788, Spearman0.8324696941077123, and sign agreement
+0.8233333333333334.
+A.4 CROSS-SCALE CAUSAL CONFIRMATION AND NATIVE GEOMETRY
+Selected/control ranks in ascending scale order are P3/P5, P3/P5, P2/P5, P5/P4, and P3/P5. The
+historical 130MD SUF and 370MD DOM endpoints preceded the later standardizedD CORE =
+Qrestored −Q control confirmations. By Eq. 2, all five share the mathematical contrast
+Qselected restored −Q matched control and the sameQ=E XG2 −E XG4 semantics; selected-state
+coefficients are transferred to the orthonormal control plane, matching component norms. The five
+experiments share a common scale-local causal contrast while retaining distinct historical confirma-
+tion protocols. Table 4 reports their own frozen values. Heterogeneous raw magnitudes do not form
+a scaling series.
+Table 4: Scale-local causal-role tests. Each row has a positive frozen endpoint, but the historical
+370M joint residual criterion remains failed.
+Scale Pair Endpoint XG1 pairs Meant(299)One-sidedp
+130M P3/P5D SUF 901–12004.07887×10 −8 20.1059.01×10 −58
+370M P3/P5D DOM 3301–36003.97429×10 −8 26.0563.19×10 −79
+790M P2/P5D CORE 7201–75007.19308×10 −8 29.5674.65×10 −91
+1.4B P5/P4D CORE 4201–45009.28285×10 −9 16.2532.62×10 −43
+2.8B P3/P5D CORE 6301–66004.11599×10 −8 24.9562.22×10 −75
+The 370M raw dominant-componentpwas3.19293×10 −79 and its historical Holm-adjusted value
+was6.38586×10 −79. Its separate positive aggregate-residual hypothesis failed, so the pre-registered
+joint qualitative-recurrence criterion remained not established. Later core confirmations do not
+retroactively rescue it. The 1.4B discovery and confirmation populations were XG1 3901–4200
+and 4201–4500, with residual characterization on 4501–4800.
+The later matched response-blind series, ordered 370M, 790M, 1.4B, 2.8B, has
+µk2 = (0.0246235,0.0238427,0.0148388,0.00985711), leading spectral concentra-
+tionλ 1 = (0.967180,0.892961,0.889041,0.893226), and strong-channel fractions
+(0.317383,0.317383,0.202393,0.195898). The historically reconstructed 130M values for
+these two plotted quantities are given in Appendix A.2. Their mathematical definitions match, but
+their provenance precedes the later bridge. There is no fitted scale law or same-numbered-plane
+homology.
+13
+PAGE 14
+702
+703
+704
+705
+706
+707
+708
+709
+710
+711
+712
+713
+714
+715
+716
+717
+718
+719
+720
+721
+722
+723
+724
+725
+726
+727
+728
+729
+730
+731
+732
+733
+734
+735
+736
+737
+738
+739
+740
+741
+742
+743
+744
+745
+746
+747
+748
+749
+750
+751
+752
+753
+754
+755
+Under review as a conference paper at ICLR 2027
+A.5 FULL TASK-READOUT DECOMPOSITION
+The selected and control components have equal norm to numerical precision; the maximum relative
+mismatch across frozen rows is about10 −15. Putu i =∥g i∥,n i =∥c i∥, andh i = cos(gi, csel,i)−
+cos(gi, cctrl,i). Then∆L i =u inihi exactly, and
+E[unh] =µ uµnµh +µ u Cov(n, h) +µ n Cov(u, h)
++µ h Cov(u, n) +E[(u−µ u)(n−µ n)(h−µ h)].(3)
+Table 5 transcribes the frozen owned-unit components. Forward-equivalent readouts are twice these
+values.
+Table 5: Frozen mean angular gapµ h, mean-product baseB, and norm–gap covariance contribution
+N, in owned readout units.
+Scaleµ h B N
+130M .008881965010493697 .001278782557357266 .000133190457109135
+370M -.000802156327488121 -.000094095358107031 .000042452455047036
+790M .007793196921091330 .001040616136353141 -.000068706620106335
+1.4B -.009643894952004040 -.000877367363000991 -.000176563578561815
+2.8B .004473173637057720 .000329550929066379 -.000171543926043767
+Table 6: Remaining exact terms: gradient–gap covarianceG, gradient–norm covarianceU, centered
+three-way termT, and owned mean readout. Together with Table 5, these give the full decomposi-
+tion of Eq. 3.
+ScaleG U T ∆L
+130M -.000519576976183540 -.000012825062806655 .000240795061055922 .001120366036532126
+370M .000402747883547661 -.000001430912906175 .000159282284303926 .000508956351885417
+790M .001426961516464109 -.000040009026410042 -.000082150556444377 .002276711449856494
+1.4B -.000101775327135446 -.000010052654126476 -.000029688583061496 -.001195447505886224
+2.8B -.000162660052525846 -.000009378023827281 -.000060143880171834 -.000074174953502349
+At 370M favorable dependence outweighs a negative mean alignment gap. At 1.4B negative align-
+ment dominates. At 2.8B adverse dependence overcomes a positive mean gap; 55.3% of pairs remain
+positive. This is an algebraic decomposition, without fitted parameters or new tests.
+A.6 PRETRAINED-LMCONTROL AND SENSITIVITY
+At frozen targett, with observed next tokeny=x t+1, the control usesJ LM = logp θ(y|x ≤t)
+andg LM =∇ hJLM at the equal-valued local leaf. Table 7 records the frozen objective comparison.
+Means have distinct units; pair-level associations are descriptive.
+Table 7: Task-matched frozen contrasts under the downstream task and pretrained next-token objec-
+tives. The pre-existing 130M scale was completed under a separately frozen LM-control extension
+and joins the four original rows descriptively.
+Scale Task forward LM mean Pearson Spearman Sign agree
+130M .00224073 -.05641685 .3208 .2044 .5567
+370M .00101791 -.00197532 -.4593 .0346 .6033
+790M .00455342 -.01596436 .1862 -.0379 .4433
+1.4B -.00239090 .00783318 -.3664 -.1827 .4567
+2.8B -.00014835 .01644840 .1330 .0966 .5733
+The common-P3/P5 sensitivity means are−0.00197532(370M),−0.00443947(790M),
+−0.00990855(1.4B), and+0.01644840(2.8B). The 1.4B sign differs from its primary task-matched
+P5/P4 result. This contrast sensitivity does not reselect the primary comparison. Opposed aggregate
+signs are not a rowwise inversion.
+14
+PAGE 15
+756
+757
+758
+759
+760
+761
+762
+763
+764
+765
+766
+767
+768
+769
+770
+771
+772
+773
+774
+775
+776
+777
+778
+779
+780
+781
+782
+783
+784
+785
+786
+787
+788
+789
+790
+791
+792
+793
+794
+795
+796
+797
+798
+799
+800
+801
+802
+803
+804
+805
+806
+807
+808
+809
+Under review as a conference paper at ICLR 2027
+A.7 PAIR-RESAMPLING ROBUSTNESS OF OBJECTIVES AND GEOMETRY
+The frozen CPU-onlysource_pair_idbootstrap usesB= 10,000replicates and per-
+centile 95% intervals. Zero lies within the intervals for 370M pretrained LM (−0.00197532;
+[−0.00655147,0.00253593]) and 2.8B task (−0.00014835;[−0.00048602,0.00018915]). These
+point signs lack individual pair-resampling stability; the five-scale vectors remain descriptive, with-
+out a new prospective inferential family.
+Geometry shares bootstrap multiplicities across five scales within each family; XG2 and XG4 are
+separate. All 20 off-diagonal CKA entries retain their qualitative intermediate range. In1,000
+balanced 150/150 split halves, Pearson, Spearman, mean absolute difference (MAD), and root mean
+square error (RMSE) compare ten off-diagonal CKA values. Frozen medians in Table 8 show stable
+overall structure on the controlled pairs, with weaker fine-grained ordering for XG4.
+Table 8: Frozen median correlations and differences between the ten off-diagonal CKA values across
+1,000 balanced split halves.
+Family Pearson Spearman MAD RMSE
+XG2 .875577 .878788 .057331 .068640
+XG4 .652928 .672727 .056955 .068166
+These summaries describe sampling robustness on frozen cohorts, not a noise ceiling, model uncer-
+tainty, or independent replication. Analysis outputs, CSVs, and the protocol are frozen as a byte-
+identified supplementary snapshot; SHA-256 identities are provided in the supplementary manifest.
+A.8 AVERITECEXTERNAL-TRANSFER INFERENCE
+The authenticated official A VeriTeC development source isMichSchli/AVeriTeC, commit
+7c62d1ec8df3fb560d6efe2b85fa191135636f81, pathdata/dev.json, Git blob
+40974243267f395dc583d805d10f043812419249. Of 500 development examples,
+the fixed compatible cohort comprises 305 Refuted, 122 Supported, and 35 Not Enough Evi-
+dence examples (N= 462). The 38 Conflicting Evidence/Cherrypicking examples are excluded
+by the pre-specified three-label compatibility rule. Gold question–answer blocks retain source
+order. There is no retrieval or question generation in this experiment. The 130M/370M family
+uses the frozen active serializationclaim[:63] + EOS(0) + evidence[:64], response-
+blind claim–evidence-boundary anchor, and target offset 2. Its sharedtokenizer.json,
+tokenizer_config.json, andspecial_tokens_map.jsonSHA256 identities are, re-
+spectively,b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b
+27585fcf,9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84d
+c6b46acb, and57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b0348
+4e6ff4723ae8. The active-encoding gate used tokenizers version 0.22.2 and required all 462
+rows to pass. The 1.4B external-transfer extension uses its own pinned tokenizer snapshot at revi-
+sion6e46eae61c27280517feef46f536d16b91076f08;tokenizer.jsonSHA256 is
+3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8,
+andtokenizer_config.jsonSHA256 is3ba257483d22a5a84aab5465aa427e59bd
+aeb55f09fb14349e2d571ff67e8020. It is not byte-identical to the tokenizer used for the
+completed 130M/370M external family. The response-blind anchor is the claim–evidence boundary,
+with intervention target at consumed claim length plus 2.
+Correct-class-margin selected-versus-control means at 130M and 370M were0.00023104869and
+0.000045550022, with Cohen’sd z = 0.11964887and0.10631035, and Holm-adjusted positive-
+familyp= 0.010430705and0.0113815. The separately frozen 1.4B negative test had mean
+−0.000078509516,d z =−0.0668655,t(461) =−1.43722, and one-sidedp= 0.0756671, failing
+theα=.05gate. Its native, neutralized, and control conditions all had accuracy0.12987013, with
+zero intervention-induced argmax flips. The three scales are not pooled into a new inferential family.
+15
+PAGE 16
+810
+811
+812
+813
+814
+815
+816
+817
+818
+819
+820
+821
+822
+823
+824
+825
+826
+827
+828
+829
+830
+831
+832
+833
+834
+835
+836
+837
+838
+839
+840
+841
+842
+843
+844
+845
+846
+847
+848
+849
+850
+851
+852
+853
+854
+855
+856
+857
+858
+859
+860
+861
+862
+863
+Under review as a conference paper at ICLR 2027
+A.9 FIGURE PROVENANCE AND SOURCE MAPPING
+Figure 2 uses frozen 130M causal, specificity, seed-181 behavioral, and pair-merge records.
+Figure 3 combines five-scale causal support and the frozen coordinate-free XG2/XG4 geome-
+try snapshot; historical scalar geometry stays in Appendix A.2. Figure 4 combines task read-
+outs, four-scale LM control, later 130M completeness, and percentile 95% pair intervals from
+objective_bootstrap.csvin the frozen objective pair-resampling snapshot. Figure 1 sum-
+marizes the design.
+16

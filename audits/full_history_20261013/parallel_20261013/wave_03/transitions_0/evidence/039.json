@@ -1,0 +1,572 @@
+{
+  "shard_ordinal": 39,
+  "original_queue_id": "WORK-5f415b8c8a1cd1f1b38b",
+  "original_source_ids": [
+    "HV001557"
+  ],
+  "original_source_identity": {
+    "commit": "02c1dc7c38785d643de1531213048db41f8a674e",
+    "path": "tools/run_stage13_ood_v5_vs_v6a.py",
+    "blob": "33e8b6954411e0af06f60277d3708f6055e00517",
+    "object_type": "commit",
+    "bytes": 40488,
+    "sha256": "0eab90506d1bcf7e69c50d2d27c9dddeb428b111fbf67d34ce9d458e11727401"
+  },
+  "before": {
+    "commit": "519b3f8960635d14798cc25ee93adb72cc680f50",
+    "path": "tools/run_stage13_ood_v5_vs_v6a.py",
+    "blob": "6d9c95b6cc900ac894e9f06ee211e94591abf6a6",
+    "object_type": "commit",
+    "bytes": 37564,
+    "sha256": "2475b73c6a02d8d6ca671f108f9b304d5385c2517affe4fb4e77f3b373343ec9"
+  },
+  "after": {
+    "commit": "02c1dc7c38785d643de1531213048db41f8a674e",
+    "path": "tools/run_stage13_ood_v5_vs_v6a.py",
+    "blob": "33e8b6954411e0af06f60277d3708f6055e00517",
+    "object_type": "commit",
+    "bytes": 40488,
+    "sha256": "0eab90506d1bcf7e69c50d2d27c9dddeb428b111fbf67d34ce9d458e11727401"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0296"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "build_stage13_model",
+      "controlled_losses_with_correction_l2",
+      "controlled_losses_with_v6a_diagnostics",
+      "current_v6a_alpha",
+      "main",
+      "parse_args",
+      "train_and_eval_system",
+      "v6a_logit_diagnostics"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 13 removed/replaced lines and 74 added/replaced lines in 16 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "519b3f8960635d14798cc25ee93adb72cc680f50",
+      "blob": "6d9c95b6cc900ac894e9f06ee211e94591abf6a6"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 256,
+      "before_end_exclusive": 256,
+      "after_start": 256,
+      "after_end_exclusive": 262,
+      "before": [],
+      "after": [
+        "    alpha_raw = output.get(\"composer_correction_alpha_raw\")",
+        "    alpha_raw_value = (",
+        "        float(alpha_raw.detach().float().cpu().item())",
+        "        if isinstance(alpha_raw, torch.Tensor)",
+        "        else None",
+        "    )"
+      ],
+      "before_context": [
+        "        if isinstance(correction_scale, torch.Tensor)",
+        "        else None",
+        "    )",
+        "    return {",
+        "        \"subset\": subset_name,",
+        "        \"intervention_type\": intervention_type or \"__all__\","
+      ],
+      "after_context": [
+        "        if isinstance(correction_scale, torch.Tensor)",
+        "        else None",
+        "    )",
+        "    return {",
+        "        \"subset\": subset_name,",
+        "        \"intervention_type\": intervention_type or \"__all__\","
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 261,
+      "before_end_exclusive": 261,
+      "after_start": 267,
+      "after_end_exclusive": 268,
+      "before": [],
+      "after": [
+        "        \"correction_alpha_raw\": alpha_raw_value,"
+      ],
+      "before_context": [
+        "        \"intervention_type\": intervention_type or \"__all__\",",
+        "        \"n\": len(indices),",
+        "        \"correction_scale\": scale_value,",
+        "        \"product_logits\": _tensor_stats(product),",
+        "        \"composer_raw_correction_logits\": _tensor_stats(raw_correction),",
+        "        \"composer_correction_logits\": _tensor_stats(correction),"
+      ],
+      "after_context": [
+        "        \"intervention_type\": intervention_type or \"__all__\",",
+        "        \"n\": len(indices),",
+        "        \"correction_scale\": scale_value,",
+        "        \"product_logits\": _tensor_stats(product),",
+        "        \"composer_raw_correction_logits\": _tensor_stats(raw_correction),",
+        "        \"composer_correction_logits\": _tensor_stats(correction),"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 293,
+      "before_end_exclusive": 293,
+      "after_start": 300,
+      "after_end_exclusive": 310,
+      "before": [],
+      "after": [
+        "",
+        "",
+        "def current_v6a_alpha(model: torch.nn.Module) -> float | None:",
+        "    scale_fn = getattr(model, \"current_correction_scale\", None)",
+        "    if scale_fn is None:",
+        "        return None",
+        "    value = scale_fn()",
+        "    if isinstance(value, torch.Tensor):",
+        "        return float(value.detach().float().cpu().item())",
+        "    return float(value)"
+      ],
+      "before_context": [
+        "    if correction is None:",
+        "        raise ValueError(\"v6A correction L2 requested, but correction logits are absent\")",
+        "    return correction.square().sum(dim=-1).mean()",
+        "",
+        "",
+        "def choose_group_field(records: list[dict[str, Any]]) -> str | None:"
+      ],
+      "after_context": [
+        "    if correction is None:",
+        "        raise ValueError(\"v6A correction L2 requested, but correction logits are absent\")",
+        "    return correction.square().sum(dim=-1).mean()",
+        "",
+        "",
+        "def choose_group_field(records: list[dict[str, Any]]) -> str | None:"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 406,
+      "before_end_exclusive": 406,
+      "after_start": 423,
+      "after_end_exclusive": 425,
+      "before": [],
+      "after": [
+        "    v6a_learnable_correction_scale: bool,",
+        "    v6a_learnable_correction_init: float,"
+      ],
+      "before_context": [
+        "    train_inputs: dict[str, torch.Tensor],",
+        "    dev_inputs: dict[str, torch.Tensor],",
+        "    v6a_correction_scale: float,",
+        ") -> torch.nn.Module:",
+        "    if system == \"v5\":",
+        "        if backbone == \"mamba\":"
+      ],
+      "after_context": [
+        "    train_inputs: dict[str, torch.Tensor],",
+        "    dev_inputs: dict[str, torch.Tensor],",
+        "    v6a_correction_scale: float,",
+        ") -> torch.nn.Module:",
+        "    if system == \"v5\":",
+        "        if backbone == \"mamba\":"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 420,
+      "before_end_exclusive": 420,
+      "after_start": 439,
+      "after_end_exclusive": 441,
+      "before": [],
+      "after": [
+        "        if v6a_learnable_correction_scale:",
+        "            model.enable_learnable_correction_scale(v6a_learnable_correction_init)"
+      ],
+      "before_context": [
+        "            max_length = max(train_inputs[\"input_ids\"].shape[1], dev_inputs[\"input_ids\"].shape[1])",
+        "            model = v6a.build_model(len(vocab), max_length)",
+        "        model.correction_scale = v6a_correction_scale",
+        "    else:",
+        "        raise ValueError(f\"unknown system: {system}\")",
+        "    return model"
+      ],
+      "after_context": [
+        "            max_length = max(train_inputs[\"input_ids\"].shape[1], dev_inputs[\"input_ids\"].shape[1])",
+        "            model = v6a.build_model(len(vocab), max_length)",
+        "        model.correction_scale = v6a_correction_scale",
+        "    else:",
+        "        raise ValueError(f\"unknown system: {system}\")",
+        "    return model"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 455,
+      "before_end_exclusive": 455,
+      "after_start": 476,
+      "after_end_exclusive": 478,
+      "before": [],
+      "after": [
+        "    v6a_learnable_correction_scale: bool,",
+        "    v6a_learnable_correction_init: float,"
+      ],
+      "before_context": [
+        "    log_v6a_diagnostics: bool,",
+        "    v6a_correction_scale: float,",
+        "    v6a_correction_l2: float,",
+        ") -> tuple[dict[str, Any], list[dict[str, Any]]]:",
+        "    random.seed(seed)",
+        "    torch.manual_seed(seed)"
+      ],
+      "after_context": [
+        "    log_v6a_diagnostics: bool,",
+        "    v6a_correction_scale: float,",
+        "    v6a_correction_l2: float,",
+        ") -> tuple[dict[str, Any], list[dict[str, Any]]]:",
+        "    random.seed(seed)",
+        "    torch.manual_seed(seed)"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 486,
+      "before_end_exclusive": 486,
+      "after_start": 509,
+      "after_end_exclusive": 511,
+      "before": [],
+      "after": [
+        "        v6a_learnable_correction_scale=v6a_learnable_correction_scale,",
+        "        v6a_learnable_correction_init=v6a_learnable_correction_init,"
+      ],
+      "before_context": [
+        "        train_inputs=train_inputs,",
+        "        dev_inputs=dev_inputs,",
+        "        v6a_correction_scale=v6a_correction_scale,",
+        "    ).to(device)",
+        "    cache_if_needed(model, inputs, backbone)",
+        ""
+      ],
+      "after_context": [
+        "        train_inputs=train_inputs,",
+        "        dev_inputs=dev_inputs,",
+        "        v6a_correction_scale=v6a_correction_scale,",
+        "    ).to(device)",
+        "    cache_if_needed(model, inputs, backbone)",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 490,
+      "before_end_exclusive": 492,
+      "after_start": 515,
+      "after_end_exclusive": 524,
+      "before": [
+        "    if system == \"v6a\" and v6a_correction_l2 > 0:",
+        "        print(f\"Using v6A correction L2 regularization: lambda={v6a_correction_l2}\")"
+      ],
+      "after": [
+        "    if system == \"v6a\" and (v6a_correction_l2 > 0 or v6a_learnable_correction_scale):",
+        "        if v6a_correction_l2 > 0:",
+        "            print(f\"Using v6A correction L2 regularization: lambda={v6a_correction_l2}\")",
+        "        if v6a_learnable_correction_scale:",
+        "            print(",
+        "                \"Using learnable v6A correction scale: \"",
+        "                f\"init={v6a_learnable_correction_init} \"",
+        "                f\"current_alpha={current_v6a_alpha(model):.6f}\"",
+        "            )"
+      ],
+      "before_context": [
+        "    cache_if_needed(model, inputs, backbone)",
+        "",
+        "    original_controlled_losses = v5.controlled_losses",
+        "",
+        "        def controlled_losses_with_correction_l2(",
+        "            output: dict[str, Any],"
+      ],
+      "after_context": [
+        "    cache_if_needed(model, inputs, backbone)",
+        "",
+        "    original_controlled_losses = v5.controlled_losses",
+        "",
+        "        def controlled_losses_with_v6a_diagnostics(",
+        "            output: dict[str, Any],"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 493,
+      "before_end_exclusive": 494,
+      "after_start": 525,
+      "after_end_exclusive": 526,
+      "before": [
+        "        def controlled_losses_with_correction_l2("
+      ],
+      "after": [
+        "        def controlled_losses_with_v6a_diagnostics("
+      ],
+      "before_context": [
+        "    if system == \"v6a\" and v6a_correction_l2 > 0:",
+        "        print(f\"Using v6A correction L2 regularization: lambda={v6a_correction_l2}\")",
+        "",
+        "            output: dict[str, Any],",
+        "            inputs: dict[str, torch.Tensor],",
+        "            indices: torch.Tensor,"
+      ],
+      "after_context": [
+        "                f\"current_alpha={current_v6a_alpha(model):.6f}\"",
+        "            )",
+        "",
+        "            output: dict[str, Any],",
+        "            inputs: dict[str, torch.Tensor],",
+        "            indices: torch.Tensor,"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 505,
+      "before_end_exclusive": 514,
+      "after_start": 537,
+      "after_end_exclusive": 552,
+      "before": [
+        "            correction_l2 = v6a_correction_l2_loss(output)",
+        "            losses[\"v6a_correction_l2\"] = correction_l2",
+        "            losses[\"total\"] = losses[\"total\"] + v6a_correction_l2 * correction_l2",
+        "            print(",
+        "                \"v6a_correction_l2_loss=\"",
+        "                f\"{correction_l2.detach().item():.6f} \"",
+        "                \"weighted=\"",
+        "                f\"{(v6a_correction_l2 * correction_l2).detach().item():.6f}\"",
+        "            )"
+      ],
+      "after": [
+        "            components: list[str] = []",
+        "            if v6a_correction_l2 > 0:",
+        "                correction_l2 = v6a_correction_l2_loss(output)",
+        "                losses[\"v6a_correction_l2\"] = correction_l2",
+        "                losses[\"total\"] = losses[\"total\"] + v6a_correction_l2 * correction_l2",
+        "                components.append(",
+        "                    \"v6a_correction_l2_loss=\"",
+        "                    f\"{correction_l2.detach().item():.6f} \"",
+        "                    \"weighted=\"",
+        "                    f\"{(v6a_correction_l2 * correction_l2).detach().item():.6f}\"",
+        "                )",
+        "            if v6a_learnable_correction_scale:",
+        "                components.append(f\"v6a_alpha={current_v6a_alpha(model):.6f}\")",
+        "            if components:",
+        "                print(\" \".join(components))"
+      ],
+      "before_context": [
+        "                indices,",
+        "                weighted_label_loss,",
+        "            )",
+        "            return losses",
+        "",
+        "        v5.controlled_losses = controlled_losses_with_correction_l2"
+      ],
+      "after_context": [
+        "                indices,",
+        "                weighted_label_loss,",
+        "            )",
+        "            return losses",
+        "",
+        "        v5.controlled_losses = controlled_losses_with_v6a_diagnostics"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 516,
+      "before_end_exclusive": 517,
+      "after_start": 554,
+      "after_end_exclusive": 555,
+      "before": [
+        "        v5.controlled_losses = controlled_losses_with_correction_l2"
+      ],
+      "after": [
+        "        v5.controlled_losses = controlled_losses_with_v6a_diagnostics"
+      ],
+      "before_context": [
+        "            )",
+        "            return losses",
+        "",
+        "    try:",
+        "        report = v5.run_training(",
+        "            model,"
+      ],
+      "after_context": [
+        "                print(\" \".join(components))",
+        "            return losses",
+        "",
+        "    try:",
+        "        report = v5.run_training(",
+        "            model,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 606,
+      "before_end_exclusive": 606,
+      "after_start": 644,
+      "after_end_exclusive": 655,
+      "before": [],
+      "after": [
+        "        \"v6a_learnable_correction_scale\": (",
+        "            v6a_learnable_correction_scale if system == \"v6a\" else None",
+        "        ),",
+        "        \"v6a_learnable_correction_init\": (",
+        "            v6a_learnable_correction_init",
+        "            if system == \"v6a\" and v6a_learnable_correction_scale",
+        "            else None",
+        "        ),",
+        "        \"v6a_final_correction_alpha\": (",
+        "            current_v6a_alpha(model) if system == \"v6a\" else None",
+        "        ),"
+      ],
+      "before_context": [
+        "        \"use_intervention_loss\": True,",
+        "        \"v6a_correction_scale\": v6a_correction_scale if system == \"v6a\" else None,",
+        "        \"v6a_correction_l2\": v6a_correction_l2 if system == \"v6a\" else None,",
+        "        \"best_epoch\": report[\"best_epoch\"],",
+        "        \"train_data\": \"data/controlled_v5_v3.jsonl with time_swap excluded before split\",",
+        "        \"ood_group_field\": group_field,"
+      ],
+      "after_context": [
+        "        \"use_intervention_loss\": True,",
+        "        \"v6a_correction_scale\": v6a_correction_scale if system == \"v6a\" else None,",
+        "        \"v6a_correction_l2\": v6a_correction_l2 if system == \"v6a\" else None,",
+        "        \"best_epoch\": report[\"best_epoch\"],",
+        "        \"train_data\": \"data/controlled_v5_v3.jsonl with time_swap excluded before split\",",
+        "        \"ood_group_field\": group_field,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 871,
+      "before_end_exclusive": 871,
+      "after_start": 920,
+      "after_end_exclusive": 922,
+      "before": [],
+      "after": [
+        "    parser.add_argument(\"--v6a-learnable-correction-scale\", action=\"store_true\")",
+        "    parser.add_argument(\"--v6a-learnable-correction-init\", type=float, default=0.1)"
+      ],
+      "before_context": [
+        "    parser.add_argument(\"--smoke-ood-pairs\", type=int, default=12)",
+        "    parser.add_argument(\"--v6a-correction-scale\", type=float, default=1.0)",
+        "    parser.add_argument(\"--v6a-correction-l2\", type=float, default=0.0)",
+        "    parser.add_argument(\"--log-v6a-logit-diagnostics\", action=\"store_true\")",
+        "    parser.add_argument(\"--output-prefix\", type=Path, default=REPO_ROOT / \"results\" / \"stage13_ood\")",
+        "    return parser.parse_args()"
+      ],
+      "after_context": [
+        "    parser.add_argument(\"--smoke-ood-pairs\", type=int, default=12)",
+        "    parser.add_argument(\"--v6a-correction-scale\", type=float, default=1.0)",
+        "    parser.add_argument(\"--v6a-correction-l2\", type=float, default=0.0)",
+        "    parser.add_argument(\"--log-v6a-logit-diagnostics\", action=\"store_true\")",
+        "    parser.add_argument(\"--output-prefix\", type=Path, default=REPO_ROOT / \"results\" / \"stage13_ood\")",
+        "    return parser.parse_args()"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 880,
+      "before_end_exclusive": 880,
+      "after_start": 931,
+      "after_end_exclusive": 937,
+      "before": [],
+      "after": [
+        "    if args.v6a_learnable_correction_init <= 0:",
+        "        raise ValueError(\"--v6a-learnable-correction-init must be positive\")",
+        "    if args.v6a_learnable_correction_scale and args.v6a_correction_scale != 1.0:",
+        "        raise ValueError(",
+        "            \"--v6a-correction-scale and --v6a-learnable-correction-scale are mutually exclusive\"",
+        "        )"
+      ],
+      "before_context": [
+        "    args = parse_args()",
+        "    if args.v6a_correction_l2 < 0:",
+        "        raise ValueError(\"--v6a-correction-l2 must be non-negative\")",
+        "    torch.set_num_threads(1)",
+        "    device = resolve_device(args.device)",
+        "    output_prefix = args.output_prefix"
+      ],
+      "after_context": [
+        "    args = parse_args()",
+        "    if args.v6a_correction_l2 < 0:",
+        "        raise ValueError(\"--v6a-correction-l2 must be non-negative\")",
+        "    torch.set_num_threads(1)",
+        "    device = resolve_device(args.device)",
+        "    output_prefix = args.output_prefix"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 906,
+      "before_end_exclusive": 906,
+      "after_start": 963,
+      "after_end_exclusive": 965,
+      "before": [],
+      "after": [
+        "        f\"v6a_learnable_correction_scale={args.v6a_learnable_correction_scale} \"",
+        "        f\"v6a_learnable_correction_init={args.v6a_learnable_correction_init} \""
+      ],
+      "before_context": [
+        "        f\"ranking_weight={args.ranking_weight} max_length={args.max_length} \"",
+        "        f\"v6a_correction_scale={args.v6a_correction_scale} \"",
+        "        f\"v6a_correction_l2={args.v6a_correction_l2} \"",
+        "        \"weighted_label_loss=True balanced_sampler=True use_intervention_loss=True\"",
+        "    )",
+        ""
+      ],
+      "after_context": [
+        "        f\"ranking_weight={args.ranking_weight} max_length={args.max_length} \"",
+        "        f\"v6a_correction_scale={args.v6a_correction_scale} \"",
+        "        f\"v6a_correction_l2={args.v6a_correction_l2} \"",
+        "        \"weighted_label_loss=True balanced_sampler=True use_intervention_loss=True\"",
+        "    )",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 941,
+      "before_end_exclusive": 941,
+      "after_start": 1000,
+      "after_end_exclusive": 1002,
+      "before": [],
+      "after": [
+        "                v6a_learnable_correction_scale=args.v6a_learnable_correction_scale,",
+        "                v6a_learnable_correction_init=args.v6a_learnable_correction_init,"
+      ],
+      "before_context": [
+        "                log_v6a_diagnostics=args.log_v6a_logit_diagnostics,",
+        "                v6a_correction_scale=args.v6a_correction_scale,",
+        "                v6a_correction_l2=args.v6a_correction_l2,",
+        "            )",
+        "            all_metrics.append(payload)",
+        "            seed_predictions[system] = predictions"
+      ],
+      "after_context": [
+        "                log_v6a_diagnostics=args.log_v6a_logit_diagnostics,",
+        "                v6a_correction_scale=args.v6a_correction_scale,",
+        "                v6a_correction_l2=args.v6a_correction_l2,",
+        "            )",
+        "            all_metrics.append(payload)",
+        "            seed_predictions[system] = predictions"
+      ]
+    }
+  ]
+}

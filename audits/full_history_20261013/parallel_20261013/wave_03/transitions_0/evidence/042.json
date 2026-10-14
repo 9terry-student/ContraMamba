@@ -1,0 +1,94 @@
+{
+  "shard_ordinal": 42,
+  "original_queue_id": "WORK-6986d2197f2c6de73218",
+  "original_source_ids": [
+    "HV000113"
+  ],
+  "original_source_identity": {
+    "commit": "048fb78258bbe0dac29f0dfbe0310b9023ecc672",
+    "path": "paper/iclr2027/figures/fig3_five_scale_recurrence_reorganization.pdf",
+    "blob": "a156360f987b62849b62864564de7559e083684b",
+    "object_type": "commit",
+    "bytes": 75365,
+    "sha256": "61a314c1edc58a4acda6a4407ddc8de561d8ead601d3f0f0a020d0fb8ce5477d"
+  },
+  "before": {
+    "commit": "ef1806bef9e4a7f55e1f7e77f7a0f08592fb4abe",
+    "path": "paper/iclr2027/figures/fig3_five_scale_recurrence_reorganization.pdf",
+    "blob": "f12d9bb756806b6438ac3cd1ac7c9deccd2d4670",
+    "object_type": "commit",
+    "bytes": 75453,
+    "sha256": "f62ce8455f61f6fb9f36438e129438e94181fdcd3ae04ded08cd53b91040f3f9"
+  },
+  "after": {
+    "commit": "048fb78258bbe0dac29f0dfbe0310b9023ecc672",
+    "path": "paper/iclr2027/figures/fig3_five_scale_recurrence_reorganization.pdf",
+    "blob": "a156360f987b62849b62864564de7559e083684b",
+    "object_type": "commit",
+    "bytes": 75365,
+    "sha256": "61a314c1edc58a4acda6a4407ddc8de561d8ead601d3f0f0a020d0fb8ce5477d"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "versions_shard_1/semantic_revision_records.jsonl",
+      "jsonl_line": 48,
+      "record": {
+        "added_excerpt": [],
+        "added_lines": null,
+        "classification": "UNRESOLVED_CONTENT",
+        "from_blob": "f12d9bb756806b6438ac3cd1ac7c9deccd2d4670",
+        "from_commit": "ef1806bef9e4a7f55e1f7e77f7a0f08592fb4abe",
+        "from_id": "HV000114",
+        "manual_content_review": "NO",
+        "path": "paper/iclr2027/figures/fig3_five_scale_recurrence_reorganization.pdf",
+        "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+        "removed_excerpt": [],
+        "removed_lines": null,
+        "semantic_disposition": "REVIEW_REQUIRED",
+        "to_blob": "a156360f987b62849b62864564de7559e083684b",
+        "to_commit": "048fb78258bbe0dac29f0dfbe0310b9023ecc672",
+        "to_id": "HV000113",
+        "truncated_diff": true
+      }
+    }
+  ],
+  "prior_interpretation": null,
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "8423ef9d1325c007ecd31849a668131197e2214d",
+      "blob": "f12d9bb756806b6438ac3cd1ac7c9deccd2d4670"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "extracted_pdf_text",
+  "changes": [
+    {
+      "operation": "delete",
+      "before_start": 4,
+      "before_end_exclusive": 5,
+      "after_start": 4,
+      "after_end_exclusive": 4,
+      "before": [
+        "Selected/control ranks are local identities; equal rank numbers do not imply semantic homology."
+      ],
+      "after": [],
+      "before_context": [
+        "PAGE 1",
+        "A",
+        "The causal role recurs across all five Mamba-1 scales",
+        "130M",
+        "370M",
+        "790M"
+      ],
+      "after_context": [
+        "PAGE 1",
+        "A",
+        "The causal role recurs across all five Mamba-1 scales",
+        "130M",
+        "370M",
+        "790M"
+      ]
+    }
+  ]
+}

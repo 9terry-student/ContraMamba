@@ -1,0 +1,116 @@
+{
+  "shard_ordinal": 76,
+  "original_queue_id": "WORK-b10c78eb572059b21c34",
+  "original_source_ids": [
+    "HV000907"
+  ],
+  "original_source_identity": {
+    "commit": "bfe5ce29dc12f905049d79d77bcbe436323a1cdc",
+    "path": "scripts/reason_router_gen4_mamba1_vanilla_lm_readout_raw_fast_cuda.py",
+    "blob": "8bbab84e7347f528172c93ba3afbbab56ef1e3e6",
+    "object_type": "commit",
+    "bytes": 42275,
+    "sha256": "8d6a94f6b3021c5edc02faaf3188b5eb0107d71a6dcd9fdd1b24fda935b25643"
+  },
+  "before": {
+    "commit": "7a5442bcc5fb6ac8c1e86e44da9c4a0378bc2d44",
+    "path": "scripts/reason_router_gen4_mamba1_vanilla_lm_readout_raw_fast_cuda.py",
+    "blob": "b59c01f16211f37e22bd74f984988d3804c899c7",
+    "object_type": "commit",
+    "bytes": 42163,
+    "sha256": "be72c976bd6f12346a16c513fac6f29339dafc9fb39a99f95561def6d3a7b641"
+  },
+  "after": {
+    "commit": "bfe5ce29dc12f905049d79d77bcbe436323a1cdc",
+    "path": "scripts/reason_router_gen4_mamba1_vanilla_lm_readout_raw_fast_cuda.py",
+    "blob": "8bbab84e7347f528172c93ba3afbbab56ef1e3e6",
+    "object_type": "commit",
+    "bytes": 42275,
+    "sha256": "8d6a94f6b3021c5edc02faaf3188b5eb0107d71a6dcd9fdd1b24fda935b25643"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0119"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 1 removed/replaced lines and 6 added/replaced lines in 2 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "7a5442bcc5fb6ac8c1e86e44da9c4a0378bc2d44",
+      "blob": "b59c01f16211f37e22bd74f984988d3804c899c7"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 10,
+      "before_end_exclusive": 10,
+      "after_start": 10,
+      "after_end_exclusive": 11,
+      "before": [],
+      "after": [
+        "import sys"
+      ],
+      "before_context": [
+        "import math",
+        "import multiprocessing as mp",
+        "import subprocess",
+        "import tempfile",
+        "import traceback",
+        "from pathlib import Path"
+      ],
+      "after_context": [
+        "import math",
+        "import multiprocessing as mp",
+        "import subprocess",
+        "import tempfile",
+        "import traceback",
+        "from pathlib import Path"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 18,
+      "before_end_exclusive": 19,
+      "after_start": 19,
+      "after_end_exclusive": 24,
+      "before": [
+        "ROOT = Path(__file__).resolve().parents[1]"
+      ],
+      "after": [
+        "_REPO_ROOT = Path(__file__).resolve().parents[1]",
+        "if str(_REPO_ROOT) not in sys.path:",
+        "    sys.path.insert(0, str(_REPO_ROOT))",
+        "",
+        "ROOT = _REPO_ROOT"
+      ],
+      "before_context": [
+        "import torch",
+        "",
+        "",
+        "EXPECTED_BRANCH = \"gen4-mamba1-five-scale-ladder-extension\"",
+        "",
+        "PLAN_FREEZE_COMMIT = ("
+      ],
+      "after_context": [
+        "import torch",
+        "",
+        "",
+        "EXPECTED_BRANCH = \"gen4-mamba1-five-scale-ladder-extension\"",
+        "",
+        "PLAN_FREEZE_COMMIT = ("
+      ]
+    }
+  ]
+}

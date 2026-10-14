@@ -1,0 +1,634 @@
+{
+  "shard_ordinal": 11,
+  "original_queue_id": "WORK-1c67d763abbcc2ff37b2",
+  "original_source_ids": [
+    "HV001113"
+  ],
+  "original_source_identity": {
+    "commit": "3c5b1176692928a8f81bfe41df87a53f5f1b2e7d",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "8728a7113158751835c0ce2f1cd333bd389ea1c4",
+    "object_type": "commit",
+    "bytes": 444372,
+    "sha256": "e3d4d8c0e20b3100233cee45c1e7c984092645586bd272b55419d715e77ef130"
+  },
+  "before": {
+    "commit": "10376c088b9008c6a62664f695d8b269d9ffee18",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "5a686cb5843296fafa1d9d964392e8b4cc1091a3",
+    "object_type": "commit",
+    "bytes": 441759,
+    "sha256": "b38d88856f2c45e660f852babce0e60d011732102da3153b07d913f2b86efd76"
+  },
+  "after": {
+    "commit": "3c5b1176692928a8f81bfe41df87a53f5f1b2e7d",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "8728a7113158751835c0ce2f1cd333bd389ea1c4",
+    "object_type": "commit",
+    "bytes": 444372,
+    "sha256": "e3d4d8c0e20b3100233cee45c1e7c984092645586bd272b55419d715e77ef130"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0139"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "Stage31CCoverageEntailmentHead",
+      "__init__",
+      "_current_features",
+      "_raw_pair_features",
+      "add_stage31c_coverage_entailment_outputs",
+      "build_parser",
+      "forward",
+      "install_stage31c_coverage_entailment_head",
+      "main",
+      "prediction_records_v6b"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate trainer objectives, gradient ownership, data/evaluation selection, ablation defaults and historical authority from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 17 removed/replaced lines and 77 added/replaced lines in 18 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "10376c088b9008c6a62664f695d8b269d9ffee18",
+      "blob": "5a686cb5843296fafa1d9d964392e8b4cc1091a3"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 49,
+      "before_end_exclusive": 49,
+      "after_start": 49,
+      "after_end_exclusive": 50,
+      "before": [],
+      "after": [
+        "STAGE31C_INPUT_MODES = (\"current\", \"raw_pair\", \"hybrid\")"
+      ],
+      "before_context": [
+        "    label: idx for idx, label in enumerate(STAGE31C_COVERAGE_LABELS)",
+        "}",
+        "STAGE31C_DEFAULT_NUM_CLASSES = 3",
+        "",
+        "",
+        "class Stage31CCoverageEntailmentHead(nn.Module):"
+      ],
+      "after_context": [
+        "    label: idx for idx, label in enumerate(STAGE31C_COVERAGE_LABELS)",
+        "}",
+        "STAGE31C_DEFAULT_NUM_CLASSES = 3",
+        "",
+        "",
+        "class Stage31CCoverageEntailmentHead(nn.Module):"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 60,
+      "before_end_exclusive": 60,
+      "after_start": 61,
+      "after_end_exclusive": 62,
+      "before": [],
+      "after": [
+        "        input_mode: str = \"current\","
+      ],
+      "before_context": [
+        "        predicate_size: int,",
+        "        sufficiency_size: int,",
+        "        num_classes: int = STAGE31C_DEFAULT_NUM_CLASSES,",
+        "        detach_input: bool = False,",
+        "    ) -> None:",
+        "        super().__init__()"
+      ],
+      "after_context": [
+        "        predicate_size: int,",
+        "        sufficiency_size: int,",
+        "        num_classes: int = STAGE31C_DEFAULT_NUM_CLASSES,",
+        "        detach_input: bool = False,",
+        "    ) -> None:",
+        "        super().__init__()"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 65,
+      "before_end_exclusive": 66,
+      "after_start": 67,
+      "after_end_exclusive": 80,
+      "before": [
+        "        input_size = frame_size + predicate_size + sufficiency_size"
+      ],
+      "after": [
+        "        if input_mode not in STAGE31C_INPUT_MODES:",
+        "            raise ValueError(",
+        "                f\"Stage31-C coverage entailment input_mode must be one of \"",
+        "                f\"{STAGE31C_INPUT_MODES}, got {input_mode!r}\"",
+        "            )",
+        "        current_size = frame_size + predicate_size + sufficiency_size",
+        "        raw_pair_size = frame_size * 4",
+        "        if input_mode == \"current\":",
+        "            input_size = current_size",
+        "        elif input_mode == \"raw_pair\":",
+        "            input_size = raw_pair_size",
+        "        else:",
+        "            input_size = raw_pair_size + current_size"
+      ],
+      "before_context": [
+        "        super().__init__()",
+        "        if num_classes not in (3, 4):",
+        "            raise ValueError(f\"Stage31-C coverage entailment num_classes must be 3 or 4, got {num_classes}\")",
+        "        hidden = max(input_size // 2, 16)",
+        "        self.num_classes = num_classes",
+        "        self.detach_input = detach_input"
+      ],
+      "after_context": [
+        "        super().__init__()",
+        "        if num_classes not in (3, 4):",
+        "            raise ValueError(f\"Stage31-C coverage entailment num_classes must be 3 or 4, got {num_classes}\")",
+        "        hidden = max(input_size // 2, 16)",
+        "        self.num_classes = num_classes",
+        "        self.input_mode = input_mode"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 68,
+      "before_end_exclusive": 68,
+      "after_start": 82,
+      "after_end_exclusive": 83,
+      "before": [],
+      "after": [
+        "        self.input_mode = input_mode"
+      ],
+      "before_context": [
+        "        input_size = frame_size + predicate_size + sufficiency_size",
+        "        hidden = max(input_size // 2, 16)",
+        "        self.num_classes = num_classes",
+        "        self.detach_input = detach_input",
+        "        self.mlp = nn.Sequential(",
+        "            nn.Linear(input_size, hidden),"
+      ],
+      "after_context": [
+        "            input_size = raw_pair_size + current_size",
+        "        hidden = max(input_size // 2, 16)",
+        "        self.num_classes = num_classes",
+        "        self.detach_input = detach_input",
+        "        self.mlp = nn.Sequential(",
+        "            nn.Linear(input_size, hidden),"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 76,
+      "before_end_exclusive": 84,
+      "after_start": 91,
+      "after_end_exclusive": 98,
+      "before": [
+        "    def forward(",
+        "        self,",
+        "        frame_pair_repr: torch.Tensor,",
+        "        predicate_pair_repr: torch.Tensor,",
+        "        sufficiency_repr: torch.Tensor,",
+        "    ) -> torch.Tensor:",
+        "        features = torch.cat(",
+        "            [frame_pair_repr, predicate_pair_repr, sufficiency_repr],"
+      ],
+      "after": [
+        "    def _current_features(self, output: dict[str, Any]) -> torch.Tensor:",
+        "        return torch.cat(",
+        "            [",
+        "                output[\"frame_pair_repr\"],",
+        "                output[\"predicate_pair_repr\"],",
+        "                output[\"sufficiency_repr\"],",
+        "            ],"
+      ],
+      "before_context": [
+        "            nn.Linear(hidden, num_classes),",
+        "        )",
+        "",
+        "            dim=-1,",
+        "        )",
+        "        if self.detach_input:"
+      ],
+      "after_context": [
+        "            nn.Linear(hidden, num_classes),",
+        "        )",
+        "",
+        "            dim=-1,",
+        "        )",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 86,
+      "before_end_exclusive": 86,
+      "after_start": 100,
+      "after_end_exclusive": 124,
+      "before": [],
+      "after": [
+        "",
+        "    def _raw_pair_features(self, output: dict[str, Any]) -> torch.Tensor:",
+        "        claim_repr = output[\"claim_frame_state\"]",
+        "        evidence_repr = output[\"evidence_frame_state\"]",
+        "        return torch.cat(",
+        "            [",
+        "                claim_repr,",
+        "                evidence_repr,",
+        "                torch.abs(claim_repr - evidence_repr),",
+        "                claim_repr * evidence_repr,",
+        "            ],",
+        "            dim=-1,",
+        "        )",
+        "",
+        "    def forward(self, output: dict[str, Any]) -> torch.Tensor:",
+        "        if self.input_mode == \"current\":",
+        "            features = self._current_features(output)",
+        "        elif self.input_mode == \"raw_pair\":",
+        "            features = self._raw_pair_features(output)",
+        "        else:",
+        "            features = torch.cat(",
+        "                [self._raw_pair_features(output), self._current_features(output)],",
+        "                dim=-1,",
+        "            )"
+      ],
+      "before_context": [
+        "            [frame_pair_repr, predicate_pair_repr, sufficiency_repr],",
+        "            dim=-1,",
+        "        )",
+        "        if self.detach_input:",
+        "            features = features.detach()",
+        "        return self.mlp(features)"
+      ],
+      "after_context": [
+        "            ],",
+        "            dim=-1,",
+        "        )",
+        "        if self.detach_input:",
+        "            features = features.detach()",
+        "        return self.mlp(features)"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 100,
+      "before_end_exclusive": 100,
+      "after_start": 138,
+      "after_end_exclusive": 139,
+      "before": [],
+      "after": [
+        "    input_mode: str = \"current\","
+      ],
+      "before_context": [
+        "    model: nn.Module,",
+        "    *,",
+        "    num_classes: int = STAGE31C_DEFAULT_NUM_CLASSES,",
+        "    detach_input: bool,",
+        ") -> None:",
+        "    \"\"\"Register and wrap a diagnostic head without changing final logits.\"\"\""
+      ],
+      "after_context": [
+        "    model: nn.Module,",
+        "    *,",
+        "    num_classes: int = STAGE31C_DEFAULT_NUM_CLASSES,",
+        "    detach_input: bool,",
+        ") -> None:",
+        "    \"\"\"Register and wrap a diagnostic head without changing final logits.\"\"\""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 115,
+      "before_end_exclusive": 115,
+      "after_start": 154,
+      "after_end_exclusive": 155,
+      "before": [],
+      "after": [
+        "        input_mode=input_mode,"
+      ],
+      "before_context": [
+        "        predicate_size=predicate_size,",
+        "        sufficiency_size=sufficiency_size,",
+        "        num_classes=num_classes,",
+        "        detach_input=detach_input,",
+        "    )",
+        "    original_forward = model.forward"
+      ],
+      "after_context": [
+        "        predicate_size=predicate_size,",
+        "        sufficiency_size=sufficiency_size,",
+        "        num_classes=num_classes,",
+        "        detach_input=detach_input,",
+        "    )",
+        "    original_forward = model.forward"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 133,
+      "before_end_exclusive": 134,
+      "after_start": 173,
+      "after_end_exclusive": 177,
+      "before": [
+        "    required = (\"frame_pair_repr\", \"predicate_pair_repr\", \"sufficiency_repr\")"
+      ],
+      "after": [
+        "    input_mode = getattr(head, \"input_mode\", \"current\")",
+        "    required = [\"frame_pair_repr\", \"predicate_pair_repr\", \"sufficiency_repr\"]",
+        "    if input_mode in (\"raw_pair\", \"hybrid\"):",
+        "        required.extend([\"claim_frame_state\", \"evidence_frame_state\"])"
+      ],
+      "before_context": [
+        "    head = getattr(model, \"stage31c_coverage_entailment_head\", None)",
+        "    if head is None:",
+        "        return output",
+        "    if any(output.get(key) is None for key in required):",
+        "        return output",
+        "    logits = head("
+      ],
+      "after_context": [
+        "    head = getattr(model, \"stage31c_coverage_entailment_head\", None)",
+        "    if head is None:",
+        "        return output",
+        "    if any(output.get(key) is None for key in required):",
+        "        return output",
+        "    logits = head(output)"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 136,
+      "before_end_exclusive": 141,
+      "after_start": 179,
+      "after_end_exclusive": 180,
+      "before": [
+        "    logits = head(",
+        "        output[\"frame_pair_repr\"],",
+        "        output[\"predicate_pair_repr\"],",
+        "        output[\"sufficiency_repr\"],",
+        "    )"
+      ],
+      "after": [
+        "    logits = head(output)"
+      ],
+      "before_context": [
+        "    required = (\"frame_pair_repr\", \"predicate_pair_repr\", \"sufficiency_repr\")",
+        "    if any(output.get(key) is None for key in required):",
+        "        return output",
+        "    probs = torch.softmax(logits, dim=-1)",
+        "    pred_id = probs.argmax(dim=-1)",
+        "    confidence = probs.max(dim=-1).values"
+      ],
+      "after_context": [
+        "        required.extend([\"claim_frame_state\", \"evidence_frame_state\"])",
+        "    if any(output.get(key) is None for key in required):",
+        "        return output",
+        "    probs = torch.softmax(logits, dim=-1)",
+        "    pred_id = probs.argmax(dim=-1)",
+        "    confidence = probs.max(dim=-1).values"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 160,
+      "before_end_exclusive": 160,
+      "after_start": 199,
+      "after_end_exclusive": 200,
+      "before": [],
+      "after": [
+        "    output[\"coverage_entailment_input_mode\"] = input_mode"
+      ],
+      "before_context": [
+        "        labels[int(i)] for i in pred_id.detach().cpu().tolist()",
+        "    ]",
+        "    output[\"coverage_entailment_confidence\"] = confidence",
+        "    return output",
+        "",
+        ""
+      ],
+      "after_context": [
+        "        labels[int(i)] for i in pred_id.detach().cpu().tolist()",
+        "    ]",
+        "    output[\"coverage_entailment_confidence\"] = confidence",
+        "    return output",
+        "",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 2103,
+      "before_end_exclusive": 2103,
+      "after_start": 2143,
+      "after_end_exclusive": 2146,
+      "before": [],
+      "after": [
+        "                    \"coverage_entailment_input_mode\": output.get(",
+        "                        \"coverage_entailment_input_mode\"",
+        "                    ),"
+      ],
+      "before_context": [
+        "                    \"coverage_entailment_pred_label\": output[",
+        "                        \"coverage_entailment_pred_label\"",
+        "                    ][index],",
+        "                }",
+        "                if output.get(\"coverage_entailment_pred_id\") is not None",
+        "                and output.get(\"coverage_entailment_pred_label\") is not None"
+      ],
+      "after_context": [
+        "                    \"coverage_entailment_pred_label\": output[",
+        "                        \"coverage_entailment_pred_label\"",
+        "                    ][index],",
+        "                }",
+        "                if output.get(\"coverage_entailment_pred_id\") is not None",
+        "                and output.get(\"coverage_entailment_pred_label\") is not None"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3410,
+      "before_end_exclusive": 3410,
+      "after_start": 3453,
+      "after_end_exclusive": 3464,
+      "before": [],
+      "after": [
+        "        \"--v7-coverage-entailment-input-mode\",",
+        "        choices=STAGE31C_INPUT_MODES,",
+        "        default=\"current\",",
+        "        help=(",
+        "            \"Stage31-C3: representation access ablation for the diagnostic \"",
+        "            \"coverage-entailment head. current uses frame/predicate/sufficiency \"",
+        "            \"pair representations; raw_pair uses claim/evidence frame states plus \"",
+        "            \"abs-diff and product; hybrid concatenates both.\"",
+        "        ),",
+        "    )",
+        "    parser.add_argument("
+      ],
+      "before_context": [
+        "        ),",
+        "    )",
+        "    parser.add_argument(",
+        "        \"--v7-use-coverage-entailment-loss\",",
+        "        action=\"store_true\",",
+        "        default=False,"
+      ],
+      "after_context": [
+        "        ),",
+        "    )",
+        "    parser.add_argument(",
+        "        \"--v7-use-coverage-entailment-loss\",",
+        "        action=\"store_true\",",
+        "        default=False,"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3452,
+      "before_end_exclusive": 3454,
+      "after_start": 3506,
+      "after_end_exclusive": 3508,
+      "before": [
+        "            \"Stage31-C: detach concat([frame_pair_repr, predicate_pair_repr, \"",
+        "            \"sufficiency_repr]) before the diagnostic head. Default off.\""
+      ],
+      "after": [
+        "            \"Stage31-C: detach the selected diagnostic-head representation before \"",
+        "            \"the coverage-entailment head. Default off.\""
+      ],
+      "before_context": [
+        "        action=\"store_true\",",
+        "        default=False,",
+        "        help=(",
+        "        ),",
+        "    )",
+        ""
+      ],
+      "after_context": [
+        "        action=\"store_true\",",
+        "        default=False,",
+        "        help=(",
+        "        ),",
+        "    )",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 4067,
+      "before_end_exclusive": 4067,
+      "after_start": 4121,
+      "after_end_exclusive": 4122,
+      "before": [],
+      "after": [
+        "    \"v7_coverage_entailment_input_mode\","
+      ],
+      "before_context": [
+        "    \"v7_initial_ne_bias\",",
+        "    \"v7_use_coverage_entailment_head\",",
+        "    \"v7_coverage_entailment_num_classes\",",
+        "    \"v7_use_coverage_entailment_loss\",",
+        "    \"v7_coverage_entailment_loss_weight\",",
+        "    \"v7_coverage_entailment_data\","
+      ],
+      "after_context": [
+        "    \"v7_initial_ne_bias\",",
+        "    \"v7_use_coverage_entailment_head\",",
+        "    \"v7_coverage_entailment_num_classes\",",
+        "    \"v7_use_coverage_entailment_loss\",",
+        "    \"v7_coverage_entailment_loss_weight\",",
+        "    \"v7_coverage_entailment_data\","
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 4495,
+      "before_end_exclusive": 4495,
+      "after_start": 4550,
+      "after_end_exclusive": 4551,
+      "before": [],
+      "after": [
+        "            input_mode=getattr(args, \"v7_coverage_entailment_input_mode\", \"current\"),"
+      ],
+      "before_context": [
+        "        install_stage31c_coverage_entailment_head(",
+        "            model,",
+        "            num_classes=getattr(args, \"v7_coverage_entailment_num_classes\", 3),",
+        "            detach_input=getattr(args, \"v7_coverage_entailment_detach_input\", False),",
+        "        )",
+        ""
+      ],
+      "after_context": [
+        "        install_stage31c_coverage_entailment_head(",
+        "            model,",
+        "            num_classes=getattr(args, \"v7_coverage_entailment_num_classes\", 3),",
+        "            detach_input=getattr(args, \"v7_coverage_entailment_detach_input\", False),",
+        "        )",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 5029,
+      "before_end_exclusive": 5029,
+      "after_start": 5085,
+      "after_end_exclusive": 5086,
+      "before": [],
+      "after": [
+        "            f\" input_mode={getattr(args, 'v7_coverage_entailment_input_mode', 'current')}\""
+      ],
+      "before_context": [
+        "            f\" train={_covent_meta_train_records}\"",
+        "            f\" dev={_covent_meta_dev_records}\"",
+        "            f\" num_classes={getattr(args, 'v7_coverage_entailment_num_classes', 3)}\"",
+        "            f\" detach_input={getattr(args, 'v7_coverage_entailment_detach_input', False)}\"",
+        "        )",
+        ""
+      ],
+      "after_context": [
+        "            f\" train={_covent_meta_train_records}\"",
+        "            f\" dev={_covent_meta_dev_records}\"",
+        "            f\" num_classes={getattr(args, 'v7_coverage_entailment_num_classes', 3)}\"",
+        "            f\" detach_input={getattr(args, 'v7_coverage_entailment_detach_input', False)}\"",
+        "        )",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 7869,
+      "before_end_exclusive": 7869,
+      "after_start": 7926,
+      "after_end_exclusive": 7929,
+      "before": [],
+      "after": [
+        "            \"v7_coverage_entailment_input_mode\": getattr(",
+        "                args, \"v7_coverage_entailment_input_mode\", \"current\"",
+        "            ),"
+      ],
+      "before_context": [
+        "            \"v7_coverage_entailment_num_classes\": getattr(",
+        "                args, \"v7_coverage_entailment_num_classes\", 3",
+        "            ),",
+        "            \"v7_coverage_entailment_loss_weight\": getattr(",
+        "                args, \"v7_coverage_entailment_loss_weight\", 0.0",
+        "            ),"
+      ],
+      "after_context": [
+        "            \"v7_coverage_entailment_num_classes\": getattr(",
+        "                args, \"v7_coverage_entailment_num_classes\", 3",
+        "            ),",
+        "            \"v7_coverage_entailment_loss_weight\": getattr(",
+        "                args, \"v7_coverage_entailment_loss_weight\", 0.0",
+        "            ),"
+      ]
+    }
+  ]
+}

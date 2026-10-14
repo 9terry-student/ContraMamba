@@ -1,0 +1,235 @@
+{
+  "shard_ordinal": 98,
+  "original_queue_id": "WORK-e8510154ae424aa50d50",
+  "original_source_ids": [
+    "HV000903"
+  ],
+  "original_source_identity": {
+    "commit": "e7ee5fa735fa12fa4b1df607744be9077b0eafae",
+    "path": "scripts/reason_router_gen4_mamba1_vanilla_lm_readout_raw_fast_cuda.py",
+    "blob": "668fde09f7bb131700c55d917d29257b9fb0b33a",
+    "object_type": "commit",
+    "bytes": 49042,
+    "sha256": "9d67178289268af6641df0621d697070fceafaa9fb17d550ff1f1c818c87b263"
+  },
+  "before": {
+    "commit": "9c56906e3dab5a5f48e0c20b9c4ff904997cf7a0",
+    "path": "scripts/reason_router_gen4_mamba1_vanilla_lm_readout_raw_fast_cuda.py",
+    "blob": "6fb37db3494321a27f1a41f95f24e0d1590de53e",
+    "object_type": "commit",
+    "bytes": 47795,
+    "sha256": "1f2d65f5b42ef91f4d62e702ef44352edb335c4724b8456ae4e38d81e757e642"
+  },
+  "after": {
+    "commit": "e7ee5fa735fa12fa4b1df607744be9077b0eafae",
+    "path": "scripts/reason_router_gen4_mamba1_vanilla_lm_readout_raw_fast_cuda.py",
+    "blob": "668fde09f7bb131700c55d917d29257b9fb0b33a",
+    "object_type": "commit",
+    "bytes": 49042,
+    "sha256": "9d67178289268af6641df0621d697070fceafaa9fb17d550ff1f1c818c87b263"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0120"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "load_vanilla_model"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 8 removed/replaced lines and 63 added/replaced lines in 4 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "3eaf648791fe31699dde858288c704171261a514",
+      "blob": "6fb37db3494321a27f1a41f95f24e0d1590de53e"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "replace",
+      "before_start": 933,
+      "before_end_exclusive": 935,
+      "after_start": 933,
+      "after_end_exclusive": 948,
+      "before": [
+        "    with safe_open(",
+        "        str("
+      ],
+      "after": [
+        "    checkpoint_weight_files = tuple(",
+        "        name",
+        "        for name in spec[\"geom\"].HF_FILES",
+        "        if name.endswith(\".safetensors\")",
+        "    )",
+        "",
+        "    require(",
+        "        len(checkpoint_weight_files) >= 1,",
+        "        \"CHECKPOINT_WEIGHT_FILES_MISSING\",",
+        "    )",
+        "",
+        "    checkpoint_key_set: set[str] = set()",
+        "",
+        "    for weight_name in checkpoint_weight_files:",
+        "        weight_path = ("
+      ],
+      "before_context": [
+        "",
+        "    from safetensors import safe_open",
+        "",
+        "            snapshot",
+        "            / \"model.safetensors\"",
+        "        ),"
+      ],
+      "after_context": [
+        "",
+        "    from safetensors import safe_open",
+        "",
+        "            snapshot",
+        "            / weight_name",
+        "        )"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 936,
+      "before_end_exclusive": 942,
+      "after_start": 949,
+      "after_end_exclusive": 950,
+      "before": [
+        "            / \"model.safetensors\"",
+        "        ),",
+        "        framework=\"pt\",",
+        "    ) as checkpoint:",
+        "        checkpoint_keys = frozenset(",
+        "            checkpoint.keys()"
+      ],
+      "after": [
+        "            / weight_name"
+      ],
+      "before_context": [
+        "    with safe_open(",
+        "        str(",
+        "            snapshot",
+        "        )",
+        "",
+        "    require("
+      ],
+      "after_context": [
+        "    for weight_name in checkpoint_weight_files:",
+        "        weight_path = (",
+        "            snapshot",
+        "        )",
+        "",
+        "        require("
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 943,
+      "before_end_exclusive": 943,
+      "after_start": 951,
+      "after_end_exclusive": 994,
+      "before": [],
+      "after": [
+        "",
+        "        require(",
+        "            weight_path.is_file(),",
+        "            (",
+        "                \"CHECKPOINT_WEIGHT_FILE_MISSING:\"",
+        "                + weight_name",
+        "            ),",
+        "        )",
+        "",
+        "        with safe_open(",
+        "            str(weight_path),",
+        "            framework=\"pt\",",
+        "        ) as checkpoint:",
+        "            shard_keys = set(",
+        "                checkpoint.keys()",
+        "            )",
+        "",
+        "        overlap = (",
+        "            checkpoint_key_set",
+        "            .intersection(",
+        "                shard_keys",
+        "            )",
+        "        )",
+        "",
+        "        require(",
+        "            not overlap,",
+        "            (",
+        "                \"CHECKPOINT_DUPLICATE_KEYS:\"",
+        "                + repr(",
+        "                    sorted(",
+        "                        overlap",
+        "                    )",
+        "                )",
+        "            ),",
+        "        )",
+        "",
+        "        checkpoint_key_set.update(",
+        "            shard_keys",
+        "        )",
+        "",
+        "    checkpoint_keys = frozenset(",
+        "        checkpoint_key_set",
+        "    )"
+      ],
+      "before_context": [
+        "        checkpoint_keys = frozenset(",
+        "            checkpoint.keys()",
+        "        )",
+        "",
+        "    require(",
+        "        \"backbone.embeddings.weight\""
+      ],
+      "after_context": [
+        "            snapshot",
+        "            / weight_name",
+        "        )",
+        "",
+        "    require(",
+        "        \"backbone.embeddings.weight\""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 1114,
+      "before_end_exclusive": 1114,
+      "after_start": 1165,
+      "after_end_exclusive": 1169,
+      "before": [],
+      "after": [
+        "            \"checkpoint_weight_files\":",
+        "                list(checkpoint_weight_files),",
+        "            \"checkpoint_weight_file_count\":",
+        "                len(checkpoint_weight_files),"
+      ],
+      "before_context": [
+        "                False,",
+        "            \"hf_runtime_tie_word_embeddings\":",
+        "                hf_runtime_tie_word_embeddings,",
+        "            \"checkpoint_embedding_weight_present\":",
+        "                True,",
+        "            \"checkpoint_lm_head_weight_present\":"
+      ],
+      "after_context": [
+        "                False,",
+        "            \"hf_runtime_tie_word_embeddings\":",
+        "                hf_runtime_tie_word_embeddings,",
+        "            \"checkpoint_embedding_weight_present\":",
+        "                True,",
+        "            \"checkpoint_lm_head_weight_present\":"
+      ]
+    }
+  ]
+}

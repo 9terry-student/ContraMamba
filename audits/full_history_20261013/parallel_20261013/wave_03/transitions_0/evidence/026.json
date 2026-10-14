@@ -1,0 +1,316 @@
+{
+  "shard_ordinal": 26,
+  "original_queue_id": "WORK-421f6ad35bbbf06f96b1",
+  "original_source_ids": [
+    "HV000968"
+  ],
+  "original_source_identity": {
+    "commit": "ea03cdaa5394de03389d31aa1089b51e10340a57",
+    "path": "scripts/render_reason_router_gen4_main_figures.py",
+    "blob": "acdcc2aed00a0866d66aa3930a85ea9f7c1e1842",
+    "object_type": "commit",
+    "bytes": 32886,
+    "sha256": "7a5460b4eda869b3a66386d68e557fbbaf58191d8f6eb1a72f490d10e310d95f"
+  },
+  "before": {
+    "commit": "6bed98f46250182e7ac5225b19ab7b52221423db",
+    "path": "scripts/render_reason_router_gen4_main_figures.py",
+    "blob": "606a9acc291c635ff87f8b21c11707883c1c2aa7",
+    "object_type": "commit",
+    "bytes": 32598,
+    "sha256": "b0a2dd51184d919856c6f1c400adaf6a0211bf277c14c4261abcec2851119e30"
+  },
+  "after": {
+    "commit": "ea03cdaa5394de03389d31aa1089b51e10340a57",
+    "path": "scripts/render_reason_router_gen4_main_figures.py",
+    "blob": "acdcc2aed00a0866d66aa3930a85ea9f7c1e1842",
+    "object_type": "commit",
+    "bytes": 32886,
+    "sha256": "7a5460b4eda869b3a66386d68e557fbbaf58191d8f6eb1a72f490d10e310d95f"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0128"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "build_figures"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 19 removed/replaced lines and 25 added/replaced lines in 8 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "7b9c311b2bd6887086dc3c31269d269243fde472",
+      "blob": "acdcc2aed00a0866d66aa3930a85ea9f7c1e1842"
+    }
+  ],
+  "immediate_parent_has_before_blob": false,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 391,
+      "before_end_exclusive": 391,
+      "after_start": 391,
+      "after_end_exclusive": 392,
+      "before": [],
+      "after": [
+        "    a.set_xticks([1, 50, 100, 150, 200, 250, 300])"
+      ],
+      "before_context": [
+        "    a, b, c, e, f, legend = axes.flat",
+        "    panel(a, \"A  External-generator transport\", \"Stored C_PP3 (x 1e-8)\")",
+        "    a.scatter(np.arange(1, 301), [r[\"C_PP3\"] / 1e-8 for r in d[\"xg1\"]], s=7, color=BLUE, alpha=0.55)",
+        "    a.set_xlabel(\"Frozen XG1 item (1-300)\")",
+        "    note(a, \"Stored item-level observations; N=300\")",
+        "    spec = d[\"specificity\"]"
+      ],
+      "after_context": [
+        "    a, b, c, e, f, legend = axes.flat",
+        "    panel(a, \"A  External-generator transport\", \"Stored C_PP3 (x 1e-8)\")",
+        "    a.scatter(np.arange(1, 301), [r[\"C_PP3\"] / 1e-8 for r in d[\"xg1\"]], s=7, color=BLUE, alpha=0.55)",
+        "    a.set_xlabel(\"Frozen XG1 item (1-300)\")",
+        "    note(a, \"Stored item-level observations; N=300\")",
+        "    spec = d[\"specificity\"]"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 450,
+      "before_end_exclusive": 454,
+      "after_start": 451,
+      "after_end_exclusive": 454,
+      "before": [
+        "    panel(c, \"C  Transported functional response\", \"Stored paired response (x 1e-9)\")",
+        "    keys = [\"D_CAN_descriptive_only\", \"D_ADJ\", \"D_TRANSPORT\"]",
+        "    for row in d[\"transport\"]:",
+        "        c.plot(range(3), [row[k] / 1e-9 for k in keys], color=GRAY, alpha=0.07, lw=0.5)"
+      ],
+      "after": [
+        "    panel(c, \"C  Primary transport endpoint G\", \"Count\")",
+        "    counts, _, _ = c.hist([row[\"G\"] / 1e-9 for row in d[\"transport\"]],",
+        "                          bins=20, color=GRAY, edgecolor=\"white\", linewidth=0.5)"
+      ],
+      "before_context": [
+        "    b.set_ylim(0, 120)",
+        "    b.set_yticks([0, 30, 60, 90])",
+        "    note(b, f\"Rank two: 600/600 XG2/XG4 rows\\nMean projector overlap={d['overlap']:.5f}\")",
+        "    analysis = d[\"transport_analysis\"]",
+        "    means = [at(analysis, \"descriptive_only\", k, \"mean\") / 1e-9",
+        "             for k in (\"historical_D_CAN\", \"historical_D_ADJ\", \"D_TRANSPORT\")]"
+      ],
+      "after_context": [
+        "    b.set_ylim(0, 120)",
+        "    b.set_yticks([0, 30, 60, 90])",
+        "    note(b, f\"Rank two: 600/600 XG2/XG4 rows\\nMean projector overlap={d['overlap']:.5f}\")",
+        "    analysis = d[\"transport_analysis\"]",
+        "    primary = analysis[\"primary\"]",
+        "    c.axvline(0, color=GRAY, ls=\"--\", lw=1.2)"
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 455,
+      "before_end_exclusive": 459,
+      "after_start": 455,
+      "after_end_exclusive": 455,
+      "before": [
+        "    means = [at(analysis, \"descriptive_only\", k, \"mean\") / 1e-9",
+        "             for k in (\"historical_D_CAN\", \"historical_D_ADJ\", \"D_TRANSPORT\")]",
+        "    c.plot(range(3), means, \"o-\", color=ORANGE, lw=2)",
+        "    c.set_xticks(range(3), [\"D_CAN*\", \"D_ADJ\", \"D_TRANSPORT\"], fontsize=8)"
+      ],
+      "after": [],
+      "before_context": [
+        "    for row in d[\"transport\"]:",
+        "        c.plot(range(3), [row[k] / 1e-9 for k in keys], color=GRAY, alpha=0.07, lw=0.5)",
+        "    analysis = d[\"transport_analysis\"]",
+        "    primary = analysis[\"primary\"]",
+        "    note(c, f\"Mean G={primary['mean_G']:.2e}\\nFrozen one-sided p={primary['p_value']:.2e}\")",
+        "    c.set_ylim(top=35)"
+      ],
+      "after_context": [
+        "    counts, _, _ = c.hist([row[\"G\"] / 1e-9 for row in d[\"transport\"]],",
+        "                          bins=20, color=GRAY, edgecolor=\"white\", linewidth=0.5)",
+        "    analysis = d[\"transport_analysis\"]",
+        "    primary = analysis[\"primary\"]",
+        "    c.axvline(0, color=GRAY, ls=\"--\", lw=1.2)",
+        "    c.axvline(primary[\"mean_G\"] / 1e-9, color=ORANGE, lw=2)"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 460,
+      "before_end_exclusive": 462,
+      "after_start": 456,
+      "after_end_exclusive": 465,
+      "before": [
+        "    note(c, f\"Mean G={primary['mean_G']:.2e}\\nFrozen one-sided p={primary['p_value']:.2e}\")",
+        "    c.set_ylim(top=35)"
+      ],
+      "after": [
+        "    c.axvline(0, color=GRAY, ls=\"--\", lw=1.2)",
+        "    c.axvline(primary[\"mean_G\"] / 1e-9, color=ORANGE, lw=2)",
+        "    c.set_xlabel(\"G = D_TRANSPORT - D_ADJ (x 1e-9)\")",
+        "    note(c, f\"N={primary['n']}; frozen mean G={primary['mean_G']:+.2e}\\n\"",
+        "            f\"Frozen one-sided p={primary['p_value']:.2e}\\n\"",
+        "            f\"Mean D_ADJ={analysis['descriptive_only']['historical_D_ADJ']['mean']:.2e}\\n\"",
+        "            f\"Mean D_TRANSPORT={analysis['descriptive_only']['D_TRANSPORT']['mean']:.2e}\\n\"",
+        "            \"Positive restoration not established.\\nDashed: zero; orange: frozen mean\")",
+        "    c.set_ylim(0, max(counts) * 1.85)"
+      ],
+      "before_context": [
+        "    c.plot(range(3), means, \"o-\", color=ORANGE, lw=2)",
+        "    c.set_xticks(range(3), [\"D_CAN*\", \"D_ADJ\", \"D_TRANSPORT\"], fontsize=8)",
+        "    primary = analysis[\"primary\"]",
+        "    fig.suptitle(\"Figure 4 | Cross-block geometric reorientation\", fontsize=16, x=0.06, ha=\"left\")",
+        "    fig.text(0.06, 0.07, \"Transport shifts the adjacent response toward canonical, but positive restoration is not established.\\n*Canonical response in C is descriptive only. A tests one fixed adjacent site; no global layer-optimum claim.\", fontsize=11, linespacing=1.5)",
+        "    fig.subplots_adjust(left=0.07, right=0.98, top=0.84, bottom=0.24, wspace=0.34)"
+      ],
+      "after_context": [
+        "                          bins=20, color=GRAY, edgecolor=\"white\", linewidth=0.5)",
+        "    analysis = d[\"transport_analysis\"]",
+        "    primary = analysis[\"primary\"]",
+        "    fig.suptitle(\"Figure 4 | Cross-block geometric reorientation\", fontsize=16, x=0.06, ha=\"left\")",
+        "    fig.text(0.06, 0.07, \"Transport shifts the adjacent response toward canonical, but positive restoration is not established.\\nA tests one fixed adjacent site; no global layer-optimum claim. C shows the frozen paired transport endpoint.\", fontsize=11, linespacing=1.5)",
+        "    fig.subplots_adjust(left=0.07, right=0.98, top=0.84, bottom=0.24, wspace=0.34)"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 463,
+      "before_end_exclusive": 464,
+      "after_start": 466,
+      "after_end_exclusive": 467,
+      "before": [
+        "    fig.text(0.06, 0.07, \"Transport shifts the adjacent response toward canonical, but positive restoration is not established.\\n*Canonical response in C is descriptive only. A tests one fixed adjacent site; no global layer-optimum claim.\", fontsize=11, linespacing=1.5)"
+      ],
+      "after": [
+        "    fig.text(0.06, 0.07, \"Transport shifts the adjacent response toward canonical, but positive restoration is not established.\\nA tests one fixed adjacent site; no global layer-optimum claim. C shows the frozen paired transport endpoint.\", fontsize=11, linespacing=1.5)"
+      ],
+      "before_context": [
+        "    note(c, f\"Mean G={primary['mean_G']:.2e}\\nFrozen one-sided p={primary['p_value']:.2e}\")",
+        "    c.set_ylim(top=35)",
+        "    fig.suptitle(\"Figure 4 | Cross-block geometric reorientation\", fontsize=16, x=0.06, ha=\"left\")",
+        "    fig.subplots_adjust(left=0.07, right=0.98, top=0.84, bottom=0.24, wspace=0.34)",
+        "    figs.append(fig)",
+        ""
+      ],
+      "after_context": [
+        "            \"Positive restoration not established.\\nDashed: zero; orange: frozen mean\")",
+        "    c.set_ylim(0, max(counts) * 1.85)",
+        "    fig.suptitle(\"Figure 4 | Cross-block geometric reorientation\", fontsize=16, x=0.06, ha=\"left\")",
+        "    fig.subplots_adjust(left=0.07, right=0.98, top=0.84, bottom=0.24, wspace=0.34)",
+        "    figs.append(fig)",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 472,
+      "before_end_exclusive": 477,
+      "after_start": 475,
+      "after_end_exclusive": 478,
+      "before": [
+        "    panel(b, \"B  Matched readout reversal | primary\", \"Delta_L_owned (x 1e-3)\")",
+        "    for row in d[\"readout\"]:",
+        "        b.plot([0, 1], [row[\"Delta_L_370M\"] / 1e-3, row[\"Delta_L_1.4B\"] / 1e-3], color=GRAY, alpha=0.12, lw=0.5)",
+        "    b.plot([0, 1], np.asarray(d[\"context_means\"][1:]) / 1e-3, \"o-\", color=ORANGE, lw=2)",
+        "    b.set_xticks([0, 1], [\"370M (P3 / P5)\", \"1.4B (P5 / P4)\"])"
+      ],
+      "after": [
+        "    panel(b, \"B  Primary matched readout endpoint R\", \"Count\")",
+        "    counts, _, _ = b.hist([row[\"R\"] / 1e-3 for row in d[\"readout\"]],",
+        "                          bins=20, color=GRAY, edgecolor=\"white\", linewidth=0.5)"
+      ],
+      "before_context": [
+        "    panel(a, \"A  Three-checkpoint context\", \"Mean Delta_L_owned (x 1e-3)\")",
+        "    summaries(a, [\"130M*\", \"370M\", \"1.4B\"], d[\"context_means\"], [GRAY, BLUE, ORANGE], 1e-3)",
+        "    note(a, \"*Separate frozen population; no fitted scale trend\")",
+        "    p = d[\"readout_analysis\"][\"primary_test\"]",
+        "    b.set_ylim(top=13)",
+        "    note(b, f\"N={p['n']}; mean R={p['mean_R']:+.2e}; SD={p['sd_R']:.2e}\\nFrozen t({p['df']})={p['t_statistic']:.2f}; one-sided p={p['p_value']:.2e}\")"
+      ],
+      "after_context": [
+        "    panel(a, \"A  Three-checkpoint context\", \"Mean Delta_L_owned (x 1e-3)\")",
+        "    summaries(a, [\"130M*\", \"370M\", \"1.4B\"], d[\"context_means\"], [GRAY, BLUE, ORANGE], 1e-3)",
+        "    note(a, \"*Separate frozen population; no fitted scale trend\")",
+        "    p = d[\"readout_analysis\"][\"primary_test\"]",
+        "    b.axvline(0, color=GRAY, ls=\"--\", lw=1.2)",
+        "    b.axvline(p[\"mean_R\"] / 1e-3, color=ORANGE, lw=2)"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 478,
+      "before_end_exclusive": 480,
+      "after_start": 479,
+      "after_end_exclusive": 486,
+      "before": [
+        "    b.set_ylim(top=13)",
+        "    note(b, f\"N={p['n']}; mean R={p['mean_R']:+.2e}; SD={p['sd_R']:.2e}\\nFrozen t({p['df']})={p['t_statistic']:.2f}; one-sided p={p['p_value']:.2e}\")"
+      ],
+      "after": [
+        "    b.axvline(0, color=GRAY, ls=\"--\", lw=1.2)",
+        "    b.axvline(p[\"mean_R\"] / 1e-3, color=ORANGE, lw=2)",
+        "    b.set_xlabel(\"R = Delta_L_370M - Delta_L_1.4B (x 1e-3)\")",
+        "    b.set_ylim(0, max(counts) * 1.45)",
+        "    note(b, f\"N={p['n']}; frozen mean R={p['mean_R']:+.2e}; SD(R)={p['sd_R']:.2e}\\n\"",
+        "            f\"Frozen t({p['df']})={p['t_statistic']:.2f}; one-sided p={p['p_value']:.2e}\\n\"",
+        "            \"Dashed: zero; orange: frozen mean\")"
+      ],
+      "before_context": [
+        "    b.plot([0, 1], np.asarray(d[\"context_means\"][1:]) / 1e-3, \"o-\", color=ORANGE, lw=2)",
+        "    b.set_xticks([0, 1], [\"370M (P3 / P5)\", \"1.4B (P5 / P4)\"])",
+        "    p = d[\"readout_analysis\"][\"primary_test\"]",
+        "    panel(c, \"C  Direct behavioral bridge\", \"Frozen mean D_BEH (x 1e-3)\")",
+        "    summaries(c, [\"370M\", \"1.4B\"], [number(p[\"mean\"]) for p in d[\"bridge\"]], [BLUE, ORANGE], 1e-3)",
+        "    note(c, f\"Positive-bridge Holm p: {number(d['bridge'][0]['p_holm']):.2e}, {number(d['bridge'][1]['p_holm']):.2f}\\nScale-specific behavioral bridge only\")"
+      ],
+      "after_context": [
+        "    counts, _, _ = b.hist([row[\"R\"] / 1e-3 for row in d[\"readout\"]],",
+        "                          bins=20, color=GRAY, edgecolor=\"white\", linewidth=0.5)",
+        "    p = d[\"readout_analysis\"][\"primary_test\"]",
+        "    panel(c, \"C  Direct behavioral bridge\", \"Frozen mean D_BEH (x 1e-3)\")",
+        "    summaries(c, [\"370M\", \"1.4B\"], [number(p[\"mean\"]) for p in d[\"bridge\"]], [BLUE, ORANGE], 1e-3)",
+        "    note(c, f\"Positive-bridge Holm p: {number(d['bridge'][0]['p_holm']):.2e}, {number(d['bridge'][1]['p_holm']):.2f}\\nScale-specific behavioral bridge only\")"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 486,
+      "before_end_exclusive": 487,
+      "after_start": 492,
+      "after_end_exclusive": 493,
+      "before": [
+        "    e.set_xticks([0, 1, 5, 9, 13, 14], [\"pre 35\", \"post 35\", \"39\", \"43\", \"47\", \"final\\nnorm\"])"
+      ],
+      "after": [
+        "    e.set_xticks([0, 1, 5, 9, 13, 14], [\"pre35\", \"35\", \"39\", \"43\", \"47\", \"norm\"])"
+      ],
+      "before_context": [
+        "    panel(e, \"D  Stagewise localization | descriptive\", \"Frozen pair-average D (x 1e-3)\")",
+        "    for vals, label, color in zip(d[\"stage_means\"], (\"370M\", \"1.4B\"), (BLUE, ORANGE)):",
+        "        e.plot(range(len(vals)), np.asarray(vals) / 1e-3, \"o-\", ms=3, label=label, color=color)",
+        "    e.legend(loc=\"lower left\", frameon=False, fontsize=9)",
+        "    e.set_ylim(-2.8, 3.0)",
+        "    note(e, \"Persistent C2 opposition: post_block_35\\nPersistent pair opposition: post_block_47\")"
+      ],
+      "after_context": [
+        "    panel(e, \"D  Stagewise localization | descriptive\", \"Frozen pair-average D (x 1e-3)\")",
+        "    for vals, label, color in zip(d[\"stage_means\"], (\"370M\", \"1.4B\"), (BLUE, ORANGE)):",
+        "        e.plot(range(len(vals)), np.asarray(vals) / 1e-3, \"o-\", ms=3, label=label, color=color)",
+        "    e.legend(loc=\"lower left\", frameon=False, fontsize=9)",
+        "    e.set_ylim(-2.8, 3.0)",
+        "    note(e, \"Persistent C2 opposition: post_block_35\\nPersistent pair opposition: post_block_47\")"
+      ]
+    }
+  ]
+}

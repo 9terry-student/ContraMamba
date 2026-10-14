@@ -1,0 +1,427 @@
+{
+  "shard_ordinal": 89,
+  "original_queue_id": "WORK-d7227a4c137cdaae76e9",
+  "original_source_ids": [
+    "HV000821"
+  ],
+  "original_source_identity": {
+    "commit": "5f5f4d6a80085ad8baf43445475d1c3049535c22",
+    "path": "scripts/longterm_k0_rvg_raw_recurrence_observer.py",
+    "blob": "2722b6ee0e3cd04c8167924d41e5fb801e3945e5",
+    "object_type": "commit",
+    "bytes": 33196,
+    "sha256": "9cb3b49a9b516def1fe50d90be1d57ddc160495743f5abff20e61684d2b34ffe"
+  },
+  "before": {
+    "commit": "fcfe161c12f4ed8ef37aff435554cc0660e477af",
+    "path": "scripts/longterm_k0_rvg_raw_recurrence_observer.py",
+    "blob": "f2dbdfe52661eca384897578ab272e602e36deac",
+    "object_type": "commit",
+    "bytes": 31950,
+    "sha256": "12542e32d49b368e727de782b0cb833991464503b1fab56d375f15ec58649c25"
+  },
+  "after": {
+    "commit": "5f5f4d6a80085ad8baf43445475d1c3049535c22",
+    "path": "scripts/longterm_k0_rvg_raw_recurrence_observer.py",
+    "blob": "2722b6ee0e3cd04c8167924d41e5fb801e3945e5",
+    "object_type": "commit",
+    "bytes": 33196,
+    "sha256": "9cb3b49a9b516def1fe50d90be1d57ddc160495743f5abff20e61684d2b34ffe"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0111"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "_repo_contract",
+      "run_synthetic_preflight",
+      "validate_recurrence_record"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 10 removed/replaced lines and 37 added/replaced lines in 12 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "dcac03006a97079061d7955e287e1f8b54aa2853",
+      "blob": "2722b6ee0e3cd04c8167924d41e5fb801e3945e5"
+    }
+  ],
+  "immediate_parent_has_before_blob": false,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "replace",
+      "before_start": 27,
+      "before_end_exclusive": 28,
+      "after_start": 27,
+      "after_end_exclusive": 28,
+      "before": [
+        "AUTHORITY_COMMIT = \"41dbeae22a3831300f0de2f1f44a4b49733d70a5\""
+      ],
+      "after": [
+        "AUTHORITY_COMMIT = \"d8d717a09516b8562f64f7c503d4bbdcc9c34c5d\""
+      ],
+      "before_context": [
+        "from pathlib import Path",
+        "from typing import Any, Iterable, Mapping, Sequence",
+        "",
+        "PARENT_STATIC_COMMIT = \"e048e83083da105ee44ef53e9e32193591c79a90\"",
+        "A0_COMMIT = \"55debe94f0d19d16a334395e8561901fed6b52fa\"",
+        "A0_MODEL_REL = \"src/contramamba/modeling_v6b_minimal.py\""
+      ],
+      "after_context": [
+        "from pathlib import Path",
+        "from typing import Any, Iterable, Mapping, Sequence",
+        "",
+        "PARENT_STATIC_COMMIT = \"e048e83083da105ee44ef53e9e32193591c79a90\"",
+        "A0_COMMIT = \"55debe94f0d19d16a334395e8561901fed6b52fa\"",
+        "A0_MODEL_REL = \"src/contramamba/modeling_v6b_minimal.py\""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 74,
+      "before_end_exclusive": 75,
+      "after_start": 74,
+      "after_end_exclusive": 77,
+      "before": [
+        "IMPLEMENTATION_UNTRACKED = {OBSERVER_REL, TEST_REL}"
+      ],
+      "after": [
+        "RUNNER_REL = \"scripts/longterm_k0_rvg_p1_raw_vector_execution.py\"",
+        "RUNNER_TEST_REL = \"tests/test_longterm_k0_rvg_p1_raw_vector_execution.py\"",
+        "R2_IMPLEMENTATION_FILES = {OBSERVER_REL, TEST_REL, RUNNER_REL, RUNNER_TEST_REL}"
+      ],
+      "before_context": [
+        "    \"scripts/longterm_k1_native_state_kinematics.py\",",
+        "    \"tests/test_longterm_k1_native_state_kinematics.py\",",
+        "}",
+        "",
+        "",
+        "class ContractError(RuntimeError):"
+      ],
+      "after_context": [
+        "    \"scripts/longterm_k1_native_state_kinematics.py\",",
+        "    \"tests/test_longterm_k1_native_state_kinematics.py\",",
+        "}",
+        "",
+        "",
+        "class ContractError(RuntimeError):"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 514,
+      "before_end_exclusive": 515,
+      "after_start": 516,
+      "after_end_exclusive": 517,
+      "before": [
+        "def validate_recurrence_record(record: RecurrenceRecord) -> dict[str, float | str]:"
+      ],
+      "after": [
+        "def validate_recurrence_record(record: RecurrenceRecord) -> dict[str, float | str | bool]:"
+      ],
+      "before_context": [
+        "    )",
+        "",
+        "",
+        "    import torch",
+        "",
+        "    _validate_record_metadata(record)"
+      ],
+      "after_context": [
+        "    )",
+        "",
+        "",
+        "    import torch",
+        "",
+        "    _validate_record_metadata(record)"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 532,
+      "before_end_exclusive": 533,
+      "after_start": 534,
+      "after_end_exclusive": 535,
+      "before": [
+        "    require("
+      ],
+      "after": [
+        "    rearrangement_allclose = bool("
+      ],
+      "before_context": [
+        "    relative_frobenius = diff_norm / max(raw_norm, 1e-12)",
+        "    tolerance_scale = VELOCITY_ATOL + VELOCITY_RTOL * rearranged.abs()",
+        "    max_scaled = float((diff / tolerance_scale).max().item()) if diff.numel() else 0.0",
+        "        torch.allclose(",
+        "            v_raw,",
+        "            rearranged,"
+      ],
+      "after_context": [
+        "    relative_frobenius = diff_norm / max(raw_norm, 1e-12)",
+        "    tolerance_scale = VELOCITY_ATOL + VELOCITY_RTOL * rearranged.abs()",
+        "    max_scaled = float((diff / tolerance_scale).max().item()) if diff.numel() else 0.0",
+        "        torch.allclose(",
+        "            v_raw,",
+        "            rearranged,"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 538,
+      "before_end_exclusive": 540,
+      "after_start": 540,
+      "after_end_exclusive": 546,
+      "before": [
+        "        ),",
+        "        \"VELOCITY_REARRANGEMENT_TOLERANCE_FAILURE\","
+      ],
+      "after": [
+        "        )",
+        "    )",
+        "    rearrangement_status = (",
+        "        \"PASS_TOLERANCE\"",
+        "        if rearrangement_allclose",
+        "        else \"DIAGNOSTIC_TOLERANCE_EXCEEDED\""
+      ],
+      "before_context": [
+        "            rearranged,",
+        "            atol=VELOCITY_ATOL,",
+        "            rtol=VELOCITY_RTOL,",
+        "    )",
+        "    return {",
+        "        \"recurrence_exact\": \"PASS_EXACT\","
+      ],
+      "after_context": [
+        "            rearranged,",
+        "            atol=VELOCITY_ATOL,",
+        "            rtol=VELOCITY_RTOL,",
+        "    )",
+        "    return {",
+        "        \"recurrence_exact\": \"PASS_EXACT\","
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 543,
+      "before_end_exclusive": 544,
+      "after_start": 549,
+      "after_end_exclusive": 551,
+      "before": [
+        "        \"velocity_rearrangement\": \"PASS_TOLERANCE\","
+      ],
+      "after": [
+        "        \"velocity_rearrangement\": rearrangement_status,",
+        "        \"velocity_rearrangement_allclose\": rearrangement_allclose,"
+      ],
+      "before_context": [
+        "    )",
+        "    return {",
+        "        \"recurrence_exact\": \"PASS_EXACT\",",
+        "        \"velocity_atol\": VELOCITY_ATOL,",
+        "        \"velocity_rtol\": VELOCITY_RTOL,",
+        "        \"max_abs_residual\": max_abs,"
+      ],
+      "after_context": [
+        "    )",
+        "    return {",
+        "        \"recurrence_exact\": \"PASS_EXACT\",",
+        "        \"velocity_atol\": VELOCITY_ATOL,",
+        "        \"velocity_rtol\": VELOCITY_RTOL,",
+        "        \"max_abs_residual\": max_abs,"
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 587,
+      "before_end_exclusive": 588,
+      "after_start": 594,
+      "after_end_exclusive": 594,
+      "before": [
+        "    allowed = HISTORICAL_K1_UNTRACKED | IMPLEMENTATION_UNTRACKED"
+      ],
+      "after": [],
+      "before_context": [
+        "    status = subprocess.check_output(",
+        "        [\"git\", \"status\", \"--porcelain=v1\"], cwd=root, text=True",
+        "    ).splitlines()",
+        "    for line in status:",
+        "        path = line[3:].replace(\"\\\\\", \"/\") if len(line) >= 4 else \"\"",
+        "        require(line[:2] == \"??\" and path in allowed, \"GIT_DIRTY_CONTRACT_MISMATCH\")"
+      ],
+      "after_context": [
+        "    status = subprocess.check_output(",
+        "        [\"git\", \"status\", \"--porcelain=v1\"], cwd=root, text=True",
+        "    ).splitlines()",
+        "    for line in status:",
+        "        path = line[3:].replace(\"\\\\\", \"/\") if len(line) >= 4 else \"\"",
+        "        if path in HISTORICAL_K1_UNTRACKED:"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 590,
+      "before_end_exclusive": 591,
+      "after_start": 596,
+      "after_end_exclusive": 603,
+      "before": [
+        "        require(line[:2] == \"??\" and path in allowed, \"GIT_DIRTY_CONTRACT_MISMATCH\")"
+      ],
+      "after": [
+        "        if path in HISTORICAL_K1_UNTRACKED:",
+        "            require(line[:2] == \"??\", \"GIT_DIRTY_CONTRACT_MISMATCH\")",
+        "            continue",
+        "        if path in R2_IMPLEMENTATION_FILES:",
+        "            require(line[:2] == \" M\", \"GIT_DIRTY_CONTRACT_MISMATCH\")",
+        "            continue",
+        "        raise ContractError(\"GIT_DIRTY_CONTRACT_MISMATCH\")"
+      ],
+      "before_context": [
+        "    allowed = HISTORICAL_K1_UNTRACKED | IMPLEMENTATION_UNTRACKED",
+        "    for line in status:",
+        "        path = line[3:].replace(\"\\\\\", \"/\") if len(line) >= 4 else \"\"",
+        "",
+        "    helper = root / K2S_REL",
+        "    require(helper.is_file(), \"K2S_HELPER_MISSING\")"
+      ],
+      "after_context": [
+        "    ).splitlines()",
+        "    for line in status:",
+        "        path = line[3:].replace(\"\\\\\", \"/\") if len(line) >= 4 else \"\"",
+        "",
+        "    helper = root / K2S_REL",
+        "    require(helper.is_file(), \"K2S_HELPER_MISSING\")"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 713,
+      "before_end_exclusive": 713,
+      "after_start": 725,
+      "after_end_exclusive": 727,
+      "before": [],
+      "after": [
+        "    diagnostic_pass_count = 0",
+        "    diagnostic_exceedance_count = 0"
+      ],
+      "before_context": [
+        "    max_abs = 0.0",
+        "    max_rel = 0.0",
+        "    max_scaled = 0.0",
+        "    for record in collector.records.values():",
+        "        result = validate_recurrence_record(record)",
+        "        max_abs = max(max_abs, float(result[\"max_abs_residual\"]))"
+      ],
+      "after_context": [
+        "    max_abs = 0.0",
+        "    max_rel = 0.0",
+        "    max_scaled = 0.0",
+        "    for record in collector.records.values():",
+        "        result = validate_recurrence_record(record)",
+        "        status = result[\"velocity_rearrangement\"]"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 715,
+      "before_end_exclusive": 715,
+      "after_start": 729,
+      "after_end_exclusive": 736,
+      "before": [],
+      "after": [
+        "        status = result[\"velocity_rearrangement\"]",
+        "        if status == \"PASS_TOLERANCE\":",
+        "            diagnostic_pass_count += 1",
+        "        elif status == \"DIAGNOSTIC_TOLERANCE_EXCEEDED\":",
+        "            diagnostic_exceedance_count += 1",
+        "        else:",
+        "            raise ContractError(\"UNKNOWN_VELOCITY_REARRANGEMENT_STATUS\")"
+      ],
+      "before_context": [
+        "    max_scaled = 0.0",
+        "    for record in collector.records.values():",
+        "        result = validate_recurrence_record(record)",
+        "        max_abs = max(max_abs, float(result[\"max_abs_residual\"]))",
+        "        max_rel = max(max_rel, float(result[\"max_relative_residual\"]))",
+        "        max_scaled = max("
+      ],
+      "after_context": [
+        "    diagnostic_exceedance_count = 0",
+        "    for record in collector.records.values():",
+        "        result = validate_recurrence_record(record)",
+        "        max_abs = max(max_abs, float(result[\"max_abs_residual\"]))",
+        "        max_rel = max(max_rel, float(result[\"max_relative_residual\"]))",
+        "        max_scaled = max("
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 721,
+      "before_end_exclusive": 721,
+      "after_start": 742,
+      "after_end_exclusive": 746,
+      "before": [],
+      "after": [
+        "    require(",
+        "        diagnostic_pass_count + diagnostic_exceedance_count == len(collector.records),",
+        "        \"VELOCITY_DIAGNOSTIC_ACCOUNTING_MISMATCH\",",
+        "    )"
+      ],
+      "before_context": [
+        "            max_scaled,",
+        "            float(result[\"max_scaled_tolerance_residual\"]),",
+        "        )",
+        "",
+        "    fresh = RawRecurrenceCollector(binding, layer_map, target_all)",
+        "    with fresh.capture():"
+      ],
+      "after_context": [
+        "            max_scaled,",
+        "            float(result[\"max_scaled_tolerance_residual\"]),",
+        "        )",
+        "",
+        "    fresh = RawRecurrenceCollector(binding, layer_map, target_all)",
+        "    with fresh.capture():"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 811,
+      "before_end_exclusive": 812,
+      "after_start": 836,
+      "after_end_exclusive": 839,
+      "before": [
+        "            \"velocity_rearrangement\": \"PASS_TOLERANCE\","
+      ],
+      "after": [
+        "            \"velocity_rearrangement_blocking\": False,",
+        "            \"velocity_rearrangement_diagnostic_pass_count\": diagnostic_pass_count,",
+        "            \"velocity_rearrangement_diagnostic_exceedance_count\": diagnostic_exceedance_count,"
+      ],
+      "before_context": [
+        "            \"tensor_shape_dtype_finite\": \"PASS\",",
+        "            \"snapshot_nonaliasing\": \"PASS\",",
+        "            \"recurrence_reconstruction\": \"PASS_EXACT\",",
+        "            \"velocity_atol\": VELOCITY_ATOL,",
+        "            \"velocity_rtol\": VELOCITY_RTOL,",
+        "            \"velocity_max_abs_residual\": max_abs,"
+      ],
+      "after_context": [
+        "            \"tensor_shape_dtype_finite\": \"PASS\",",
+        "            \"snapshot_nonaliasing\": \"PASS\",",
+        "            \"recurrence_reconstruction\": \"PASS_EXACT\",",
+        "            \"velocity_atol\": VELOCITY_ATOL,",
+        "            \"velocity_rtol\": VELOCITY_RTOL,",
+        "            \"velocity_max_abs_residual\": max_abs,"
+      ]
+    }
+  ]
+}

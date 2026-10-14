@@ -1,0 +1,64 @@
+PAGE 1
+A
+Downstream task objective
+B
+Vanilla next-token LM objective
+Mean Delta L (forward-equivalent)
+Mean TASK_MATCHED readout
+-0.002
+0.000
+0.002
+0.004
+0.006
+130M
+370M
+790M
+1.4B
+2.8B
+-0.06
+-0.04
+-0.02
+0.00
+0.02
+130M
+370M
+790M
+1.4B
+2.8B
++
++
++
+-
+-
+-
+-
+-
++
++
+Separate y-scales; bars and signs are point means, whiskers are percentile 95% pair intervals.
+C
+Pair-level associations remain mixed
+130M
+370M
+790M
+1.4B
+2.8B
+Pearson
++0.3208
+-0.4593
++0.1862
+-0.3664
++0.1330
+Spearman
++0.2044
++0.0346
+-0.0379
+-0.1827
++0.0966
+Pair sign agreement
+0.5567
+0.6033
+0.4433
+0.4567
+0.5733
+All five scales are shown descriptively; the 130M LM cell is the later completeness extension (Appendix A.6).

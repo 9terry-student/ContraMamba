@@ -1,0 +1,127 @@
+{
+  "shard_ordinal": 92,
+  "original_queue_id": "WORK-dec276e2b69072d7c7c5",
+  "original_source_ids": [
+    "HV001330"
+  ],
+  "original_source_identity": {
+    "commit": "32e5d8d78253056dca47036ba88be15f950383a3",
+    "path": "tests/test_native_downstream_functional_reconvergence_raw_write_transport.py",
+    "blob": "0105ad57884d6f69097b7f38772f3d13cf9823cb",
+    "object_type": "commit",
+    "bytes": 16246,
+    "sha256": "52910ed3198033bc7fea0d52d24e8d67e6ce9d8c679e3b402d59add548d009f1"
+  },
+  "before": {
+    "commit": "76d820ca8cc11be264125e435a8da02af444de0d",
+    "path": "tests/test_native_downstream_functional_reconvergence_raw_write_transport.py",
+    "blob": "ed5747eeb10467874eb56f4fc780a22d9d3799ee",
+    "object_type": "commit",
+    "bytes": 14888,
+    "sha256": "7fdecde488aa0dbd253f82fe41a790593138de3c21bf920b5df70523101fc0aa"
+  },
+  "after": {
+    "commit": "32e5d8d78253056dca47036ba88be15f950383a3",
+    "path": "tests/test_native_downstream_functional_reconvergence_raw_write_transport.py",
+    "blob": "0105ad57884d6f69097b7f38772f3d13cf9823cb",
+    "object_type": "commit",
+    "bytes": 16246,
+    "sha256": "52910ed3198033bc7fea0d52d24e8d67e6ce9d8c679e3b402d59add548d009f1"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0225"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "test_stream_write_trajectories_adds_source_to_projected_components"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate test assertion/fixture contracts and their relationship to the historical implementation and stage authority from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 0 removed/replaced lines and 43 added/replaced lines in 1 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "76d820ca8cc11be264125e435a8da02af444de0d",
+      "blob": "ed5747eeb10467874eb56f4fc780a22d9d3799ee"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 270,
+      "before_end_exclusive": 270,
+      "after_start": 270,
+      "after_end_exclusive": 313,
+      "before": [],
+      "after": [
+        "def test_stream_write_trajectories_adds_source_to_projected_components():",
+        "    torch.manual_seed(11)",
+        "    batch, seq_len, width = 2, 3, 4",
+        "    source = torch.randn(batch, seq_len, width)",
+        "    targets = [",
+        "        source + 0.1 * torch.randn(batch, seq_len, width),",
+        "        source + 0.1 * torch.randn(batch, seq_len, width),",
+        "    ]",
+        "    visible = torch.randn(2, batch, seq_len, width)",
+        "    complement = torch.randn(2, batch, seq_len, width)",
+        "",
+        "    token_index = 1",
+        "    packed = mod._stream_write_trajectories(",
+        "        raw_source=source,",
+        "        raw_targets=targets,",
+        "        visible=visible,",
+        "        complement=complement,",
+        "        token_index=token_index,",
+        "    )",
+        "",
+        "    assert packed.shape == (7, batch, width)",
+        "    assert torch.equal(packed[0], source[:, token_index, :])",
+        "    assert torch.equal(packed[1], targets[0][:, token_index, :])",
+        "    assert torch.equal(packed[2], targets[1][:, token_index, :])",
+        "",
+        "    assert torch.equal(",
+        "        packed[3],",
+        "        source[:, token_index, :] + visible[0, :, token_index, :],",
+        "    )",
+        "    assert torch.equal(",
+        "        packed[4],",
+        "        source[:, token_index, :] + visible[1, :, token_index, :],",
+        "    )",
+        "    assert torch.equal(",
+        "        packed[5],",
+        "        source[:, token_index, :] + complement[0, :, token_index, :],",
+        "    )",
+        "    assert torch.equal(",
+        "        packed[6],",
+        "        source[:, token_index, :] + complement[1, :, token_index, :],",
+        "    )",
+        "",
+        ""
+      ],
+      "before_context": [
+        "    mod.validate_args(args)",
+        "",
+        "",
+        "def test_stream_stage_energy_matches_reference_stage_sum():",
+        "    source = torch.randn(2, 3, 5)",
+        "    full = source + torch.randn(2, 3, 5)"
+      ],
+      "after_context": [
+        "    mod.validate_args(args)",
+        "",
+        "",
+        "def test_stream_stage_energy_matches_reference_stage_sum():",
+        "    source = torch.randn(2, 3, 5)",
+        "    full = source + torch.randn(2, 3, 5)"
+      ]
+    }
+  ]
+}

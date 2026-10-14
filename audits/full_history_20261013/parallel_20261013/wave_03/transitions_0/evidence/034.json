@@ -1,0 +1,306 @@
+{
+  "shard_ordinal": 34,
+  "original_queue_id": "WORK-53ba86f374bd4243f4df",
+  "original_source_ids": [
+    "HV001524"
+  ],
+  "original_source_identity": {
+    "commit": "b32d73dfa49b6b9dfabf3093802904323cf679cd",
+    "path": "tests/test_reason_router_p3w7_a0_seed180_reference_recovery_helper.py",
+    "blob": "c002c4f01e6aa2acf9617d9243be928a1828f879",
+    "object_type": "commit",
+    "bytes": 28121,
+    "sha256": "75343e4676104102143cb3a8237d717cee78896a724f1f8cd6983823184257ea"
+  },
+  "before": {
+    "commit": "98dfe3ee25c266ad0e12e2215f8ca68ea499fdda",
+    "path": "tests/test_reason_router_p3w7_a0_seed180_reference_recovery_helper.py",
+    "blob": "1c66d71d9182dd43880b9157598cc5a9e69f6e78",
+    "object_type": "commit",
+    "bytes": 24201,
+    "sha256": "00c19da87cfe6aded7505a51679aa2df4c78d48d010a97ad98a3204d125d0b1a"
+  },
+  "after": {
+    "commit": "b32d73dfa49b6b9dfabf3093802904323cf679cd",
+    "path": "tests/test_reason_router_p3w7_a0_seed180_reference_recovery_helper.py",
+    "blob": "c002c4f01e6aa2acf9617d9243be928a1828f879",
+    "object_type": "commit",
+    "bytes": 28121,
+    "sha256": "75343e4676104102143cb3a8237d717cee78896a724f1f8cd6983823184257ea"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0287"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "canonical_sidecar_semantic_sha",
+      "previous_defective_jsonl_sidecar_sha",
+      "test_real_canonical_sidecar_semantic_regression",
+      "test_sidecar_semantic_sha_changes_for_included_field",
+      "test_sidecar_semantic_sha_ignores_created_at",
+      "test_sidecar_semantic_sha_preserves_row_order",
+      "test_sidecar_semantic_sha_uses_json_array_not_jsonl",
+      "test_tracked_physical_sidecar_differs_from_semantic_sidecar_sha",
+      "tracked_git_blob_sha",
+      "write_jsonl"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate test assertion/fixture contracts and their relationship to the historical implementation and stage authority from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 0 removed/replaced lines and 109 added/replaced lines in 5 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "c34a80e676b75f18889ec48cabc623d7a59d490c",
+      "blob": "c002c4f01e6aa2acf9617d9243be928a1828f879"
+    }
+  ],
+  "immediate_parent_has_before_blob": false,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 12,
+      "before_end_exclusive": 12,
+      "after_start": 12,
+      "after_end_exclusive": 13,
+      "before": [],
+      "after": [
+        "import subprocess"
+      ],
+      "before_context": [
+        "import re",
+        "import shutil",
+        "import stat",
+        "import uuid",
+        "import zipfile",
+        "from pathlib import Path"
+      ],
+      "after_context": [
+        "import re",
+        "import shutil",
+        "import stat",
+        "import uuid",
+        "import zipfile",
+        "from pathlib import Path"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 24,
+      "before_end_exclusive": 24,
+      "after_start": 25,
+      "after_end_exclusive": 26,
+      "before": [],
+      "after": [
+        "REPO_ROOT = MODULE_PATH.parents[1]"
+      ],
+      "before_context": [
+        "    / \"scripts\"",
+        "    / \"reason_router_p3w7_a0_seed180_reference_recovery_helper.py\"",
+        ")",
+        "spec = importlib.util.spec_from_file_location(\"seed180_reference_helper\", MODULE_PATH)",
+        "helper = importlib.util.module_from_spec(spec)",
+        "assert spec.loader is not None"
+      ],
+      "after_context": [
+        "    / \"scripts\"",
+        "    / \"reason_router_p3w7_a0_seed180_reference_recovery_helper.py\"",
+        ")",
+        "spec = importlib.util.spec_from_file_location(\"seed180_reference_helper\", MODULE_PATH)",
+        "helper = importlib.util.module_from_spec(spec)",
+        "assert spec.loader is not None"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 30,
+      "before_end_exclusive": 30,
+      "after_start": 32,
+      "after_end_exclusive": 35,
+      "before": [],
+      "after": [
+        "EXPECTED_TRACKED_SIDECAR_PHYSICAL_SHA256 = (",
+        "    \"2b8cffdf71d68a8abeb3b6eb3534eeb664bd012483bcebd9716c7a6645a487f1\"",
+        ")"
+      ],
+      "before_context": [
+        "spec.loader.exec_module(helper)",
+        "",
+        "HEAD = \"f\" * 40",
+        "",
+        "",
+        "@pytest.fixture()"
+      ],
+      "after_context": [
+        "spec.loader.exec_module(helper)",
+        "",
+        "HEAD = \"f\" * 40",
+        "",
+        "",
+        "@pytest.fixture()"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 55,
+      "before_end_exclusive": 55,
+      "after_start": 60,
+      "after_end_exclusive": 97,
+      "before": [],
+      "after": [
+        "",
+        "",
+        "def write_jsonl(path: Path, rows: list[dict[str, object]]) -> None:",
+        "    path.write_bytes(jsonl_bytes(rows))",
+        "",
+        "",
+        "def canonical_sidecar_semantic_sha(rows: list[dict[str, object]]) -> str:",
+        "    canonical = [",
+        "        {key: row[key] for key in sorted(row) if key != \"created_at\"}",
+        "        for row in rows",
+        "    ]",
+        "    return sha(json.dumps(",
+        "        canonical,",
+        "        sort_keys=True,",
+        "        separators=(\",\", \":\"),",
+        "        ensure_ascii=False,",
+        "        allow_nan=False,",
+        "    ).encode(\"utf-8\"))",
+        "",
+        "",
+        "def previous_defective_jsonl_sidecar_sha(rows: list[dict[str, object]]) -> str:",
+        "    normalized = [",
+        "        json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(\",\", \":\"))",
+        "        for row in rows",
+        "    ]",
+        "    return sha((\"\\n\".join(normalized) + \"\\n\").encode(\"utf-8\"))",
+        "",
+        "",
+        "def tracked_git_blob_sha(path: Path) -> str:",
+        "    relative = path.relative_to(REPO_ROOT).as_posix()",
+        "    result = subprocess.run(",
+        "        [\"git\", \"cat-file\", \"-p\", f\"HEAD:{relative}\"],",
+        "        cwd=REPO_ROOT,",
+        "        check=True,",
+        "        capture_output=True,",
+        "    )",
+        "    return sha(result.stdout)"
+      ],
+      "before_context": [
+        "",
+        "def jsonl_bytes(rows: list[dict[str, object]]) -> bytes:",
+        "    return b\"\".join(json_bytes(row) + b\"\\n\" for row in rows)",
+        "",
+        "",
+        "def dataset_rows() -> list[dict[str, object]]:"
+      ],
+      "after_context": [
+        "",
+        "def jsonl_bytes(rows: list[dict[str, object]]) -> bytes:",
+        "    return b\"\".join(json_bytes(row) + b\"\\n\" for row in rows)",
+        "",
+        "",
+        "def dataset_rows() -> list[dict[str, object]]:"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 209,
+      "before_end_exclusive": 209,
+      "after_start": 251,
+      "after_end_exclusive": 318,
+      "before": [],
+      "after": [
+        "",
+        "",
+        "def test_real_canonical_sidecar_semantic_regression():",
+        "    sidecar = REPO_ROOT / helper.SIDECAR_REL",
+        "    assert helper.semantic_sidecar_sha256(sidecar) == helper.EXPECTED_SIDECAR_SEMANTIC_SHA256",
+        "",
+        "",
+        "def test_tracked_physical_sidecar_differs_from_semantic_sidecar_sha():",
+        "    sidecar = REPO_ROOT / helper.SIDECAR_REL",
+        "    assert tracked_git_blob_sha(sidecar) == EXPECTED_TRACKED_SIDECAR_PHYSICAL_SHA256",
+        "    assert helper.semantic_sidecar_sha256(sidecar) == helper.EXPECTED_SIDECAR_SEMANTIC_SHA256",
+        "    assert EXPECTED_TRACKED_SIDECAR_PHYSICAL_SHA256 != helper.EXPECTED_SIDECAR_SEMANTIC_SHA256",
+        "",
+        "",
+        "def test_sidecar_semantic_sha_ignores_created_at(work_tmp: Path):",
+        "    rows_a = [",
+        "        {\"row_id\": \"r1\", \"created_at\": \"2026-01-01T00:00:00Z\", \"value\": 1},",
+        "        {\"row_id\": \"r2\", \"created_at\": \"2026-01-01T00:00:01Z\", \"value\": 2},",
+        "    ]",
+        "    rows_b = [",
+        "        {\"row_id\": \"r1\", \"created_at\": \"2026-09-03T00:00:00Z\", \"value\": 1},",
+        "        {\"row_id\": \"r2\", \"created_at\": \"2026-09-03T00:00:01Z\", \"value\": 2},",
+        "    ]",
+        "    path_a = work_tmp / \"sidecar-a.jsonl\"",
+        "    path_b = work_tmp / \"sidecar-b.jsonl\"",
+        "    write_jsonl(path_a, rows_a)",
+        "    write_jsonl(path_b, rows_b)",
+        "",
+        "    assert helper.semantic_sidecar_sha256(path_a) == helper.semantic_sidecar_sha256(path_b)",
+        "",
+        "",
+        "def test_sidecar_semantic_sha_changes_for_included_field(work_tmp: Path):",
+        "    rows_a = [{\"row_id\": \"r1\", \"created_at\": \"same\", \"value\": 1}]",
+        "    rows_b = [{\"row_id\": \"r1\", \"created_at\": \"same\", \"value\": 2}]",
+        "    path_a = work_tmp / \"sidecar-a.jsonl\"",
+        "    path_b = work_tmp / \"sidecar-b.jsonl\"",
+        "    write_jsonl(path_a, rows_a)",
+        "    write_jsonl(path_b, rows_b)",
+        "",
+        "    assert helper.semantic_sidecar_sha256(path_a) != helper.semantic_sidecar_sha256(path_b)",
+        "",
+        "",
+        "def test_sidecar_semantic_sha_preserves_row_order(work_tmp: Path):",
+        "    rows = [",
+        "        {\"row_id\": \"r1\", \"created_at\": \"same\", \"value\": 1},",
+        "        {\"row_id\": \"r2\", \"created_at\": \"same\", \"value\": 2},",
+        "    ]",
+        "    path_a = work_tmp / \"sidecar-a.jsonl\"",
+        "    path_b = work_tmp / \"sidecar-b.jsonl\"",
+        "    write_jsonl(path_a, rows)",
+        "    write_jsonl(path_b, list(reversed(rows)))",
+        "",
+        "    assert helper.semantic_sidecar_sha256(path_a) != helper.semantic_sidecar_sha256(path_b)",
+        "",
+        "",
+        "def test_sidecar_semantic_sha_uses_json_array_not_jsonl(work_tmp: Path):",
+        "    rows = [",
+        "        {\"row_id\": \"r1\", \"created_at\": \"ignored-a\", \"value\": 1},",
+        "        {\"row_id\": \"r2\", \"created_at\": \"ignored-b\", \"value\": 2},",
+        "    ]",
+        "    path = work_tmp / \"sidecar.jsonl\"",
+        "    write_jsonl(path, rows)",
+        "",
+        "    expected_array_sha = canonical_sidecar_semantic_sha(rows)",
+        "    defective_jsonl_sha = previous_defective_jsonl_sidecar_sha(rows)",
+        "    assert helper.semantic_sidecar_sha256(path) == expected_array_sha",
+        "    assert defective_jsonl_sha != expected_array_sha"
+      ],
+      "before_context": [
+        "def assert_blocked(fn, *args, **kwargs):",
+        "    with pytest.raises(helper.Blocker, match=\"REFERENCE_RECOVERY_BLOCKED\"):",
+        "        fn(*args, **kwargs)",
+        "",
+        "",
+        "def test_happy_path_materializes_and_audit_is_pass(synthetic):"
+      ],
+      "after_context": [
+        "def assert_blocked(fn, *args, **kwargs):",
+        "    with pytest.raises(helper.Blocker, match=\"REFERENCE_RECOVERY_BLOCKED\"):",
+        "        fn(*args, **kwargs)",
+        "",
+        "",
+        "def test_happy_path_materializes_and_audit_is_pass(synthetic):"
+      ]
+    }
+  ]
+}

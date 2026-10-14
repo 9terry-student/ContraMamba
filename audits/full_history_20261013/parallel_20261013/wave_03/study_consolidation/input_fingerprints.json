@@ -1,0 +1,1674 @@
+{
+  "authority": "Current user-directed historical census consolidation only",
+  "binary_sources_reopened": false,
+  "declaration_checks": [
+    {
+      "declaration": "output_sha256",
+      "expected": "37013e7f55212945d71e76b45a3520ff11fced4906ceeb54116c63df7a56b3e1",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/historical_scientific_changes.jsonl",
+      "matches": true
+    },
+    {
+      "declaration": "output_sha256",
+      "expected": "432743d50dabb2765399c3b4026143dfef42a235076e4932da45eb69085798af",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/remaining_transition_gaps.jsonl",
+      "matches": true
+    },
+    {
+      "declaration": "output_sha256",
+      "expected": "b00ea12f45f873a6e1a88d7fd519b741f613c7bde2a48474d43a10d8d4bb6d66",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/report.md",
+      "matches": true
+    },
+    {
+      "declaration": "output_sha256",
+      "expected": "d7e2ed74fac4143e5349c261849e579232c4a5f38537a801cc521371ebd2e518",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/transition_interpretations.jsonl",
+      "matches": true
+    },
+    {
+      "declaration": "output_sha256",
+      "expected": "247008f269eff73c9ddc48396ebae6aaa8c3a3527991ff3f63c2bd625a89677e",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/historical_scientific_changes.jsonl",
+      "matches": true
+    },
+    {
+      "declaration": "output_sha256",
+      "expected": "249a31583d6ff8ad573b263c35331fab597cd461824b15c72a683c5919a17204",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/remaining_transition_gaps.jsonl",
+      "matches": true
+    },
+    {
+      "declaration": "output_sha256",
+      "expected": "08445e07f51da9be43ae65e75e3ee54d72e7851a7eb43ff917ace88322a3b68e",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/report.md",
+      "matches": true
+    },
+    {
+      "declaration": "output_fingerprints",
+      "expected": "555caaf4779443c1e3c5bf38bb4317ccd442a7cfcfdb85500cbaf644d0f86a08",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/target_manifest.jsonl",
+      "matches": true
+    },
+    {
+      "declaration": "output_fingerprints",
+      "expected": "c9e2f548eba81a4b796f5ea40f1d4061c78e7a5bd212ae497adba00931968771",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/source_content_recovery.jsonl",
+      "matches": true
+    },
+    {
+      "declaration": "output_fingerprints",
+      "expected": "ca9728c6b34a6977c4b6073cadf329dc985aa8e914889370296353d183737827",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/recovered_scientific_source_records.jsonl",
+      "matches": true
+    },
+    {
+      "declaration": "output_fingerprints",
+      "expected": "2f9850fdbb6de22d871822e04126af81d1998b1564f951f48fccc44a32dde733",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/source_damage_registry.jsonl",
+      "matches": true
+    },
+    {
+      "declaration": "output_fingerprints",
+      "expected": "3b6b06299ffa74c940bbc357b9b134a612461d1b0e12a328e460fb37e40a89fb",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/remaining_content_gaps.jsonl",
+      "matches": true
+    },
+    {
+      "declaration": "output_fingerprints",
+      "expected": "9f94ddd47e6a8061865269468cb650df603a6032a8d5fb267b473a31c27961e8",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/report.md",
+      "matches": true
+    },
+    {
+      "declaration": "output_fingerprints_excluding_validation_self",
+      "expected": "09de7e9244b68adc1fd3b09aa8f09e42bd444b6e63427e432d94d611b4fdd823",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/git_attribution_assessment.json",
+      "matches": true
+    },
+    {
+      "declaration": "output_fingerprints_excluding_validation_self",
+      "expected": "f1360bb90913925fd30d1b377a724eee3062b47f97171ad2fd0a3ea64e9b2a98",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/relationship_adjudications.jsonl",
+      "matches": true
+    },
+    {
+      "declaration": "output_fingerprints_excluding_validation_self",
+      "expected": "fbf531fcaff797d007d58e95063c325350ec2fc91f6a9164d294f4d740f3027c",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/remaining_provenance_gaps.jsonl",
+      "matches": true
+    },
+    {
+      "declaration": "output_fingerprints_excluding_validation_self",
+      "expected": "70e6dbbc3e504cab1267af7c417c3b4cb6dcc5cc362e0508cbf61a57876afcd9",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/report.md",
+      "matches": true
+    },
+    {
+      "declaration": "output_fingerprints_excluding_validation_self",
+      "expected": "bc36e4843bebc1af974682e1926423bc1d7245f20ea6efd2703a4c7961285d34",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/snapshot_chronology_assessment.json",
+      "matches": true
+    },
+    {
+      "declaration": "output_fingerprints_excluding_validation_self",
+      "expected": "3a97218525d3f703f88f9ef20472aacc66a487e11ec86b37ffa5fd8e35dd247c",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/target_manifest.jsonl",
+      "matches": true
+    }
+  ],
+  "files": {
+    "AGENTS.md": {
+      "bytes": 10344,
+      "sha256": "66e8b1f6b05c967515907d8ead1838fb4c48267ec1c606d27765d1ac6a71f0b3"
+    },
+    "audits/full_history_20261013/anomaly_candidates.jsonl": {
+      "bytes": 7447,
+      "sha256": "284593926b913194badffdb62bbe5a63addd6b60b1af63f493ae7ea5a238bc81"
+    },
+    "audits/full_history_20261013/coverage_report.md": {
+      "bytes": 5314,
+      "sha256": "833e010150915da9a0f94e6bec768dd1ca1a15d617ee21ee5ab095dd49d6b0a7"
+    },
+    "audits/full_history_20261013/evidence_graph.jsonl": {
+      "bytes": 329029,
+      "sha256": "44fa23d6a8ea4f9f8ff41a424307557e46d5bd1278519ac6844cb8563d93f138"
+    },
+    "audits/full_history_20261013/expansion_01/expansion_report.md": {
+      "bytes": 9762,
+      "sha256": "a474af7eb1adaf865248b18f2a6ce461d5533d782d3c1309860cf010dfe4ba51"
+    },
+    "audits/full_history_20261013/expansion_01/historical_unreachable_commit_audit.json": {
+      "bytes": 12565,
+      "sha256": "39386d6e6fa26ccdb6c988901273282ce4d59fe4dea64a0267e424dc2afec8fd"
+    },
+    "audits/full_history_20261013/expansion_01/ledger_correction_candidates.jsonl": {
+      "bytes": 118014,
+      "sha256": "8022873df992016cf8d525e0ac7d7f8fc0055efd063dd27003ad724563b0a9af"
+    },
+    "audits/full_history_20261013/expansion_01/new_anomaly_candidates.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "audits/full_history_20261013/expansion_01/omitted_reports_inventory.jsonl": {
+      "bytes": 2774791,
+      "sha256": "938d57a2b954d1621f7f02c3e780c7fab4713a5b4195668888e0160f1c85645f"
+    },
+    "audits/full_history_20261013/expansion_01/recovered_scientific_records.jsonl": {
+      "bytes": 261237,
+      "sha256": "7b8b6807876d6e0d18957382a492a47741a42482d5225cf054ed9408a9246f82"
+    },
+    "audits/full_history_20261013/expansion_01/remaining_coverage_manifest.json": {
+      "bytes": 256845,
+      "sha256": "bb22809386e5d0d2e69e4c841b5cbd829e6d02bf125e7f672ccfe72005f85c0c"
+    },
+    "audits/full_history_20261013/expansion_02/evidence_relationships.jsonl": {
+      "bytes": 10812,
+      "sha256": "d4c23f55e95e02b2084b99ca2c9407e0ded48ade4a569bbf2f33ef40ce203990"
+    },
+    "audits/full_history_20261013/expansion_02/execution_run_ledger.jsonl": {
+      "bytes": 13000,
+      "sha256": "13dcfd85860e07d8ac2b2945c58354b1afa4ce8a7331f7e0b0e1a3bd333ebe85"
+    },
+    "audits/full_history_20261013/expansion_02/historical_revision_analysis.jsonl": {
+      "bytes": 134917,
+      "sha256": "a06db2f1db1aaed291dbd28265bf2c19c27cf47ac65f0c41ad49ff6fdb5f1bbc"
+    },
+    "audits/full_history_20261013/expansion_02/reconciliation_report.md": {
+      "bytes": 6840,
+      "sha256": "352cec73d5fcf68abac7b25bfd2f25a5e02a42eff7de8e664779a2b3f46f160c"
+    },
+    "audits/full_history_20261013/expansion_02/remaining_coverage_manifest.json": {
+      "bytes": 392880,
+      "sha256": "b965f9dedecf596db2bcd66c29e11f6310bb5cf7e96c205675001ab40684105c"
+    },
+    "audits/full_history_20261013/expansion_02/source_to_study_mapping.jsonl": {
+      "bytes": 116748,
+      "record_count": 152,
+      "sha256": "896f9e5ee26194888c041aea7d1c7416a644e385d1525500b21e43e18fb86a83"
+    },
+    "audits/full_history_20261013/expansion_02/static_discrepancy_candidates.jsonl": {
+      "bytes": 3633,
+      "sha256": "59a0e24db4010122258f296a59f54c6a3f37265283cef34bf869d340966701c0"
+    },
+    "audits/full_history_20261013/expansion_02/study_identity_ledger.jsonl": {
+      "bytes": 24090,
+      "record_count": 26,
+      "sha256": "843fc6d2f7aab77ce476dce5885aa04c650b048982d9edeeb52348621f0f0743"
+    },
+    "audits/full_history_20261013/expansion_03/build_inventory.py": {
+      "bytes": 20097,
+      "sha256": "594254a4418dc9a033fe5c7ee20cc3d7a62d4c2a501833069dbf5c6803e22527"
+    },
+    "audits/full_history_20261013/expansion_03/coverage_reconciliation.json": {
+      "bytes": 2610,
+      "sha256": "202646e961cefad364c310879f70e544c553e5058b609d78f736376ab777c184"
+    },
+    "audits/full_history_20261013/expansion_03/expansion_report.md": {
+      "bytes": 8580,
+      "sha256": "3eb0ff97128ee63e45fa5502859de53d0e54ccf0b83cc78d079b113c68c9fe50"
+    },
+    "audits/full_history_20261013/expansion_03/historical_source_versions.jsonl": {
+      "bytes": 1102784,
+      "record_count": 1565,
+      "sha256": "d7547e41638682fb6cfdd60c58b0c011d330fb1cd770b31b568a38f45a4f5a55"
+    },
+    "audits/full_history_20261013/expansion_03/remaining_candidate_inventory.jsonl": {
+      "bytes": 5752027,
+      "sha256": "436842f1c4681ec21830bba37979bb57546dc5787e692d29722848f0369086e3"
+    },
+    "audits/full_history_20261013/expansion_03/source_classification_ledger.jsonl": {
+      "bytes": 538555,
+      "sha256": "c43293e5e776f50eb4ca7311128ab0b78f0261c42848fc7f203d37a256bd2b17"
+    },
+    "audits/full_history_20261013/expansion_03/source_universe_manifest.jsonl": {
+      "bytes": 38579799,
+      "record_count": 4474,
+      "sha256": "99f06aa10eed279c6431bbde6a4fdc954b46f8636acf261be42f09b02e0f71f5"
+    },
+    "audits/full_history_20261013/expansion_03/unprocessed_source_manifest.jsonl": {
+      "bytes": 653283,
+      "sha256": "988707a118012ac811325f784426600768f7127b1aa99ba7f2dcce3125e6a89a"
+    },
+    "audits/full_history_20261013/expansion_03/unresolved_identity_links.jsonl": {
+      "bytes": 43981,
+      "sha256": "b54fa0f499e6a033adf94ad893f1db8451af3b8548b4568c76b312b8a51e59b8"
+    },
+    "audits/full_history_20261013/expansion_03/validate_inventory.py": {
+      "bytes": 4519,
+      "sha256": "2eedeba95ddc28cf3cfd66a2ac4fb294348f7d996cb3d27ce7509eb215b79c90"
+    },
+    "audits/full_history_20261013/expansion_04a/completed_source_inspections.jsonl": {
+      "bytes": 1376105,
+      "sha256": "324758c72124723d44e617c21187fc9a89bcb3d2189da2be377f239fce32773f"
+    },
+    "audits/full_history_20261013/expansion_04a/coverage_validation.json": {
+      "bytes": 10571,
+      "sha256": "5ba2b6a9ba1653ec864c9f0c8fa196936d9bf9f0c33495480c0cec6173f66deb"
+    },
+    "audits/full_history_20261013/expansion_04a/enhance_inspections.py": {
+      "bytes": 9360,
+      "sha256": "08638ee687404a512d0c865a284f0c4fb419419ece8d4c6b742eea9577a71f14"
+    },
+    "audits/full_history_20261013/expansion_04a/expansion_report.md": {
+      "bytes": 9357,
+      "sha256": "a04eb0cc1ec8ac51c3d9eca426b52c8ff698345a818f8f9f30abcc0822ec7fb8"
+    },
+    "audits/full_history_20261013/expansion_04a/inspect_sources.py": {
+      "bytes": 13550,
+      "sha256": "73a065db9e2b3f116a02e08d39958b28425a721f355c398b68a5786e93c615ea"
+    },
+    "audits/full_history_20261013/expansion_04a/record_visual_inspection.py": {
+      "bytes": 3757,
+      "sha256": "5e70b5199387f07b1fb05d8c69603e0f4868c426e0c3c1c818845a6455ca435e"
+    },
+    "audits/full_history_20261013/expansion_04a/scientific_source_extractions.jsonl": {
+      "bytes": 420631,
+      "sha256": "f831416ee900d219ea6da28a98391829b57cbe479f0789bbe9733c7c054866f7"
+    },
+    "audits/full_history_20261013/expansion_04a/source_relationship_candidates.jsonl": {
+      "bytes": 21258,
+      "sha256": "52288f5d6f2ef5f80d3b52ec4419a3b6cf1b2410d0fd67f38c40d5f246a022eb"
+    },
+    "audits/full_history_20261013/expansion_04a/target_manifest.jsonl": {
+      "bytes": 375427,
+      "sha256": "8c5c6e1ef1aa28846a259c4fd1ef981dceaf0e33de70fa23cc53d61e33e4e451"
+    },
+    "audits/full_history_20261013/expansion_04a/unresolved_sources.jsonl": {
+      "bytes": 109471,
+      "sha256": "9b9b26fac0f4d8830d8823bc84625ec08c1550f36324dca7536ecc67d444bb7f"
+    },
+    "audits/full_history_20261013/expansion_04a/validate_coverage.py": {
+      "bytes": 7204,
+      "sha256": "ee98fa41181456c9449efb98070a3013948197f2ac4f79d984d280ec3e03e331"
+    },
+    "audits/full_history_20261013/expansion_04a_recovery/coverage_reconciliation.json": {
+      "bytes": 1292,
+      "sha256": "5bd1b2a1a054540ed6c7d57ffd8f4aadd37e980bebc305bce4aff050e738758e"
+    },
+    "audits/full_history_20261013/expansion_04a_recovery/frozen_target_manifest.jsonl": {
+      "bytes": 135776,
+      "sha256": "98605a01c70d34f26aece173b957c655cc86bc0bc4a7075cdf72e6a5ebb7d791"
+    },
+    "audits/full_history_20261013/expansion_04a_recovery/inspect_recovery.py": {
+      "bytes": 28492,
+      "sha256": "0980146dd0810b0ff47d00b0769e5ba42d0904fa444e5e6cdc92965538157b55"
+    },
+    "audits/full_history_20261013/expansion_04a_recovery/recovered_scientific_content.jsonl": {
+      "bytes": 747212,
+      "sha256": "ce837ed69c399569c36ddc72a1554543a3c66fc3c58ef6b4f09077ff55abec3a"
+    },
+    "audits/full_history_20261013/expansion_04a_recovery/recovery_report.md": {
+      "bytes": 7852,
+      "sha256": "5a1450129135b8fba017de835b0cb20fce1e483236f5d92caffd500748ead74c"
+    },
+    "audits/full_history_20261013/expansion_04a_recovery/source_recovery_results.jsonl": {
+      "bytes": 934806,
+      "sha256": "acc7c11725f28124e3f0e9fdbe3f697099ee78815ea1b136b080e0bf5d4ce49b"
+    },
+    "audits/full_history_20261013/expansion_04a_recovery/source_relationship_candidates.jsonl": {
+      "bytes": 214980,
+      "sha256": "d60ddc3e0d3b23bb687102fbd2dc2283d1ba72b0f9d55313df1853c889cdb87e"
+    },
+    "audits/full_history_20261013/expansion_04a_recovery/unavailable_evidence_registry.jsonl": {
+      "bytes": 978,
+      "sha256": "9a8ddd037946061a7ae170ff8f2ac318957e5b252936be1ffd26c2266f2fba4c"
+    },
+    "audits/full_history_20261013/experiment_ledger.jsonl": {
+      "bytes": 2979172,
+      "sha256": "9d6b97012b2596e9f647e5b34d070ce86c4266055a8e4b20b4073d84d3af1f8a"
+    },
+    "audits/full_history_20261013/hypothesis_ledger.jsonl": {
+      "bytes": 786750,
+      "sha256": "8d5fd3493033826db64b3c7641d23126100354ebed26677e18c2045263f8e1e9"
+    },
+    "audits/full_history_20261013/parallel_20261013/integration_01/historical_version_reconciliation.jsonl": {
+      "bytes": 5103401,
+      "sha256": "0b0869fd6beb060c03537ece04637e7f75bbd60982a3902b99db29a49f352ce1"
+    },
+    "audits/full_history_20261013/parallel_20261013/integration_01/input_fingerprints.json": {
+      "bytes": 74093,
+      "sha256": "13fb3e4ff3873271a6182804c74b68ac20fb46502d2f631ac40709468423c5e3"
+    },
+    "audits/full_history_20261013/parallel_20261013/integration_01/integrated_relationship_candidates.jsonl": {
+      "bytes": 1521024,
+      "sha256": "54e75c49961c4dc7f4763330b32840f4ca90a425cd12c00e93033848c3639e35"
+    },
+    "audits/full_history_20261013/parallel_20261013/integration_01/integrated_source_coverage.jsonl": {
+      "bytes": 23857341,
+      "sha256": "fa5eb04ad94267cdc79a252ea4c63e5e2b43d18b0391895cf1350f2dad092e12"
+    },
+    "audits/full_history_20261013/parallel_20261013/integration_01/integration_report.md": {
+      "bytes": 16324,
+      "sha256": "ed251ddf267adc55785d8bb81f29bf949ab2396aa20791981411e9bdc768de24"
+    },
+    "audits/full_history_20261013/parallel_20261013/integration_01/integration_validation.json": {
+      "bytes": 149483,
+      "sha256": "c4592fb6d25dca9bc19718c6112862af64a8fdb1dbdca73906c9cafe3e6ddbf9"
+    },
+    "audits/full_history_20261013/parallel_20261013/integration_01/provisional_study_identity_links.jsonl": {
+      "bytes": 821283,
+      "sha256": "2c5b677c9ab256b0f39a5281aafc1c387fe256f2b4465b29a1b09b19897b2151"
+    },
+    "audits/full_history_20261013/parallel_20261013/integration_01/reconcile.py": {
+      "bytes": 42797,
+      "sha256": "f0bb0d97d4489ec65b7f2cc39495a755189bb9d1dd288100198f78dfa5805dc2"
+    },
+    "audits/full_history_20261013/parallel_20261013/integration_01/remaining_work_queue.jsonl": {
+      "bytes": 1383833,
+      "sha256": "54e3ea2afffcdaa2fa498919717d49d4c2f881e498e21dd24b3542cbb27338c5"
+    },
+    "audits/full_history_20261013/parallel_20261013/integration_01/validate_outputs.py": {
+      "bytes": 5759,
+      "sha256": "cf00c5cc65a686b5d9b7fb631699f24d6a7d07bc003a018bde6077a301fe6a76"
+    },
+    "audits/full_history_20261013/parallel_20261013/relationships_321/adjudicated_relationship_candidates.jsonl": {
+      "bytes": 997264,
+      "sha256": "ef1d76219f19da258709d14e206a6f186fda82938a113ad091136c4ae5c48c7e"
+    },
+    "audits/full_history_20261013/parallel_20261013/relationships_321/coverage_validation.json": {
+      "bytes": 1827,
+      "sha256": "51f70de7ccd19a9b2ac3d8b85426d4002fd46827819d0534295409573c60a583"
+    },
+    "audits/full_history_20261013/parallel_20261013/relationships_321/graph_self_link_audit.jsonl": {
+      "bytes": 136859,
+      "sha256": "4f808b6b37674d927c4d85e891b7b220e0ac5ed8c32ca3d6e0c844c32ba538f5"
+    },
+    "audits/full_history_20261013/parallel_20261013/relationships_321/relationship_target_manifest.jsonl": {
+      "bytes": 660781,
+      "sha256": "dd121966ebf1ab67c9d98d31b7932461d1b62b7c4cc7708c2dc2233320c43a45"
+    },
+    "audits/full_history_20261013/parallel_20261013/relationships_321/report.md": {
+      "bytes": 8218,
+      "sha256": "036ecb782b824a3a7a70c9db18144bef810331692b0562b2ceda2f21f84031b4"
+    },
+    "audits/full_history_20261013/parallel_20261013/relationships_321/unsupported_or_unresolved_edges.jsonl": {
+      "bytes": 22099,
+      "sha256": "eea9ac7e700dd2bb8be862d5979e407af75b8ce60b0b61c11c425b2dc194a5e0"
+    },
+    "audits/full_history_20261013/parallel_20261013/semantic_88/adjudicated_classifications.jsonl": {
+      "bytes": 88579,
+      "sha256": "c0c635c3f8a2c527a7569d4246fd58f3a30397b8c0a0f1863ad109b7b51452cc"
+    },
+    "audits/full_history_20261013/parallel_20261013/semantic_88/coverage_validation.json": {
+      "bytes": 1056,
+      "sha256": "54d721817723f26810fb998844fe69b0f918b255ccda99957c341cfb3d31985e"
+    },
+    "audits/full_history_20261013/parallel_20261013/semantic_88/report.md": {
+      "bytes": 6609,
+      "sha256": "2d7644c3f1ed2173503580a4980e76aac5608eff6bb9085e09123369c6e55ca1"
+    },
+    "audits/full_history_20261013/parallel_20261013/semantic_88/source_role_relationships.jsonl": {
+      "bytes": 70389,
+      "sha256": "7686ae95074f47947973fb16edadd45d28c1477a83004a9b8c5d27aa37019e85"
+    },
+    "audits/full_history_20261013/parallel_20261013/semantic_88/target_manifest.jsonl": {
+      "bytes": 73793,
+      "sha256": "971d2cc4923914d67fbade8ea0272bbf27d140a1007e649e70eff4960db6d410"
+    },
+    "audits/full_history_20261013/parallel_20261013/semantic_88/unresolved_classifications.jsonl": {
+      "bytes": 5749,
+      "sha256": "9071063946dea91908f46be1b333ee8a77cee556428616700eb044a33b406160"
+    },
+    "audits/full_history_20261013/parallel_20261013/study_identity_116/coverage_validation.json": {
+      "bytes": 7375,
+      "sha256": "0e2028c566f6230f66e5e324aca7fb611c81ce2d214da3ab2bddfeffec84da1a"
+    },
+    "audits/full_history_20261013/parallel_20261013/study_identity_116/provisional_study_identity_links.jsonl": {
+      "bytes": 144810,
+      "record_count": 116,
+      "sha256": "5a3a4fe72114356aaaedb2f0be2ba5be2944966d627ad9e7e507ce16a30992d1"
+    },
+    "audits/full_history_20261013/parallel_20261013/study_identity_116/report.md": {
+      "bytes": 5867,
+      "sha256": "dc419730aadd2c6da175d0de62e2e5b07750d85d356c5dc1d4ecc2934264f6f8"
+    },
+    "audits/full_history_20261013/parallel_20261013/study_identity_116/study_identity_evidence.jsonl": {
+      "bytes": 353634,
+      "record_count": 116,
+      "sha256": "a87384b5229fd79e7aefb0470f3c6c74831587166a7f07faee606f1075fbbf73"
+    },
+    "audits/full_history_20261013/parallel_20261013/study_identity_116/target_manifest.jsonl": {
+      "bytes": 57554,
+      "record_count": 116,
+      "sha256": "0d9cf1a45460c4e4689562909ec04186626e9ea27ea00322a0c9dbcffcc01289"
+    },
+    "audits/full_history_20261013/parallel_20261013/study_identity_116/unresolved_identity_dependencies.jsonl": {
+      "bytes": 27593,
+      "record_count": 66,
+      "sha256": "b2cfb0f219fb3b71e4bf5deac87d3e684d934e0e4d0b951d722fdab0895f252d"
+    },
+    "audits/full_history_20261013/parallel_20261013/tensor_06/coverage_validation.json": {
+      "bytes": 758,
+      "sha256": "ebd7d7a10cadd5735ff438b9ad5550e99034b91e5708864ece4b4bc16836ca0d"
+    },
+    "audits/full_history_20261013/parallel_20261013/tensor_06/remaining_gaps.jsonl": {
+      "bytes": 2442,
+      "sha256": "76b89c6cf5a1b97f80a6651c35043dbf4e94423ac8eb9f05721afcb0b5d01f53"
+    },
+    "audits/full_history_20261013/parallel_20261013/tensor_06/report.md": {
+      "bytes": 5868,
+      "sha256": "b22820daedacb837d9da7a20394e2f4aff93877668b7011bdb7f43389c74989d"
+    },
+    "audits/full_history_20261013/parallel_20261013/tensor_06/target_manifest.jsonl": {
+      "bytes": 11308,
+      "sha256": "94f50f10a69079f5bc1613349dc27da4679ee3881203f2f53d68b0bdcbd8fe23"
+    },
+    "audits/full_history_20261013/parallel_20261013/tensor_06/tensor_inspection_results.jsonl": {
+      "bytes": 12860,
+      "sha256": "03604d818941eaa1301a2ceef727ead2cfb9d147513c34befa697b696c2a15b1"
+    },
+    "audits/full_history_20261013/parallel_20261013/versions_shard_0/coverage_validation.json": {
+      "bytes": 1462,
+      "sha256": "600c963fc5d7c6705f2d0a2f5f4b9527130968d04e779ec38a7b814d4661c704"
+    },
+    "audits/full_history_20261013/parallel_20261013/versions_shard_0/historical_version_chains.jsonl": {
+      "bytes": 272617,
+      "sha256": "7647c5af86c21212343dc8430d1b04f53b81be28cf933c8ec09524e09d70e1a7"
+    },
+    "audits/full_history_20261013/parallel_20261013/versions_shard_0/report.md": {
+      "bytes": 9968,
+      "sha256": "ea01f248bce7dff677f8026563206027291745f3da611e013608e3659ba522a2"
+    },
+    "audits/full_history_20261013/parallel_20261013/versions_shard_0/selected_targets.jsonl": {
+      "bytes": 401691,
+      "sha256": "6bb909169514674427e3fc46bde6674d185148f9834b1acc7d3b7538529a78e0"
+    },
+    "audits/full_history_20261013/parallel_20261013/versions_shard_0/semantic_revision_records.jsonl": {
+      "bytes": 938512,
+      "sha256": "039806c47a14958c0a6890ae830a5a7b8523f91ff40e6bf0d885d1d9acd9e5df"
+    },
+    "audits/full_history_20261013/parallel_20261013/versions_shard_0/unresolved_versions.jsonl": {
+      "bytes": 79798,
+      "sha256": "8b4a70e5d88f48f69c825a414c2809ae1d2218732d8472779ea03652f8a8fd45"
+    },
+    "audits/full_history_20261013/parallel_20261013/versions_shard_1/coverage_validation.json": {
+      "bytes": 1688,
+      "sha256": "15440b509f057223ccaa3e14dca2e3efdab485585fcf8f3c8a7943feb1ffc21f"
+    },
+    "audits/full_history_20261013/parallel_20261013/versions_shard_1/historical_version_chains.jsonl": {
+      "bytes": 813139,
+      "sha256": "dc98df77b521a2eddd141270a19d7f4e18102e13afadf6ba014d1f00542b17f0"
+    },
+    "audits/full_history_20261013/parallel_20261013/versions_shard_1/report.md": {
+      "bytes": 6751,
+      "sha256": "58e064fcf6a62f2eda123e8bb4fd2e0124347cb642120c9cfa3f23d90096ac08"
+    },
+    "audits/full_history_20261013/parallel_20261013/versions_shard_1/selected_targets.jsonl": {
+      "bytes": 424453,
+      "sha256": "0bc8babf148b1e3fb2061323877eed888a88b8681775fc48dcf1430abb98bf6a"
+    },
+    "audits/full_history_20261013/parallel_20261013/versions_shard_1/semantic_revision_records.jsonl": {
+      "bytes": 632635,
+      "record_count": 426,
+      "sha256": "6ceee3b63729d26db1778fa9dfd4500bf3018827a0b5f9fc57366c20ceb45f19"
+    },
+    "audits/full_history_20261013/parallel_20261013/versions_shard_1/unresolved_versions.jsonl": {
+      "bytes": 111076,
+      "sha256": "ac3ec39fbe0fff69510eddb89291ca378ed2796652fac7aa7bf7737a9ff4c4c9"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/chronology/coverage_validation.json": {
+      "bytes": 44029,
+      "sha256": "408c788f8710a82f6104be5bda8c883860ee8ffafaba727702fbd94d930b0a25"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/chronology/predecessor_resolution.jsonl": {
+      "bytes": 255131,
+      "sha256": "50289c53cb20e409ec07bf1cf7c3ed3be7eec122760dfdd80cc517d2fb6d938d"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/chronology/report.md": {
+      "bytes": 16220,
+      "sha256": "d4d651f7df38814fe1756ab1c82a63fe8ac604032416563d166bbba7d18fab57"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/chronology/target_manifest.jsonl": {
+      "bytes": 392378,
+      "sha256": "bac58df07efb1af598692802770033b23ed781d1c8c8fee0719c1ea3e66abb7c"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/chronology/tree_chronology_records.jsonl": {
+      "bytes": 3848319,
+      "sha256": "327df24d48e58421c820f66958651c5f38740e08e34f19b7e6002010f96509de"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/chronology/unresolved_chronology.jsonl": {
+      "bytes": 170639,
+      "sha256": "20fe545f1e3824f60ce77673ddb114689ccba4934d2c2f54470f7d100fbb51d1"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/binary_source_inspections.jsonl": {
+      "bytes": 88759,
+      "sha256": "50588ee6b5194addabc699e024ac7105a889d9c95e446d951af444b2de921007"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/bounded_content_inspections.jsonl": {
+      "bytes": 5859457,
+      "sha256": "39e911a5132bdf9aa4c650bb6c4e443c28d4db0fc9e7a99ef29b41c5dbf4d048"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/coverage_validation.json": {
+      "bytes": 89392,
+      "sha256": "a6338dc60f8d8874e28602695a5be0dc8c4d3c9c4168b007ebc1f5bd007e37c7"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/recovered_source_evidence.jsonl": {
+      "bytes": 172971848,
+      "sha256": "b7f45d79e28164b5f001f7d902bb6d5cd179cbbcd71b97ee42e9b37d2d86cede"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/remaining_content_gaps.jsonl": {
+      "bytes": 185815,
+      "sha256": "3566dec43a1957c42a214c7e8c420c15842130e172df88e4de56fa03d8d2f21d"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/report.md": {
+      "bytes": 13840,
+      "sha256": "ada9cddddcc31ba430e0c9380510c141c273e3aca6aa4c566c561afac252c04a"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/target_manifest.jsonl": {
+      "bytes": 625681,
+      "sha256": "3bd293137bfaed10383a7b035a78dcb09b22c5427884d9453af812ac315ceb73"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/coverage_validation.json": {
+      "bytes": 50345,
+      "sha256": "970b924d69c0a7a4ae04cbd44c2c430e547fd5766ddca10077ab47d8624424c2"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/graph_correction_proposals.jsonl": {
+      "bytes": 678825,
+      "sha256": "e25c355b2024d3803ba2c9829f17d1c2f2fedde35933897ea2cdfd70a29bf88b"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/relationship_adjudications.jsonl": {
+      "bytes": 81122,
+      "sha256": "63d39f590ee7b17d5ffb3812b505557fa1b097b205934f53d95ee1614b876b78"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/report.md": {
+      "bytes": 10679,
+      "sha256": "b84f924aebbb4141f6522bc0a7a4a3f4d1a43a5fb2307897fabf96dda2bfdb84"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/target_manifest.jsonl": {
+      "bytes": 409073,
+      "sha256": "20ac272923b756457a829effafc09069b644c0fdcd2ce60d3d37871e986755c8"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/unresolved_graph_items.jsonl": {
+      "bytes": 31996,
+      "sha256": "f29fc1faf7e8be1489ac52d7aea67f54233568ebdf8467784dba2cc94929a97a"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/input_fingerprints.json": {
+      "bytes": 223051,
+      "sha256": "9826a34404a5bddf6170e54bd73a5e45d8fa440ff33106f88d3b68eab60b490d"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/integration_report.md": {
+      "bytes": 13969,
+      "sha256": "d5c85bb7652cee4ef33155e4aa0c44321f1bb56fa1767d087ee31fc939a9d2a7"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/remaining_census_work_queue.jsonl": {
+      "bytes": 2808549,
+      "record_count": 409,
+      "sha256": "d1246cf4c90cf93e5f28735e97155dd9fafdfdf8138bc99eb2f98dfc3622ec17"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/study_identity_reconciliation.jsonl": {
+      "bytes": 13444583,
+      "record_count": 73,
+      "sha256": "27d97627dc73bff27eee03d007a4caa414d229b754c9cb0a9915a1217ba8772d"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/candidate_study_memberships.jsonl": {
+      "bytes": 368263,
+      "record_count": 60,
+      "sha256": "f29c6b4bcb5cbe30acbec58bbfadc34764d251ecd4f37758bc08d5b6dc3ec619"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/coverage_validation.json": {
+      "bytes": 177025,
+      "sha256": "df479f1bbd9e02e655431005dec93e96b7c26c4dacb9329e8aa18450d93bdfee"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/empty_source_dispositions.jsonl": {
+      "bytes": 1465101,
+      "record_count": 10,
+      "sha256": "ea7ed8309556ad6fc7d842cf4cc1813ec37874f524997abbde9524cf02610d0b"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/report.md": {
+      "bytes": 33103,
+      "sha256": "2546d2e8d2b9987034d877bb40a97f3a0052f0569ab0a36f7319fa2557412470"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/study_identity_adjudications.jsonl": {
+      "bytes": 10936199,
+      "record_count": 63,
+      "sha256": "22c6fc8f0dbb82ad0559c4f5f049c13af7a96b72b9f72f806f07e5785836c71f"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/target_manifest.jsonl": {
+      "bytes": 186222,
+      "record_count": 73,
+      "sha256": "657c4fd1e14500b5612d8a793a958031ad4c829aace0dac0c1197866cd9ff6c7"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/unresolved_study_dependencies.jsonl": {
+      "bytes": 133122,
+      "record_count": 73,
+      "sha256": "327b8530dff3c5ed44584908b052bdea92024e53b0619814e5a693f97cfd6101"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/coverage_validation.json": {
+      "bytes": 218550,
+      "sha256": "0a8b3117dc4dd8ded20ed41ba9b4488424e3416d4cc7168b670d7a4c2091d6e6"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/reconstruct.py": {
+      "bytes": 29091,
+      "sha256": "3aecb72cd4e40b388e287fee03becf6efb4a51292e362a664c17f6d831fff888"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/report.md": {
+      "bytes": 15256,
+      "sha256": "f818444b5e9d6be59d6e95493dc52ed28aba91abb18919040929e9544fa143c4"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/scientifically_consequential_revisions.jsonl": {
+      "bytes": 303835,
+      "sha256": "ed60e8296d5608e5670005a773b74c4d391dfcc48806c36bddb7b8c9feb1407a"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/selected_targets.jsonl": {
+      "bytes": 29735,
+      "sha256": "6027970b43147da6e6f1e16fcbd79466a644fd595b5008fc6ae6a4ca55fe5ad4"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/transition_review.jsonl": {
+      "bytes": 338816,
+      "sha256": "96ead7cbae233e4992303e9b92c919725581185abee3930afe6dd34e62bf4aaa"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/unresolved_transitions.jsonl": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/validate_outputs.py": {
+      "bytes": 6072,
+      "sha256": "c5a0824f1465c28b2263bf6540388fe305947e56b40232532dfc1bf7f85cc6ca"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/coverage_validation.json": {
+      "bytes": 230112,
+      "sha256": "bb5e218cc48757813897fa9ea90561db37c5ccba58f255bf47502d154585238a"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/report.md": {
+      "bytes": 25056,
+      "sha256": "41179aa1cf9459090af477bdd3178e71295248fdd7fccc45041ffcd043f3a85e"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/scientifically_consequential_revisions.jsonl": {
+      "bytes": 1231561,
+      "sha256": "deb7fe14115b8578eb881124d0988bed7f12f3f7873f0ccd89dc3ae59b95781d"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/selected_targets.jsonl": {
+      "bytes": 599373,
+      "sha256": "979c0c67a8f717f59f32e944e4ae7c6bec4a8c4a35e496cd7c9324ea027f14c1"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/transition_review.jsonl": {
+      "bytes": 7808247,
+      "sha256": "c98a8861a064756fd48562b7631bc1e9d64dd043518d4ca8255f314ba1ce373b"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/unresolved_transitions.jsonl": {
+      "bytes": 410541,
+      "sha256": "fbe4057aa832dc510f5deb41cc226f424e6e645efc79a0d73902c5055cc27008"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/coverage_validation.json": {
+      "bytes": 14609,
+      "sha256": "eb6f0e86c58bb752a62417f0c10e14d20a8b3e12ff3b3a6f6faf038b580a320a"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/recovered_scientific_source_records.jsonl": {
+      "bytes": 190859392,
+      "sha256": "ca9728c6b34a6977c4b6073cadf329dc985aa8e914889370296353d183737827"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/remaining_content_gaps.jsonl": {
+      "bytes": 113132,
+      "record_count": 103,
+      "sha256": "3b6b06299ffa74c940bbc357b9b134a612461d1b0e12a328e460fb37e40a89fb"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/report.md": {
+      "bytes": 8939,
+      "sha256": "9f94ddd47e6a8061865269468cb650df603a6032a8d5fb267b473a31c27961e8"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/source_content_recovery.jsonl": {
+      "bytes": 240143,
+      "record_count": 103,
+      "sha256": "c9e2f548eba81a4b796f5ea40f1d4061c78e7a5bd212ae497adba00931968771"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/source_damage_registry.jsonl": {
+      "bytes": 495536,
+      "record_count": 4,
+      "sha256": "2f9850fdbb6de22d871822e04126af81d1998b1564f951f48fccc44a32dde733"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/target_manifest.jsonl": {
+      "bytes": 1361241,
+      "record_count": 103,
+      "sha256": "555caaf4779443c1e3c5bf38bb4317ccd442a7cfcfdb85500cbaf644d0f86a08"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/coverage_validation.json": {
+      "bytes": 89762,
+      "sha256": "c1fffc32bbfd80dfc9fef195f1de11519f6af8d569dec997528f13aeca91e33b"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/git_attribution_assessment.json": {
+      "bytes": 65155,
+      "sha256": "09de7e9244b68adc1fd3b09aa8f09e42bd444b6e63427e432d94d611b4fdd823"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/relationship_adjudications.jsonl": {
+      "bytes": 51935,
+      "record_count": 4,
+      "sha256": "f1360bb90913925fd30d1b377a724eee3062b47f97171ad2fd0a3ea64e9b2a98"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/remaining_provenance_gaps.jsonl": {
+      "bytes": 16653,
+      "record_count": 6,
+      "sha256": "fbf531fcaff797d007d58e95063c325350ec2fc91f6a9164d294f4d740f3027c"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/report.md": {
+      "bytes": 10481,
+      "sha256": "70e6dbbc3e504cab1267af7c417c3b4cb6dcc5cc362e0508cbf61a57876afcd9"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/snapshot_chronology_assessment.json": {
+      "bytes": 286530,
+      "sha256": "bc36e4843bebc1af974682e1926423bc1d7245f20ea6efd2703a4c7961285d34"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/target_manifest.jsonl": {
+      "bytes": 110271,
+      "record_count": 6,
+      "sha256": "3a97218525d3f703f88f9ef20472aacc66a487e11ec86b37ffa5fd8e35dd247c"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/coverage_validation.json": {
+      "bytes": 68055,
+      "sha256": "b144763d0ecb18a7c9deccb779a1a3e909fe33a9854c36aa9497e3701243da91"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/historical_scientific_changes.jsonl": {
+      "bytes": 147556,
+      "record_count": 81,
+      "sha256": "37013e7f55212945d71e76b45a3520ff11fced4906ceeb54116c63df7a56b3e1"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/remaining_transition_gaps.jsonl": {
+      "bytes": 240656,
+      "record_count": 24,
+      "sha256": "432743d50dabb2765399c3b4026143dfef42a235076e4932da45eb69085798af"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/report.md": {
+      "bytes": 14839,
+      "sha256": "b00ea12f45f873a6e1a88d7fd519b741f613c7bde2a48474d43a10d8d4bb6d66"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/target_manifest.jsonl": {
+      "bytes": 384608,
+      "record_count": 108,
+      "sha256": "91894f9729bf13b36c0be2e975e682c8d9770079227190acc58a65a39abd90d1"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/transition_interpretations.jsonl": {
+      "bytes": 751213,
+      "record_count": 108,
+      "sha256": "d7e2ed74fac4143e5349c261849e579232c4a5f38537a801cc521371ebd2e518"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/coverage_validation.json": {
+      "bytes": 23856,
+      "sha256": "f1a9249041968119c590b2e59f4b248b82d0b9a3ea1787f73365ef535ad05025"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/historical_scientific_changes.jsonl": {
+      "bytes": 786481,
+      "record_count": 108,
+      "sha256": "247008f269eff73c9ddc48396ebae6aaa8c3a3527991ff3f63c2bd625a89677e"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/remaining_transition_gaps.jsonl": {
+      "bytes": 52786,
+      "record_count": 13,
+      "sha256": "249a31583d6ff8ad573b263c35331fab597cd461824b15c72a683c5919a17204"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/report.md": {
+      "bytes": 27750,
+      "sha256": "08445e07f51da9be43ae65e75e3ee54d72e7851a7eb43ff917ace88322a3b68e"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/target_manifest.jsonl": {
+      "bytes": 650130,
+      "record_count": 108,
+      "sha256": "11754c1b043d0881e47a36da680223046279a678520e48336a494d8decc245ed"
+    },
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/transition_interpretations.jsonl": {
+      "bytes": 9507256,
+      "record_count": 108,
+      "sha256": "1f98c892983138604f81f870c6fa16425f78e156e08f9c09fe4887fffaddf0ed"
+    },
+    "audits/full_history_20261013/reference_coverage.jsonl": {
+      "bytes": 731807,
+      "sha256": "6f411d6f34140f1f7708970947c986a16abb49ac5722bd7ec34901205ec64dc0"
+    },
+    "audits/full_history_20261013/scientific_audit_summary.md": {
+      "bytes": 4998,
+      "sha256": "c2d6e8db22374e049a4daa3e87e25fe3976f0ed2b1c5e6a7c2b02b7ccf4c9a34"
+    }
+  },
+  "git_object_authentication": "Existing source-backed checks reused; not regenerated",
+  "integration02_parent_fingerprint_checks": [
+    {
+      "expected": "284593926b913194badffdb62bbe5a63addd6b60b1af63f493ae7ea5a238bc81",
+      "file": "audits/full_history_20261013/anomaly_candidates.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "833e010150915da9a0f94e6bec768dd1ca1a15d617ee21ee5ab095dd49d6b0a7",
+      "file": "audits/full_history_20261013/coverage_report.md",
+      "matches": true
+    },
+    {
+      "expected": "44fa23d6a8ea4f9f8ff41a424307557e46d5bd1278519ac6844cb8563d93f138",
+      "file": "audits/full_history_20261013/evidence_graph.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "a474af7eb1adaf865248b18f2a6ce461d5533d782d3c1309860cf010dfe4ba51",
+      "file": "audits/full_history_20261013/expansion_01/expansion_report.md",
+      "matches": true
+    },
+    {
+      "expected": "39386d6e6fa26ccdb6c988901273282ce4d59fe4dea64a0267e424dc2afec8fd",
+      "file": "audits/full_history_20261013/expansion_01/historical_unreachable_commit_audit.json",
+      "matches": true
+    },
+    {
+      "expected": "8022873df992016cf8d525e0ac7d7f8fc0055efd063dd27003ad724563b0a9af",
+      "file": "audits/full_history_20261013/expansion_01/ledger_correction_candidates.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "file": "audits/full_history_20261013/expansion_01/new_anomaly_candidates.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "938d57a2b954d1621f7f02c3e780c7fab4713a5b4195668888e0160f1c85645f",
+      "file": "audits/full_history_20261013/expansion_01/omitted_reports_inventory.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "7b8b6807876d6e0d18957382a492a47741a42482d5225cf054ed9408a9246f82",
+      "file": "audits/full_history_20261013/expansion_01/recovered_scientific_records.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "bb22809386e5d0d2e69e4c841b5cbd829e6d02bf125e7f672ccfe72005f85c0c",
+      "file": "audits/full_history_20261013/expansion_01/remaining_coverage_manifest.json",
+      "matches": true
+    },
+    {
+      "expected": "d4c23f55e95e02b2084b99ca2c9407e0ded48ade4a569bbf2f33ef40ce203990",
+      "file": "audits/full_history_20261013/expansion_02/evidence_relationships.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "13dcfd85860e07d8ac2b2945c58354b1afa4ce8a7331f7e0b0e1a3bd333ebe85",
+      "file": "audits/full_history_20261013/expansion_02/execution_run_ledger.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "a06db2f1db1aaed291dbd28265bf2c19c27cf47ac65f0c41ad49ff6fdb5f1bbc",
+      "file": "audits/full_history_20261013/expansion_02/historical_revision_analysis.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "352cec73d5fcf68abac7b25bfd2f25a5e02a42eff7de8e664779a2b3f46f160c",
+      "file": "audits/full_history_20261013/expansion_02/reconciliation_report.md",
+      "matches": true
+    },
+    {
+      "expected": "b965f9dedecf596db2bcd66c29e11f6310bb5cf7e96c205675001ab40684105c",
+      "file": "audits/full_history_20261013/expansion_02/remaining_coverage_manifest.json",
+      "matches": true
+    },
+    {
+      "expected": "896f9e5ee26194888c041aea7d1c7416a644e385d1525500b21e43e18fb86a83",
+      "file": "audits/full_history_20261013/expansion_02/source_to_study_mapping.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "59a0e24db4010122258f296a59f54c6a3f37265283cef34bf869d340966701c0",
+      "file": "audits/full_history_20261013/expansion_02/static_discrepancy_candidates.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "843fc6d2f7aab77ce476dce5885aa04c650b048982d9edeeb52348621f0f0743",
+      "file": "audits/full_history_20261013/expansion_02/study_identity_ledger.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "594254a4418dc9a033fe5c7ee20cc3d7a62d4c2a501833069dbf5c6803e22527",
+      "file": "audits/full_history_20261013/expansion_03/build_inventory.py",
+      "matches": true
+    },
+    {
+      "expected": "202646e961cefad364c310879f70e544c553e5058b609d78f736376ab777c184",
+      "file": "audits/full_history_20261013/expansion_03/coverage_reconciliation.json",
+      "matches": true
+    },
+    {
+      "expected": "3eb0ff97128ee63e45fa5502859de53d0e54ccf0b83cc78d079b113c68c9fe50",
+      "file": "audits/full_history_20261013/expansion_03/expansion_report.md",
+      "matches": true
+    },
+    {
+      "expected": "d7547e41638682fb6cfdd60c58b0c011d330fb1cd770b31b568a38f45a4f5a55",
+      "file": "audits/full_history_20261013/expansion_03/historical_source_versions.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "436842f1c4681ec21830bba37979bb57546dc5787e692d29722848f0369086e3",
+      "file": "audits/full_history_20261013/expansion_03/remaining_candidate_inventory.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "c43293e5e776f50eb4ca7311128ab0b78f0261c42848fc7f203d37a256bd2b17",
+      "file": "audits/full_history_20261013/expansion_03/source_classification_ledger.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "99f06aa10eed279c6431bbde6a4fdc954b46f8636acf261be42f09b02e0f71f5",
+      "file": "audits/full_history_20261013/expansion_03/source_universe_manifest.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "988707a118012ac811325f784426600768f7127b1aa99ba7f2dcce3125e6a89a",
+      "file": "audits/full_history_20261013/expansion_03/unprocessed_source_manifest.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "b54fa0f499e6a033adf94ad893f1db8451af3b8548b4568c76b312b8a51e59b8",
+      "file": "audits/full_history_20261013/expansion_03/unresolved_identity_links.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "2eedeba95ddc28cf3cfd66a2ac4fb294348f7d996cb3d27ce7509eb215b79c90",
+      "file": "audits/full_history_20261013/expansion_03/validate_inventory.py",
+      "matches": true
+    },
+    {
+      "expected": "324758c72124723d44e617c21187fc9a89bcb3d2189da2be377f239fce32773f",
+      "file": "audits/full_history_20261013/expansion_04a/completed_source_inspections.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "5ba2b6a9ba1653ec864c9f0c8fa196936d9bf9f0c33495480c0cec6173f66deb",
+      "file": "audits/full_history_20261013/expansion_04a/coverage_validation.json",
+      "matches": true
+    },
+    {
+      "expected": "08638ee687404a512d0c865a284f0c4fb419419ece8d4c6b742eea9577a71f14",
+      "file": "audits/full_history_20261013/expansion_04a/enhance_inspections.py",
+      "matches": true
+    },
+    {
+      "expected": "a04eb0cc1ec8ac51c3d9eca426b52c8ff698345a818f8f9f30abcc0822ec7fb8",
+      "file": "audits/full_history_20261013/expansion_04a/expansion_report.md",
+      "matches": true
+    },
+    {
+      "expected": "73a065db9e2b3f116a02e08d39958b28425a721f355c398b68a5786e93c615ea",
+      "file": "audits/full_history_20261013/expansion_04a/inspect_sources.py",
+      "matches": true
+    },
+    {
+      "expected": "5e70b5199387f07b1fb05d8c69603e0f4868c426e0c3c1c818845a6455ca435e",
+      "file": "audits/full_history_20261013/expansion_04a/record_visual_inspection.py",
+      "matches": true
+    },
+    {
+      "expected": "f831416ee900d219ea6da28a98391829b57cbe479f0789bbe9733c7c054866f7",
+      "file": "audits/full_history_20261013/expansion_04a/scientific_source_extractions.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "52288f5d6f2ef5f80d3b52ec4419a3b6cf1b2410d0fd67f38c40d5f246a022eb",
+      "file": "audits/full_history_20261013/expansion_04a/source_relationship_candidates.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "8c5c6e1ef1aa28846a259c4fd1ef981dceaf0e33de70fa23cc53d61e33e4e451",
+      "file": "audits/full_history_20261013/expansion_04a/target_manifest.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "9b9b26fac0f4d8830d8823bc84625ec08c1550f36324dca7536ecc67d444bb7f",
+      "file": "audits/full_history_20261013/expansion_04a/unresolved_sources.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "ee98fa41181456c9449efb98070a3013948197f2ac4f79d984d280ec3e03e331",
+      "file": "audits/full_history_20261013/expansion_04a/validate_coverage.py",
+      "matches": true
+    },
+    {
+      "expected": "5bd1b2a1a054540ed6c7d57ffd8f4aadd37e980bebc305bce4aff050e738758e",
+      "file": "audits/full_history_20261013/expansion_04a_recovery/coverage_reconciliation.json",
+      "matches": true
+    },
+    {
+      "expected": "98605a01c70d34f26aece173b957c655cc86bc0bc4a7075cdf72e6a5ebb7d791",
+      "file": "audits/full_history_20261013/expansion_04a_recovery/frozen_target_manifest.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "0980146dd0810b0ff47d00b0769e5ba42d0904fa444e5e6cdc92965538157b55",
+      "file": "audits/full_history_20261013/expansion_04a_recovery/inspect_recovery.py",
+      "matches": true
+    },
+    {
+      "expected": "ce837ed69c399569c36ddc72a1554543a3c66fc3c58ef6b4f09077ff55abec3a",
+      "file": "audits/full_history_20261013/expansion_04a_recovery/recovered_scientific_content.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "5a1450129135b8fba017de835b0cb20fce1e483236f5d92caffd500748ead74c",
+      "file": "audits/full_history_20261013/expansion_04a_recovery/recovery_report.md",
+      "matches": true
+    },
+    {
+      "expected": "acc7c11725f28124e3f0e9fdbe3f697099ee78815ea1b136b080e0bf5d4ce49b",
+      "file": "audits/full_history_20261013/expansion_04a_recovery/source_recovery_results.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "d60ddc3e0d3b23bb687102fbd2dc2283d1ba72b0f9d55313df1853c889cdb87e",
+      "file": "audits/full_history_20261013/expansion_04a_recovery/source_relationship_candidates.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "9a8ddd037946061a7ae170ff8f2ac318957e5b252936be1ffd26c2266f2fba4c",
+      "file": "audits/full_history_20261013/expansion_04a_recovery/unavailable_evidence_registry.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "9d6b97012b2596e9f647e5b34d070ce86c4266055a8e4b20b4073d84d3af1f8a",
+      "file": "audits/full_history_20261013/experiment_ledger.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "8d5fd3493033826db64b3c7641d23126100354ebed26677e18c2045263f8e1e9",
+      "file": "audits/full_history_20261013/hypothesis_ledger.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "0b0869fd6beb060c03537ece04637e7f75bbd60982a3902b99db29a49f352ce1",
+      "file": "audits/full_history_20261013/parallel_20261013/integration_01/historical_version_reconciliation.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "13fb3e4ff3873271a6182804c74b68ac20fb46502d2f631ac40709468423c5e3",
+      "file": "audits/full_history_20261013/parallel_20261013/integration_01/input_fingerprints.json",
+      "matches": true
+    },
+    {
+      "expected": "54e75c49961c4dc7f4763330b32840f4ca90a425cd12c00e93033848c3639e35",
+      "file": "audits/full_history_20261013/parallel_20261013/integration_01/integrated_relationship_candidates.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "fa5eb04ad94267cdc79a252ea4c63e5e2b43d18b0391895cf1350f2dad092e12",
+      "file": "audits/full_history_20261013/parallel_20261013/integration_01/integrated_source_coverage.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "ed251ddf267adc55785d8bb81f29bf949ab2396aa20791981411e9bdc768de24",
+      "file": "audits/full_history_20261013/parallel_20261013/integration_01/integration_report.md",
+      "matches": true
+    },
+    {
+      "expected": "c4592fb6d25dca9bc19718c6112862af64a8fdb1dbdca73906c9cafe3e6ddbf9",
+      "file": "audits/full_history_20261013/parallel_20261013/integration_01/integration_validation.json",
+      "matches": true
+    },
+    {
+      "expected": "2c5b677c9ab256b0f39a5281aafc1c387fe256f2b4465b29a1b09b19897b2151",
+      "file": "audits/full_history_20261013/parallel_20261013/integration_01/provisional_study_identity_links.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "f0bb0d97d4489ec65b7f2cc39495a755189bb9d1dd288100198f78dfa5805dc2",
+      "file": "audits/full_history_20261013/parallel_20261013/integration_01/reconcile.py",
+      "matches": true
+    },
+    {
+      "expected": "54e3ea2afffcdaa2fa498919717d49d4c2f881e498e21dd24b3542cbb27338c5",
+      "file": "audits/full_history_20261013/parallel_20261013/integration_01/remaining_work_queue.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "cf00c5cc65a686b5d9b7fb631699f24d6a7d07bc003a018bde6077a301fe6a76",
+      "file": "audits/full_history_20261013/parallel_20261013/integration_01/validate_outputs.py",
+      "matches": true
+    },
+    {
+      "expected": "ef1d76219f19da258709d14e206a6f186fda82938a113ad091136c4ae5c48c7e",
+      "file": "audits/full_history_20261013/parallel_20261013/relationships_321/adjudicated_relationship_candidates.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "51f70de7ccd19a9b2ac3d8b85426d4002fd46827819d0534295409573c60a583",
+      "file": "audits/full_history_20261013/parallel_20261013/relationships_321/coverage_validation.json",
+      "matches": true
+    },
+    {
+      "expected": "4f808b6b37674d927c4d85e891b7b220e0ac5ed8c32ca3d6e0c844c32ba538f5",
+      "file": "audits/full_history_20261013/parallel_20261013/relationships_321/graph_self_link_audit.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "dd121966ebf1ab67c9d98d31b7932461d1b62b7c4cc7708c2dc2233320c43a45",
+      "file": "audits/full_history_20261013/parallel_20261013/relationships_321/relationship_target_manifest.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "036ecb782b824a3a7a70c9db18144bef810331692b0562b2ceda2f21f84031b4",
+      "file": "audits/full_history_20261013/parallel_20261013/relationships_321/report.md",
+      "matches": true
+    },
+    {
+      "expected": "eea9ac7e700dd2bb8be862d5979e407af75b8ce60b0b61c11c425b2dc194a5e0",
+      "file": "audits/full_history_20261013/parallel_20261013/relationships_321/unsupported_or_unresolved_edges.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "c0c635c3f8a2c527a7569d4246fd58f3a30397b8c0a0f1863ad109b7b51452cc",
+      "file": "audits/full_history_20261013/parallel_20261013/semantic_88/adjudicated_classifications.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "54d721817723f26810fb998844fe69b0f918b255ccda99957c341cfb3d31985e",
+      "file": "audits/full_history_20261013/parallel_20261013/semantic_88/coverage_validation.json",
+      "matches": true
+    },
+    {
+      "expected": "2d7644c3f1ed2173503580a4980e76aac5608eff6bb9085e09123369c6e55ca1",
+      "file": "audits/full_history_20261013/parallel_20261013/semantic_88/report.md",
+      "matches": true
+    },
+    {
+      "expected": "7686ae95074f47947973fb16edadd45d28c1477a83004a9b8c5d27aa37019e85",
+      "file": "audits/full_history_20261013/parallel_20261013/semantic_88/source_role_relationships.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "971d2cc4923914d67fbade8ea0272bbf27d140a1007e649e70eff4960db6d410",
+      "file": "audits/full_history_20261013/parallel_20261013/semantic_88/target_manifest.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "9071063946dea91908f46be1b333ee8a77cee556428616700eb044a33b406160",
+      "file": "audits/full_history_20261013/parallel_20261013/semantic_88/unresolved_classifications.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "0e2028c566f6230f66e5e324aca7fb611c81ce2d214da3ab2bddfeffec84da1a",
+      "file": "audits/full_history_20261013/parallel_20261013/study_identity_116/coverage_validation.json",
+      "matches": true
+    },
+    {
+      "expected": "5a3a4fe72114356aaaedb2f0be2ba5be2944966d627ad9e7e507ce16a30992d1",
+      "file": "audits/full_history_20261013/parallel_20261013/study_identity_116/provisional_study_identity_links.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "dc419730aadd2c6da175d0de62e2e5b07750d85d356c5dc1d4ecc2934264f6f8",
+      "file": "audits/full_history_20261013/parallel_20261013/study_identity_116/report.md",
+      "matches": true
+    },
+    {
+      "expected": "a87384b5229fd79e7aefb0470f3c6c74831587166a7f07faee606f1075fbbf73",
+      "file": "audits/full_history_20261013/parallel_20261013/study_identity_116/study_identity_evidence.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "0d9cf1a45460c4e4689562909ec04186626e9ea27ea00322a0c9dbcffcc01289",
+      "file": "audits/full_history_20261013/parallel_20261013/study_identity_116/target_manifest.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "b2cfb0f219fb3b71e4bf5deac87d3e684d934e0e4d0b951d722fdab0895f252d",
+      "file": "audits/full_history_20261013/parallel_20261013/study_identity_116/unresolved_identity_dependencies.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "ebd7d7a10cadd5735ff438b9ad5550e99034b91e5708864ece4b4bc16836ca0d",
+      "file": "audits/full_history_20261013/parallel_20261013/tensor_06/coverage_validation.json",
+      "matches": true
+    },
+    {
+      "expected": "76b89c6cf5a1b97f80a6651c35043dbf4e94423ac8eb9f05721afcb0b5d01f53",
+      "file": "audits/full_history_20261013/parallel_20261013/tensor_06/remaining_gaps.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "b22820daedacb837d9da7a20394e2f4aff93877668b7011bdb7f43389c74989d",
+      "file": "audits/full_history_20261013/parallel_20261013/tensor_06/report.md",
+      "matches": true
+    },
+    {
+      "expected": "94f50f10a69079f5bc1613349dc27da4679ee3881203f2f53d68b0bdcbd8fe23",
+      "file": "audits/full_history_20261013/parallel_20261013/tensor_06/target_manifest.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "03604d818941eaa1301a2ceef727ead2cfb9d147513c34befa697b696c2a15b1",
+      "file": "audits/full_history_20261013/parallel_20261013/tensor_06/tensor_inspection_results.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "600c963fc5d7c6705f2d0a2f5f4b9527130968d04e779ec38a7b814d4661c704",
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_0/coverage_validation.json",
+      "matches": true
+    },
+    {
+      "expected": "7647c5af86c21212343dc8430d1b04f53b81be28cf933c8ec09524e09d70e1a7",
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_0/historical_version_chains.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "ea01f248bce7dff677f8026563206027291745f3da611e013608e3659ba522a2",
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_0/report.md",
+      "matches": true
+    },
+    {
+      "expected": "6bb909169514674427e3fc46bde6674d185148f9834b1acc7d3b7538529a78e0",
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_0/selected_targets.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "039806c47a14958c0a6890ae830a5a7b8523f91ff40e6bf0d885d1d9acd9e5df",
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_0/semantic_revision_records.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "8b4a70e5d88f48f69c825a414c2809ae1d2218732d8472779ea03652f8a8fd45",
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_0/unresolved_versions.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "15440b509f057223ccaa3e14dca2e3efdab485585fcf8f3c8a7943feb1ffc21f",
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_1/coverage_validation.json",
+      "matches": true
+    },
+    {
+      "expected": "dc98df77b521a2eddd141270a19d7f4e18102e13afadf6ba014d1f00542b17f0",
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_1/historical_version_chains.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "58e064fcf6a62f2eda123e8bb4fd2e0124347cb642120c9cfa3f23d90096ac08",
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_1/report.md",
+      "matches": true
+    },
+    {
+      "expected": "0bc8babf148b1e3fb2061323877eed888a88b8681775fc48dcf1430abb98bf6a",
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_1/selected_targets.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "6ceee3b63729d26db1778fa9dfd4500bf3018827a0b5f9fc57366c20ceb45f19",
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_1/semantic_revision_records.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "ac3ec39fbe0fff69510eddb89291ca378ed2796652fac7aa7bf7737a9ff4c4c9",
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_1/unresolved_versions.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "408c788f8710a82f6104be5bda8c883860ee8ffafaba727702fbd94d930b0a25",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/chronology/coverage_validation.json",
+      "matches": true
+    },
+    {
+      "expected": "50289c53cb20e409ec07bf1cf7c3ed3be7eec122760dfdd80cc517d2fb6d938d",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/chronology/predecessor_resolution.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "d4d651f7df38814fe1756ab1c82a63fe8ac604032416563d166bbba7d18fab57",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/chronology/report.md",
+      "matches": true
+    },
+    {
+      "expected": "bac58df07efb1af598692802770033b23ed781d1c8c8fee0719c1ea3e66abb7c",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/chronology/target_manifest.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "327df24d48e58421c820f66958651c5f38740e08e34f19b7e6002010f96509de",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/chronology/tree_chronology_records.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "20fe545f1e3824f60ce77673ddb114689ccba4934d2c2f54470f7d100fbb51d1",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/chronology/unresolved_chronology.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "50588ee6b5194addabc699e024ac7105a889d9c95e446d951af444b2de921007",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/binary_source_inspections.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "39e911a5132bdf9aa4c650bb6c4e443c28d4db0fc9e7a99ef29b41c5dbf4d048",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/bounded_content_inspections.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "a6338dc60f8d8874e28602695a5be0dc8c4d3c9c4168b007ebc1f5bd007e37c7",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/coverage_validation.json",
+      "matches": true
+    },
+    {
+      "expected": "b7f45d79e28164b5f001f7d902bb6d5cd179cbbcd71b97ee42e9b37d2d86cede",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/recovered_source_evidence.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "3566dec43a1957c42a214c7e8c420c15842130e172df88e4de56fa03d8d2f21d",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/remaining_content_gaps.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "ada9cddddcc31ba430e0c9380510c141c273e3aca6aa4c566c561afac252c04a",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/report.md",
+      "matches": true
+    },
+    {
+      "expected": "3bd293137bfaed10383a7b035a78dcb09b22c5427884d9453af812ac315ceb73",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/target_manifest.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "970b924d69c0a7a4ae04cbd44c2c430e547fd5766ddca10077ab47d8624424c2",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/coverage_validation.json",
+      "matches": true
+    },
+    {
+      "expected": "e25c355b2024d3803ba2c9829f17d1c2f2fedde35933897ea2cdfd70a29bf88b",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/graph_correction_proposals.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "63d39f590ee7b17d5ffb3812b505557fa1b097b205934f53d95ee1614b876b78",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/relationship_adjudications.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "b84f924aebbb4141f6522bc0a7a4a3f4d1a43a5fb2307897fabf96dda2bfdb84",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/report.md",
+      "matches": true
+    },
+    {
+      "expected": "20ac272923b756457a829effafc09069b644c0fdcd2ce60d3d37871e986755c8",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/target_manifest.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "f29fc1faf7e8be1489ac52d7aea67f54233568ebdf8467784dba2cc94929a97a",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/unresolved_graph_items.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "f29c6b4bcb5cbe30acbec58bbfadc34764d251ecd4f37758bc08d5b6dc3ec619",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/candidate_study_memberships.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "df479f1bbd9e02e655431005dec93e96b7c26c4dacb9329e8aa18450d93bdfee",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/coverage_validation.json",
+      "matches": true
+    },
+    {
+      "expected": "ea7ed8309556ad6fc7d842cf4cc1813ec37874f524997abbde9524cf02610d0b",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/empty_source_dispositions.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "2546d2e8d2b9987034d877bb40a97f3a0052f0569ab0a36f7319fa2557412470",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/report.md",
+      "matches": true
+    },
+    {
+      "expected": "22c6fc8f0dbb82ad0559c4f5f049c13af7a96b72b9f72f806f07e5785836c71f",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/study_identity_adjudications.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "657c4fd1e14500b5612d8a793a958031ad4c829aace0dac0c1197866cd9ff6c7",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/target_manifest.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "327b8530dff3c5ed44584908b052bdea92024e53b0619814e5a693f97cfd6101",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/unresolved_study_dependencies.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "0a8b3117dc4dd8ded20ed41ba9b4488424e3416d4cc7168b670d7a4c2091d6e6",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/coverage_validation.json",
+      "matches": true
+    },
+    {
+      "expected": "3aecb72cd4e40b388e287fee03becf6efb4a51292e362a664c17f6d831fff888",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/reconstruct.py",
+      "matches": true
+    },
+    {
+      "expected": "f818444b5e9d6be59d6e95493dc52ed28aba91abb18919040929e9544fa143c4",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/report.md",
+      "matches": true
+    },
+    {
+      "expected": "ed60e8296d5608e5670005a773b74c4d391dfcc48806c36bddb7b8c9feb1407a",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/scientifically_consequential_revisions.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "6027970b43147da6e6f1e16fcbd79466a644fd595b5008fc6ae6a4ca55fe5ad4",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/selected_targets.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "96ead7cbae233e4992303e9b92c919725581185abee3930afe6dd34e62bf4aaa",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/transition_review.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/unresolved_transitions.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "c5a0824f1465c28b2263bf6540388fe305947e56b40232532dfc1bf7f85cc6ca",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/validate_outputs.py",
+      "matches": true
+    },
+    {
+      "expected": "bb5e218cc48757813897fa9ea90561db37c5ccba58f255bf47502d154585238a",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/coverage_validation.json",
+      "matches": true
+    },
+    {
+      "expected": "41179aa1cf9459090af477bdd3178e71295248fdd7fccc45041ffcd043f3a85e",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/report.md",
+      "matches": true
+    },
+    {
+      "expected": "deb7fe14115b8578eb881124d0988bed7f12f3f7873f0ccd89dc3ae59b95781d",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/scientifically_consequential_revisions.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "979c0c67a8f717f59f32e944e4ae7c6bec4a8c4a35e496cd7c9324ea027f14c1",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/selected_targets.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "c98a8861a064756fd48562b7631bc1e9d64dd043518d4ca8255f314ba1ce373b",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/transition_review.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "fbe4057aa832dc510f5deb41cc226f424e6e645efc79a0d73902c5055cc27008",
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/unresolved_transitions.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "6f411d6f34140f1f7708970947c986a16abb49ac5722bd7ec34901205ec64dc0",
+      "file": "audits/full_history_20261013/reference_coverage.jsonl",
+      "matches": true
+    },
+    {
+      "expected": "c2d6e8db22374e049a4daa3e87e25fe3976f0ed2b1c5e6a7c2b02b7ccf4c9a34",
+      "file": "audits/full_history_20261013/scientific_audit_summary.md",
+      "matches": true
+    }
+  ],
+  "schema_version": "W03_CONSOLIDATION_INPUT_FINGERPRINTS_V1",
+  "unchanged_after_consolidation": {
+    "AGENTS.md": true,
+    "audits/full_history_20261013/anomaly_candidates.jsonl": true,
+    "audits/full_history_20261013/coverage_report.md": true,
+    "audits/full_history_20261013/evidence_graph.jsonl": true,
+    "audits/full_history_20261013/expansion_01/expansion_report.md": true,
+    "audits/full_history_20261013/expansion_01/historical_unreachable_commit_audit.json": true,
+    "audits/full_history_20261013/expansion_01/ledger_correction_candidates.jsonl": true,
+    "audits/full_history_20261013/expansion_01/new_anomaly_candidates.jsonl": true,
+    "audits/full_history_20261013/expansion_01/omitted_reports_inventory.jsonl": true,
+    "audits/full_history_20261013/expansion_01/recovered_scientific_records.jsonl": true,
+    "audits/full_history_20261013/expansion_01/remaining_coverage_manifest.json": true,
+    "audits/full_history_20261013/expansion_02/evidence_relationships.jsonl": true,
+    "audits/full_history_20261013/expansion_02/execution_run_ledger.jsonl": true,
+    "audits/full_history_20261013/expansion_02/historical_revision_analysis.jsonl": true,
+    "audits/full_history_20261013/expansion_02/reconciliation_report.md": true,
+    "audits/full_history_20261013/expansion_02/remaining_coverage_manifest.json": true,
+    "audits/full_history_20261013/expansion_02/source_to_study_mapping.jsonl": true,
+    "audits/full_history_20261013/expansion_02/static_discrepancy_candidates.jsonl": true,
+    "audits/full_history_20261013/expansion_02/study_identity_ledger.jsonl": true,
+    "audits/full_history_20261013/expansion_03/build_inventory.py": true,
+    "audits/full_history_20261013/expansion_03/coverage_reconciliation.json": true,
+    "audits/full_history_20261013/expansion_03/expansion_report.md": true,
+    "audits/full_history_20261013/expansion_03/historical_source_versions.jsonl": true,
+    "audits/full_history_20261013/expansion_03/remaining_candidate_inventory.jsonl": true,
+    "audits/full_history_20261013/expansion_03/source_classification_ledger.jsonl": true,
+    "audits/full_history_20261013/expansion_03/source_universe_manifest.jsonl": true,
+    "audits/full_history_20261013/expansion_03/unprocessed_source_manifest.jsonl": true,
+    "audits/full_history_20261013/expansion_03/unresolved_identity_links.jsonl": true,
+    "audits/full_history_20261013/expansion_03/validate_inventory.py": true,
+    "audits/full_history_20261013/expansion_04a/completed_source_inspections.jsonl": true,
+    "audits/full_history_20261013/expansion_04a/coverage_validation.json": true,
+    "audits/full_history_20261013/expansion_04a/enhance_inspections.py": true,
+    "audits/full_history_20261013/expansion_04a/expansion_report.md": true,
+    "audits/full_history_20261013/expansion_04a/inspect_sources.py": true,
+    "audits/full_history_20261013/expansion_04a/record_visual_inspection.py": true,
+    "audits/full_history_20261013/expansion_04a/scientific_source_extractions.jsonl": true,
+    "audits/full_history_20261013/expansion_04a/source_relationship_candidates.jsonl": true,
+    "audits/full_history_20261013/expansion_04a/target_manifest.jsonl": true,
+    "audits/full_history_20261013/expansion_04a/unresolved_sources.jsonl": true,
+    "audits/full_history_20261013/expansion_04a/validate_coverage.py": true,
+    "audits/full_history_20261013/expansion_04a_recovery/coverage_reconciliation.json": true,
+    "audits/full_history_20261013/expansion_04a_recovery/frozen_target_manifest.jsonl": true,
+    "audits/full_history_20261013/expansion_04a_recovery/inspect_recovery.py": true,
+    "audits/full_history_20261013/expansion_04a_recovery/recovered_scientific_content.jsonl": true,
+    "audits/full_history_20261013/expansion_04a_recovery/recovery_report.md": true,
+    "audits/full_history_20261013/expansion_04a_recovery/source_recovery_results.jsonl": true,
+    "audits/full_history_20261013/expansion_04a_recovery/source_relationship_candidates.jsonl": true,
+    "audits/full_history_20261013/expansion_04a_recovery/unavailable_evidence_registry.jsonl": true,
+    "audits/full_history_20261013/experiment_ledger.jsonl": true,
+    "audits/full_history_20261013/hypothesis_ledger.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/integration_01/historical_version_reconciliation.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/integration_01/input_fingerprints.json": true,
+    "audits/full_history_20261013/parallel_20261013/integration_01/integrated_relationship_candidates.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/integration_01/integrated_source_coverage.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/integration_01/integration_report.md": true,
+    "audits/full_history_20261013/parallel_20261013/integration_01/integration_validation.json": true,
+    "audits/full_history_20261013/parallel_20261013/integration_01/provisional_study_identity_links.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/integration_01/reconcile.py": true,
+    "audits/full_history_20261013/parallel_20261013/integration_01/remaining_work_queue.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/integration_01/validate_outputs.py": true,
+    "audits/full_history_20261013/parallel_20261013/relationships_321/adjudicated_relationship_candidates.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/relationships_321/coverage_validation.json": true,
+    "audits/full_history_20261013/parallel_20261013/relationships_321/graph_self_link_audit.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/relationships_321/relationship_target_manifest.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/relationships_321/report.md": true,
+    "audits/full_history_20261013/parallel_20261013/relationships_321/unsupported_or_unresolved_edges.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/semantic_88/adjudicated_classifications.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/semantic_88/coverage_validation.json": true,
+    "audits/full_history_20261013/parallel_20261013/semantic_88/report.md": true,
+    "audits/full_history_20261013/parallel_20261013/semantic_88/source_role_relationships.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/semantic_88/target_manifest.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/semantic_88/unresolved_classifications.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/study_identity_116/coverage_validation.json": true,
+    "audits/full_history_20261013/parallel_20261013/study_identity_116/provisional_study_identity_links.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/study_identity_116/report.md": true,
+    "audits/full_history_20261013/parallel_20261013/study_identity_116/study_identity_evidence.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/study_identity_116/target_manifest.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/study_identity_116/unresolved_identity_dependencies.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/tensor_06/coverage_validation.json": true,
+    "audits/full_history_20261013/parallel_20261013/tensor_06/remaining_gaps.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/tensor_06/report.md": true,
+    "audits/full_history_20261013/parallel_20261013/tensor_06/target_manifest.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/tensor_06/tensor_inspection_results.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/versions_shard_0/coverage_validation.json": true,
+    "audits/full_history_20261013/parallel_20261013/versions_shard_0/historical_version_chains.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/versions_shard_0/report.md": true,
+    "audits/full_history_20261013/parallel_20261013/versions_shard_0/selected_targets.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/versions_shard_0/semantic_revision_records.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/versions_shard_0/unresolved_versions.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/versions_shard_1/coverage_validation.json": true,
+    "audits/full_history_20261013/parallel_20261013/versions_shard_1/historical_version_chains.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/versions_shard_1/report.md": true,
+    "audits/full_history_20261013/parallel_20261013/versions_shard_1/selected_targets.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/versions_shard_1/semantic_revision_records.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/versions_shard_1/unresolved_versions.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/chronology/coverage_validation.json": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/chronology/predecessor_resolution.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/chronology/report.md": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/chronology/target_manifest.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/chronology/tree_chronology_records.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/chronology/unresolved_chronology.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/binary_source_inspections.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/bounded_content_inspections.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/coverage_validation.json": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/recovered_source_evidence.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/remaining_content_gaps.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/report.md": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/target_manifest.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/coverage_validation.json": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/graph_correction_proposals.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/relationship_adjudications.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/report.md": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/target_manifest.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/unresolved_graph_items.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/input_fingerprints.json": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/integration_report.md": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/remaining_census_work_queue.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/study_identity_reconciliation.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/candidate_study_memberships.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/coverage_validation.json": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/empty_source_dispositions.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/report.md": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/study_identity_adjudications.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/target_manifest.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/unresolved_study_dependencies.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/coverage_validation.json": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/reconstruct.py": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/report.md": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/scientifically_consequential_revisions.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/selected_targets.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/transition_review.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/unresolved_transitions.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/validate_outputs.py": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/coverage_validation.json": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/report.md": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/scientifically_consequential_revisions.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/selected_targets.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/transition_review.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/unresolved_transitions.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/coverage_validation.json": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/recovered_scientific_source_records.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/remaining_content_gaps.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/report.md": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/source_content_recovery.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/source_damage_registry.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/target_manifest.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/coverage_validation.json": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/git_attribution_assessment.json": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/relationship_adjudications.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/remaining_provenance_gaps.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/report.md": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/snapshot_chronology_assessment.json": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/target_manifest.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/coverage_validation.json": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/historical_scientific_changes.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/remaining_transition_gaps.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/report.md": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/target_manifest.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/transition_interpretations.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/coverage_validation.json": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/historical_scientific_changes.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/remaining_transition_gaps.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/report.md": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/target_manifest.jsonl": true,
+    "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/transition_interpretations.jsonl": true,
+    "audits/full_history_20261013/reference_coverage.jsonl": true,
+    "audits/full_history_20261013/scientific_audit_summary.md": true
+  }
+}

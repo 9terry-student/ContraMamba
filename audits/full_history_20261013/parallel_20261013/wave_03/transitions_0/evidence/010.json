@@ -1,0 +1,361 @@
+{
+  "shard_ordinal": 10,
+  "original_queue_id": "WORK-1b0c48b08e529f7249e9",
+  "original_source_ids": [
+    "HV001134"
+  ],
+  "original_source_identity": {
+    "commit": "7c0b427fe1410dca22eab4f12f7cfdd2c00b9314",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "18246885b5cb80bb6e4c587fda8a7677ccaad37e",
+    "object_type": "commit",
+    "bytes": 249441,
+    "sha256": "64e1bec877f16e9b8105506152b41731e924febfd82619db0e7e7213235f26bd"
+  },
+  "before": {
+    "commit": "c998a7a93f85708bd2fd08ea923fd4e207a8ee0b",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "3437c26c8c3d2dad87e2de30de5e6d0fccdfe260",
+    "object_type": "commit",
+    "bytes": 247180,
+    "sha256": "ce3bca01d56a2f16dec30e6040e8eb2dbfb6725d3b992f5f0652f6bab583dfec"
+  },
+  "after": {
+    "commit": "7c0b427fe1410dca22eab4f12f7cfdd2c00b9314",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "18246885b5cb80bb6e4c587fda8a7677ccaad37e",
+    "object_type": "commit",
+    "bytes": 249441,
+    "sha256": "64e1bec877f16e9b8105506152b41731e924febfd82619db0e7e7213235f26bd"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0177"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "main",
+      "run_training_v6b"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate trainer objectives, gradient ownership, data/evaluation selection, ablation defaults and historical authority from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 22 removed/replaced lines and 68 added/replaced lines in 8 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "c998a7a93f85708bd2fd08ea923fd4e207a8ee0b",
+      "blob": "3437c26c8c3d2dad87e2de30de5e6d0fccdfe260"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "replace",
+      "before_start": 2296,
+      "before_end_exclusive": 2297,
+      "after_start": 2296,
+      "after_end_exclusive": 2302,
+      "before": [
+        "    if args.use_temporal_diagnostic_loss or args.temporal_diagnostic_data is not None:"
+      ],
+      "after": [
+        "    if (",
+        "        args.use_temporal_diagnostic_loss",
+        "        or args.use_temporal_channel_loss",
+        "        or args.use_temporal_adapter_loss",
+        "        or args.temporal_diagnostic_data is not None",
+        "    ):"
+      ],
+      "before_context": [
+        "    _td_dev_labels: \"torch.Tensor | None\" = None",
+        "    _td_dev_mask: \"torch.Tensor | None\" = None",
+        "",
+        "        if args.temporal_diagnostic_data is None:",
+        "            raise ValueError(",
+        "                \"--use-temporal-diagnostic-loss requires --temporal-diagnostic-data\""
+      ],
+      "after_context": [
+        "    _td_dev_labels: \"torch.Tensor | None\" = None",
+        "    _td_dev_mask: \"torch.Tensor | None\" = None",
+        "",
+        "        if args.temporal_diagnostic_data is None:",
+        "            _td_need = [",
+        "                f"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 2298,
+      "before_end_exclusive": 2298,
+      "after_start": 2303,
+      "after_end_exclusive": 2312,
+      "before": [],
+      "after": [
+        "            _td_need = [",
+        "                f",
+        "                for f, v in [",
+        "                    (\"--use-temporal-diagnostic-loss\", args.use_temporal_diagnostic_loss),",
+        "                    (\"--use-temporal-channel-loss\", args.use_temporal_channel_loss),",
+        "                    (\"--use-temporal-adapter-loss\", args.use_temporal_adapter_loss),",
+        "                ]",
+        "                if v",
+        "            ]"
+      ],
+      "before_context": [
+        "",
+        "    if args.use_temporal_diagnostic_loss or args.temporal_diagnostic_data is not None:",
+        "        if args.temporal_diagnostic_data is None:",
+        "            raise ValueError(",
+        "                \"--use-temporal-diagnostic-loss requires --temporal-diagnostic-data\"",
+        "            )"
+      ],
+      "after_context": [
+        "        or args.temporal_diagnostic_data is not None",
+        "    ):",
+        "        if args.temporal_diagnostic_data is None:",
+        "            raise ValueError(",
+        "                f\"{', '.join(_td_need)} require --temporal-diagnostic-data. \"",
+        "                \"Provide the temporal diagnostic JSONL (time_swap records) via \""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 2299,
+      "before_end_exclusive": 2300,
+      "after_start": 2313,
+      "after_end_exclusive": 2317,
+      "before": [
+        "                \"--use-temporal-diagnostic-loss requires --temporal-diagnostic-data\""
+      ],
+      "after": [
+        "                f\"{', '.join(_td_need)} require --temporal-diagnostic-data. \"",
+        "                \"Provide the temporal diagnostic JSONL (time_swap records) via \"",
+        "                \"--temporal-diagnostic-data. Do not use --data; temporal diagnostic \"",
+        "                \"records must not be merged into the main clean train/eval data.\""
+      ],
+      "before_context": [
+        "    if args.use_temporal_diagnostic_loss or args.temporal_diagnostic_data is not None:",
+        "        if args.temporal_diagnostic_data is None:",
+        "            raise ValueError(",
+        "            )",
+        "        _td_path = Path(args.temporal_diagnostic_data)",
+        "        if not _td_path.exists():"
+      ],
+      "after_context": [
+        "                if v",
+        "            ]",
+        "            raise ValueError(",
+        "            )",
+        "        _td_path = Path(args.temporal_diagnostic_data)",
+        "        if not _td_path.exists():"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 2545,
+      "before_end_exclusive": 2545,
+      "after_start": 2562,
+      "after_end_exclusive": 2568,
+      "before": [],
+      "after": [
+        "            )",
+        "        if tc_loss_weight > 0.0 and td_train_inputs is None:",
+        "            raise ValueError(",
+        "                \"--temporal-channel-loss-weight > 0 requires temporal diagnostic data. \"",
+        "                \"Pass --temporal-diagnostic-data with the temporal diagnostic JSONL \"",
+        "                \"(time_swap records). Without it, TC BCE cannot be computed.\""
+      ],
+      "before_context": [
+        "            raise ValueError(",
+        "                \"--temporal-channel-loss-weight > 0 requires --use-temporal-channel. \"",
+        "                \"Enable the TC head with --use-temporal-channel.\"",
+        "            )",
+        "        if use_temporal_channel_gated_penalty and (",
+        "            not hasattr(model, \"preservation_entitlement_head\")"
+      ],
+      "after_context": [
+        "            raise ValueError(",
+        "                \"--temporal-channel-loss-weight > 0 requires --use-temporal-channel. \"",
+        "                \"Enable the TC head with --use-temporal-channel.\"",
+        "            )",
+        "        if use_temporal_channel_gated_penalty and (",
+        "            not hasattr(model, \"preservation_entitlement_head\")"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 2870,
+      "before_end_exclusive": 2884,
+      "after_start": 2893,
+      "after_end_exclusive": 2912,
+      "before": [
+        "                if _tc_train_out.get(\"temporal_channel_logit\") is not None:",
+        "                    _active_tc = td_train_mask.bool()",
+        "                    if torch.any(_active_tc):",
+        "                        _tc_pos_w = torch.tensor(",
+        "                            tc_loss_pos_weight,",
+        "                            dtype=torch.float32,",
+        "                            device=_tc_train_out[\"temporal_channel_logit\"].device,",
+        "                        )",
+        "                        _tc_loss = F.binary_cross_entropy_with_logits(",
+        "                            _tc_train_out[\"temporal_channel_logit\"][_active_tc],",
+        "                            td_train_labels[_active_tc],",
+        "                            pos_weight=_tc_pos_w,",
+        "                        )",
+        "                        total_loss = total_loss + tc_loss_weight * _tc_loss"
+      ],
+      "after": [
+        "                if _tc_train_out.get(\"temporal_channel_logit\") is None:",
+        "                    raise RuntimeError(",
+        "                        \"TC loss enabled (tc_loss_weight > 0) but model forward produced \"",
+        "                        \"no temporal_channel_logit. Ensure --use-temporal-channel is set \"",
+        "                        \"and the TC head is instantiated.\"",
+        "                    )",
+        "                _active_tc = td_train_mask.bool()",
+        "                if torch.any(_active_tc):",
+        "                    _tc_pos_w = torch.tensor(",
+        "                        tc_loss_pos_weight,",
+        "                        dtype=torch.float32,",
+        "                        device=_tc_train_out[\"temporal_channel_logit\"].device,",
+        "                    )",
+        "                    _tc_loss = F.binary_cross_entropy_with_logits(",
+        "                        _tc_train_out[\"temporal_channel_logit\"][_active_tc],",
+        "                        td_train_labels[_active_tc],",
+        "                        pos_weight=_tc_pos_w,",
+        "                    )",
+        "                    total_loss = total_loss + tc_loss_weight * _tc_loss"
+      ],
+      "before_context": [
+        "                        temporal_mismatch_flags=_tc_zero_t,",
+        "                        predicate_mismatch_flags=_tc_zero_p,",
+        "                    )",
+        "",
+        "            # Stage22-A4c: pair contrastive frame ranking loss",
+        "            # Supervises frame_violation_logit only; output[\"logits\"] and predictions unchanged."
+      ],
+      "after_context": [
+        "                        temporal_mismatch_flags=_tc_zero_t,",
+        "                        predicate_mismatch_flags=_tc_zero_p,",
+        "                    )",
+        "",
+        "            # Stage22-A4c: pair contrastive frame ranking loss",
+        "            # Supervises frame_violation_logit only; output[\"logits\"] and predictions unchanged."
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3813,
+      "before_end_exclusive": 3813,
+      "after_start": 3841,
+      "after_end_exclusive": 3852,
+      "before": [],
+      "after": [
+        "        if tc_loss_weight > 0.0 and _loss_epoch_avg_raw.get(\"temporal_channel_loss\", 0.0) == 0.0:",
+        "            _audit_warnings.append(",
+        "                \"temporal_channel_loss is enabled (weight > 0) but epoch-average raw loss is 0.0: \"",
+        "                \"TC BCE was not computed. Check that --temporal-diagnostic-data was provided \"",
+        "                \"and that the TC head produced temporal_channel_logit.\"",
+        "            )",
+        "        if tc_loss_weight > 0.0 and _loss_epoch_avg_weighted.get(\"temporal_channel_loss\", 0.0) == 0.0:",
+        "            _audit_warnings.append(",
+        "                \"temporal_channel_loss weighted average is 0.0 despite weight > 0: \"",
+        "                \"TC BCE contributed nothing to total_loss this run.\"",
+        "            )"
+      ],
+      "before_context": [
+        "                \"temporal_channel_v1 is instantiated but neither tc_loss nor tc_gated_penalty is enabled: \"",
+        "                \"TC head adds parameters with no training signal and no effect on final logits\"",
+        "            )",
+        "        if _tc_fallback_used:",
+        "            _audit_warnings.append(",
+        "                \"td_constrained_selection fallback triggered: \""
+      ],
+      "after_context": [
+        "                \"temporal_channel_v1 is instantiated but neither tc_loss nor tc_gated_penalty is enabled: \"",
+        "                \"TC head adds parameters with no training signal and no effect on final logits\"",
+        "            )",
+        "        if _tc_fallback_used:",
+        "            _audit_warnings.append(",
+        "                \"td_constrained_selection fallback triggered: \""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3903,
+      "before_end_exclusive": 3903,
+      "after_start": 3942,
+      "after_end_exclusive": 3949,
+      "before": [],
+      "after": [
+        "    # TD data is shared by temporal_diagnostic_loss, temporal_adapter_loss, and",
+        "    # temporal_channel_loss. Pass it whenever any of those needs it.",
+        "    _td_data_needed = (",
+        "        args.use_temporal_diagnostic_loss",
+        "        or args.use_temporal_channel_loss",
+        "        or args.use_temporal_adapter_loss",
+        "    )"
+      ],
+      "before_context": [
+        "    )",
+        "    initial_head_state = v5.capture_head_state(model)",
+        "    reports: dict[str, dict[str, Any]] = {}",
+        "",
+        "    for run_name, loss_config in configurations.items():",
+        "        v5.restore_head_state(model, initial_head_state)"
+      ],
+      "after_context": [
+        "    )",
+        "    initial_head_state = v5.capture_head_state(model)",
+        "    reports: dict[str, dict[str, Any]] = {}",
+        "",
+        "    for run_name, loss_config in configurations.items():",
+        "        v5.restore_head_state(model, initial_head_state)"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3958,
+      "before_end_exclusive": 3964,
+      "after_start": 4004,
+      "after_end_exclusive": 4010,
+      "before": [
+        "            td_train_inputs=_td_train_inputs if args.use_temporal_diagnostic_loss else None,",
+        "            td_dev_inputs=_td_dev_inputs if args.use_temporal_diagnostic_loss else None,",
+        "            td_train_labels=_td_train_labels if args.use_temporal_diagnostic_loss else None,",
+        "            td_train_mask=_td_train_mask if args.use_temporal_diagnostic_loss else None,",
+        "            td_dev_labels=_td_dev_labels if args.use_temporal_diagnostic_loss else None,",
+        "            td_dev_mask=_td_dev_mask if args.use_temporal_diagnostic_loss else None,"
+      ],
+      "after": [
+        "            td_train_inputs=_td_train_inputs if _td_data_needed else None,",
+        "            td_dev_inputs=_td_dev_inputs if _td_data_needed else None,",
+        "            td_train_labels=_td_train_labels if _td_data_needed else None,",
+        "            td_train_mask=_td_train_mask if _td_data_needed else None,",
+        "            td_dev_labels=_td_dev_labels if _td_data_needed else None,",
+        "            td_dev_mask=_td_dev_mask if _td_data_needed else None,"
+      ],
+      "before_context": [
+        "                if args.use_preservation_entitlement_loss else 0.0",
+        "            ),",
+        "            pe_loss_pos_weight=args.preservation_entitlement_loss_pos_weight,",
+        "            td_loss_weight=(",
+        "                args.temporal_diagnostic_loss_weight",
+        "                if args.use_temporal_diagnostic_loss else 0.0"
+      ],
+      "after_context": [
+        "                if args.use_preservation_entitlement_loss else 0.0",
+        "            ),",
+        "            pe_loss_pos_weight=args.preservation_entitlement_loss_pos_weight,",
+        "            td_loss_weight=(",
+        "                args.temporal_diagnostic_loss_weight",
+        "                if args.use_temporal_diagnostic_loss else 0.0"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,444 @@
+{
+  "shard_ordinal": 102,
+  "original_queue_id": "WORK-f1dd38aca10c7235f263",
+  "original_source_ids": [
+    "HV000779"
+  ],
+  "original_source_identity": {
+    "commit": "99de1d5d7b7d5c171a9423c22fcf44ec3249ec98",
+    "path": "scripts/evaluate_stage32_shadow_composer.py",
+    "blob": "26c8234d86fea7acc832352fd8e71abddf2c92b0",
+    "object_type": "commit",
+    "bytes": 74742,
+    "sha256": "e8acbd1c4687a313a70669f5595d6d35aed52b13f34174ed21fae5203bcb6b29"
+  },
+  "before": {
+    "commit": "d71e5af50406c4077784408273511c7c5393f950",
+    "path": "scripts/evaluate_stage32_shadow_composer.py",
+    "blob": "b082d86d8fbed9a93ff7c5b86df44ef7340b2948",
+    "object_type": "commit",
+    "bytes": 69184,
+    "sha256": "3f53d16f91e508054207cd4d8efe631066b060dafa3ebc3e53ad058db9c219f1"
+  },
+  "after": {
+    "commit": "99de1d5d7b7d5c171a9423c22fcf44ec3249ec98",
+    "path": "scripts/evaluate_stage32_shadow_composer.py",
+    "blob": "26c8234d86fea7acc832352fd8e71abddf2c92b0",
+    "object_type": "commit",
+    "bytes": 74742,
+    "sha256": "e8acbd1c4687a313a70669f5595d6d35aed52b13f34174ed21fae5203bcb6b29"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0100"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "compute_stage31_diagnostics_from_values",
+      "compute_stage33_structured_summary",
+      "decide",
+      "main",
+      "write_markdown"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 0 removed/replaced lines and 122 added/replaced lines in 10 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "d71e5af50406c4077784408273511c7c5393f950",
+      "blob": "b082d86d8fbed9a93ff7c5b86df44ef7340b2948"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 342,
+      "before_end_exclusive": 342,
+      "after_start": 342,
+      "after_end_exclusive": 346,
+      "before": [],
+      "after": [
+        "        \"stage33_structured_coverage_whole_part_v2_enabled\",",
+        "        \"stage33_whole_part_direct_support_candidate\",",
+        "        \"stage33_whole_part_direct_support_allowed\",",
+        "        \"stage33_whole_part_direct_support_block_reason\","
+      ],
+      "before_context": [
+        "        \"stage33_structured_coverage_whole_part_relation\",",
+        "        \"stage33_structured_coverage_whole_part_match\",",
+        "        \"stage33_structured_coverage_whole_part_direct_support_enabled\",",
+        "    }",
+        "    if not any(any(field in row for field in fields) for row in rows):",
+        "        return None"
+      ],
+      "after_context": [
+        "        \"stage33_structured_coverage_whole_part_relation\",",
+        "        \"stage33_structured_coverage_whole_part_match\",",
+        "        \"stage33_structured_coverage_whole_part_direct_support_enabled\",",
+        "    }",
+        "    if not any(any(field in row for field in fields) for row in rows):",
+        "        return None"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 404,
+      "before_end_exclusive": 404,
+      "after_start": 408,
+      "after_end_exclusive": 425,
+      "before": [],
+      "after": [
+        "        \"stage33_whole_part_v2_enabled_counts\": dict(Counter(",
+        "            normalize_bool(",
+        "                row.get(\"stage33_structured_coverage_whole_part_v2_enabled\")",
+        "            )",
+        "            for row in rows",
+        "        )),",
+        "        \"stage33_whole_part_direct_support_candidate_counts\": dict(Counter(",
+        "            normalize_bool(row.get(\"stage33_whole_part_direct_support_candidate\"))",
+        "            for row in rows",
+        "        )),",
+        "        \"stage33_whole_part_direct_support_allowed_counts\": dict(Counter(",
+        "            normalize_bool(row.get(\"stage33_whole_part_direct_support_allowed\"))",
+        "            for row in rows",
+        "        )),",
+        "        \"stage33_whole_part_direct_support_block_reason_counts\": group_distribution(",
+        "            rows, \"stage33_whole_part_direct_support_block_reason\"",
+        "        ),"
+      ],
+      "before_context": [
+        "            )",
+        "            for row in rows",
+        "        )),",
+        "        \"stage33_proxy_refute_to_support\": proxy_refute_to_support,",
+        "        \"stage33_proxy_ne_to_support\": proxy_ne_to_support,",
+        "        \"stage33_structured_coverage_confidence_summary\": numeric_summary(confidences),"
+      ],
+      "after_context": [
+        "            )",
+        "            for row in rows",
+        "        )),",
+        "        \"stage33_proxy_refute_to_support\": proxy_refute_to_support,",
+        "        \"stage33_proxy_ne_to_support\": proxy_ne_to_support,",
+        "        \"stage33_structured_coverage_confidence_summary\": numeric_summary(confidences),"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 579,
+      "before_end_exclusive": 579,
+      "after_start": 600,
+      "after_end_exclusive": 601,
+      "before": [],
+      "after": [
+        "    whole_to_part_block_reasons = Counter()"
+      ],
+      "before_context": [
+        "    support_by_reason = Counter()",
+        "    overclaim_support_by_reason = Counter()",
+        "    refute_support_by_reason = Counter()",
+        "    for row, current_label, shadow_label, v2_route, structured_route, structured_reason in zip(",
+        "        rows, current, shadow, v2_routes, structured_routes, structured_reasons",
+        "    ):"
+      ],
+      "after_context": [
+        "    support_by_reason = Counter()",
+        "    overclaim_support_by_reason = Counter()",
+        "    refute_support_by_reason = Counter()",
+        "    for row, current_label, shadow_label, v2_route, structured_route, structured_reason in zip(",
+        "        rows, current, shadow, v2_routes, structured_routes, structured_reasons",
+        "    ):"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 587,
+      "before_end_exclusive": 587,
+      "after_start": 609,
+      "after_end_exclusive": 617,
+      "before": [],
+      "after": [
+        "            if group == \"whole_to_part_support\":",
+        "                if normalize_bool(row.get(\"stage33_whole_part_direct_support_allowed\")) is True:",
+        "                    diag[\"whole_to_part_direct_support_allowed\"] += 1",
+        "                block_reason = str(",
+        "                    row.get(\"stage33_whole_part_direct_support_block_reason\", \"\")",
+        "                )",
+        "                if block_reason:",
+        "                    whole_to_part_block_reasons[block_reason] += 1"
+      ],
+      "before_context": [
+        "            normalize_bool(row.get(\"stage33_conditional_fallback_enabled\")) is True",
+        "        )",
+        "        if group in SUPPORT_ENTAILMENT_GROUPS:",
+        "            if structured_route == \"ENTAILMENT_PRESERVE\":",
+        "                diag[\"support_entailment_stage33_entailment_preserve\"] += 1",
+        "                if group == \"whole_to_part_support\":"
+      ],
+      "after_context": [
+        "            normalize_bool(row.get(\"stage33_conditional_fallback_enabled\")) is True",
+        "        )",
+        "        if group in SUPPORT_ENTAILMENT_GROUPS:",
+        "            if structured_route == \"ENTAILMENT_PRESERVE\":",
+        "                diag[\"support_entailment_stage33_entailment_preserve\"] += 1",
+        "                if group == \"whole_to_part_support\":"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 721,
+      "before_end_exclusive": 721,
+      "after_start": 751,
+      "after_end_exclusive": 752,
+      "before": [],
+      "after": [
+        "        \"whole_to_part_direct_support_allowed\","
+      ],
+      "before_context": [
+        "        \"part_to_whole_stage33_unresolved\",",
+        "        \"whole_part_shadow_overclaim_to_support\",",
+        "        \"whole_part_shadow_refute_to_support\",",
+        "    ):",
+        "        diag.setdefault(key, 0)",
+        "    result = dict(diag)"
+      ],
+      "after_context": [
+        "        \"part_to_whole_stage33_unresolved\",",
+        "        \"whole_part_shadow_overclaim_to_support\",",
+        "        \"whole_part_shadow_refute_to_support\",",
+        "    ):",
+        "        diag.setdefault(key, 0)",
+        "    result = dict(diag)"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 729,
+      "before_end_exclusive": 729,
+      "after_start": 760,
+      "after_end_exclusive": 763,
+      "before": [],
+      "after": [
+        "    result[\"whole_to_part_direct_support_block_reason_counts\"] = dict(",
+        "        whole_to_part_block_reasons",
+        "    )"
+      ],
+      "before_context": [
+        "        overclaim_support_by_reason",
+        "    )",
+        "    result[\"stage33_shadow_refute_to_support_by_reason\"] = dict(refute_support_by_reason)",
+        "    return result",
+        "",
+        ""
+      ],
+      "after_context": [
+        "        overclaim_support_by_reason",
+        "    )",
+        "    result[\"stage33_shadow_refute_to_support_by_reason\"] = dict(refute_support_by_reason)",
+        "    return result",
+        "",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 920,
+      "before_end_exclusive": 920,
+      "after_start": 954,
+      "after_end_exclusive": 956,
+      "before": [],
+      "after": [
+        "        v2_counts = stage33_summary.get(\"stage33_whole_part_v2_enabled_counts\", {})",
+        "        v2_enabled = int(v2_counts.get(True, 0) or 0) > 0"
+      ],
+      "before_context": [
+        "    macro_delta = shadow_metrics[\"macro_f1\"] - current_metrics[\"macro_f1\"]",
+        "    if stage33_summary is not None:",
+        "        whole_part_counts = stage33_summary.get(\"stage33_whole_part_relation_counts\", {})",
+        "        whole_part_detected = sum(",
+        "            count for relation, count in whole_part_counts.items()",
+        "            if relation not in {\"\", \"none\", \"MISSING\"}"
+      ],
+      "after_context": [
+        "    macro_delta = shadow_metrics[\"macro_f1\"] - current_metrics[\"macro_f1\"]",
+        "    if stage33_summary is not None:",
+        "        whole_part_counts = stage33_summary.get(\"stage33_whole_part_relation_counts\", {})",
+        "        whole_part_detected = sum(",
+        "            count for relation, count in whole_part_counts.items()",
+        "            if relation not in {\"\", \"none\", \"MISSING\"}"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 924,
+      "before_end_exclusive": 924,
+      "after_start": 960,
+      "after_end_exclusive": 1015,
+      "before": [],
+      "after": [
+        "        if v2_enabled:",
+        "            whole_to_part_support = (",
+        "                stage31_diag.get(\"whole_to_part_stage33_shadow_support\", 0)",
+        "                if stage31_diag else 0",
+        "            )",
+        "            part_to_whole_ne = (",
+        "                stage31_diag.get(\"part_to_whole_stage33_shadow_ne\", 0)",
+        "                if stage31_diag else 0",
+        "            )",
+        "            overclaim_support = (",
+        "                stage31_diag.get(\"whole_part_shadow_overclaim_to_support\", 0)",
+        "                if stage31_diag else 0",
+        "            )",
+        "            refute_support = (",
+        "                stage31_diag.get(\"whole_part_shadow_refute_to_support\", 0)",
+        "                if stage31_diag else 0",
+        "            )",
+        "            detected_entailment = (",
+        "                stage31_diag.get(\"whole_to_part_stage33_entailment_preserve\", 0)",
+        "                if stage31_diag else 0",
+        "            )",
+        "            if overclaim_support > 0 or refute_support > 0 or macro_delta <= -0.05:",
+        "                return {",
+        "                    \"label\": \"STAGE33E_WHOLE_PART_V2_UNSAFE\",",
+        "                    \"reason\": (",
+        "                        \"Whole/part v2 is unsafe: safety errors appeared or \"",
+        "                        \"macro-F1 dropped materially.\"",
+        "                    ),",
+        "                }",
+        "            if (",
+        "                whole_to_part_support > 1",
+        "                and part_to_whole_ne > 0",
+        "                and overclaim_support == 0",
+        "                and refute_support == 0",
+        "                and macro_delta > -0.02",
+        "            ):",
+        "                return {",
+        "                    \"label\": \"STAGE33E_WHOLE_PART_V2_PROMISING\",",
+        "                    \"reason\": (",
+        "                        \"Whole/part v2 improves whole-to-part SUPPORT recovery over \"",
+        "                        \"Stage33-D while preserving safety and macro-F1.\"",
+        "                    ),",
+        "                }",
+        "            if detected_entailment > 3 or whole_to_part_support > 0:",
+        "                return {",
+        "                    \"label\": \"STAGE33E_WHOLE_PART_V2_DIAGNOSTIC_ONLY\",",
+        "                    \"reason\": (",
+        "                        \"Whole/part v2 improves detection or partial recovery, but \"",
+        "                        \"safe SUPPORT recovery is not yet materially better.\"",
+        "                    ),",
+        "                }",
+        "            return {",
+        "                \"label\": \"STAGE33E_WHOLE_PART_V2_DIAGNOSTIC_ONLY\",",
+        "                \"reason\": \"Whole/part v2 is enabled but has not demonstrated recovery.\",",
+        "            }"
+      ],
+      "before_context": [
+        "            count for relation, count in whole_part_counts.items()",
+        "            if relation not in {\"\", \"none\", \"MISSING\"}",
+        "        )",
+        "        if whole_part_detected > 0:",
+        "            whole_to_part_support = (",
+        "                stage31_diag.get(\"whole_to_part_stage33_shadow_support\", 0)"
+      ],
+      "after_context": [
+        "            count for relation, count in whole_part_counts.items()",
+        "            if relation not in {\"\", \"none\", \"MISSING\"}",
+        "        )",
+        "        if whole_part_detected > 0:",
+        "            whole_to_part_support = (",
+        "                stage31_diag.get(\"whole_to_part_stage33_shadow_support\", 0)"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 1271,
+      "before_end_exclusive": 1271,
+      "after_start": 1362,
+      "after_end_exclusive": 1375,
+      "before": [],
+      "after": [
+        "            ),",
+        "            (\"Whole/Part v2 Enabled Counts\", \"stage33_whole_part_v2_enabled_counts\"),",
+        "            (",
+        "                \"Whole/Part Direct Support Candidate Counts\",",
+        "                \"stage33_whole_part_direct_support_candidate_counts\",",
+        "            ),",
+        "            (",
+        "                \"Whole/Part Direct Support Allowed Counts\",",
+        "                \"stage33_whole_part_direct_support_allowed_counts\",",
+        "            ),",
+        "            (",
+        "                \"Whole/Part Direct Support Block Reason Counts\",",
+        "                \"stage33_whole_part_direct_support_block_reason_counts\","
+      ],
+      "before_context": [
+        "            (",
+        "                \"Whole/Part Direct Support Enabled Counts\",",
+        "                \"stage33_whole_part_direct_support_enabled_counts\",",
+        "            ),",
+        "        ):",
+        "            lines.extend([\"\", f\"### {title}\", \"| Value | Count |\", \"|---|---:|\"])"
+      ],
+      "after_context": [
+        "            (",
+        "                \"Whole/Part Direct Support Enabled Counts\",",
+        "                \"stage33_whole_part_direct_support_enabled_counts\",",
+        "            ),",
+        "        ):",
+        "            lines.extend([\"\", f\"### {title}\", \"| Value | Count |\", \"|---|---:|\"])"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 1656,
+      "before_end_exclusive": 1656,
+      "after_start": 1760,
+      "after_end_exclusive": 1778,
+      "before": [],
+      "after": [
+        "        \"stage33_whole_part_v2_enabled_counts\": (",
+        "            stage33_summary.get(\"stage33_whole_part_v2_enabled_counts\")",
+        "            if stage33_summary else None",
+        "        ),",
+        "        \"stage33_whole_part_direct_support_candidate_counts\": (",
+        "            stage33_summary.get(\"stage33_whole_part_direct_support_candidate_counts\")",
+        "            if stage33_summary else None",
+        "        ),",
+        "        \"stage33_whole_part_direct_support_allowed_counts\": (",
+        "            stage33_summary.get(\"stage33_whole_part_direct_support_allowed_counts\")",
+        "            if stage33_summary else None",
+        "        ),",
+        "        \"stage33_whole_part_direct_support_block_reason_counts\": (",
+        "            stage33_summary.get(",
+        "                \"stage33_whole_part_direct_support_block_reason_counts\"",
+        "            )",
+        "            if stage33_summary else None",
+        "        ),"
+      ],
+      "before_context": [
+        "            stage33_summary.get(\"stage33_whole_part_direct_support_enabled_counts\")",
+        "            if stage33_summary else None",
+        "        ),",
+        "        \"stage33_conditional_summary\": stage33_conditional_summary,",
+        "        \"stage33_conditional_action_counts\": (",
+        "            stage33_conditional_summary.get(\"stage33_conditional_action_counts\")"
+      ],
+      "after_context": [
+        "            stage33_summary.get(\"stage33_whole_part_direct_support_enabled_counts\")",
+        "            if stage33_summary else None",
+        "        ),",
+        "        \"stage33_conditional_summary\": stage33_conditional_summary,",
+        "        \"stage33_conditional_action_counts\": (",
+        "            stage33_conditional_summary.get(\"stage33_conditional_action_counts\")"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+[
+  {
+    "before": {
+      "identity": {
+        "commit": "2f0bee80e40877f582bebc9b3e971be8dee06aa2",
+        "path": "tests/test_intervention_losses.py",
+        "blob": "285f98dd504dd1e4a7f72283d99973e1fe1538ea",
+        "object_type": "commit",
+        "bytes": 3708,
+        "sha256": "3c89aa66a1e4d27b7615c712a4f6661a6a2cff5f9a9cc241ec54b39c9ee07a96"
+      },
+      "evidence_file": "evidence\\036_before_companion_test_intervention_losses.py",
+      "text_projection": "from __future__ import annotations\n\nimport pytest\nimport torch\n\nfrom contramamba.losses import intervention_pairwise_losses\n\n\nPAIR_IDS = [\"p\"] * 6\nINTERVENTIONS = [\n    \"none\",\n    \"paraphrase\",\n    \"predicate_swap\",\n    \"evidence_deletion\",\n    \"evidence_truncation\",\n    \"polarity_flip\",\n]\n\n\ndef ideal_output() -> dict[str, torch.Tensor]:\n    return {\n        \"frame_logit\": torch.tensor([1.0, 1.0, 1.0, -1.0, -1.0, 1.0], requires_grad=True),\n        \"predicate_coverage_logit\": torch.tensor(\n            [1.0, 1.0, 0.0, 1.0, 1.0, 1.0], requires_grad=True\n        ),\n        \"sufficiency_logit\": torch.tensor(\n            [1.0, 1.0, 1.0, 0.0, 0.0, 1.0], requires_grad=True\n        ),\n        \"entitlement_prob\": torch.tensor(\n            [0.8, 0.8, 0.2, 0.1, 0.1, 0.8], requires_grad=True\n        ),\n        \"polarity_margin\": torch.tensor(\n            [2.0, 2.0, 0.0, 0.0, 0.0, -2.0], requires_grad=True\n        ),\n        \"logits\": torch.tensor(\n            [\n                [0.0, 0.0, 2.0],\n                [0.0, 0.0, 2.0],\n                [0.0, 2.0, 0.0],\n                [0.0, 2.0, 0.0],\n                [0.0, 2.0, 0.0],\n                [2.0, 0.0, 0.0],\n            ],\n            requires_grad=True,\n        ),\n    }\n\n\ndef test_ideal_intervention_relations_have_zero_loss() -> None:\n    losses = intervention_pairwise_losses(\n        ideal_output(),\n        PAIR_IDS,\n        INTERVENTIONS,\n        ranking_margin=0.5,\n        lambda_frame_anchor=0.0,\n        lambda_predicate_anchor=0.0,\n    )\n    assert torch.equal(losses[\"total\"], torch.tensor(0.0))\n    assert set(losses) == {\n        \"total\",\n        \"frame_preserve\",\n        \"frame_anchor\",\n        \"predicate_contrast\",\n        \"predicate_anchor\",\n        \"sufficiency_contrast\",\n        \"polarity_flip\",\n        \"paraphrase_preserve\",\n        \"entitlement_preserve\",\n        \"logit_preserve\",\n    }\n\n\ndef test_violations_produce_loss_and_gradients() -> None:\n    output = ideal_output()\n    output[\"frame_logit\"] = torch.tensor(\n        [1.0, -1.0, -1.0, -1.0, -1.0, -1.0], requires_grad=True\n    )\n    output[\"predicate_coverage_logit\"] = torch.tensor(\n        [0.0, 0.0, 1.0, 0.0, 0.0, 0.0], requires_grad=True\n    )\n    output[\"sufficiency_logit\"] = torch.tensor(\n        [0.0, 0.0, 0.0, 1.0, 1.0, 0.0], requires_grad=True\n    )\n    output[\"entitlement_prob\"] = torch.tensor(\n        [0.9, 0.2, 0.2, 0.1, 0.1, 0.1], requires_grad=True\n    )\n    output[\"polarity_margin\"] = torch.tensor(\n        [2.0, 0.0, 0.0, 0.0, 0.0, 2.0], requires_grad=True\n    )\n    losses = intervention_pairwise_losses(output, PAIR_IDS, INTERVENTIONS)\n    losses[\"total\"].backward()\n    assert losses[\"total\"].item() > 0\n    assert output[\"frame_logit\"].grad is not None\n    assert output[\"polarity_margin\"].grad is not None\n\n\ndef test_pair_metadata_validation() -> None:\n    with pytest.raises(ValueError, match=\"equal length\"):\n        intervention_pairwise_losses(ideal_output(), [\"p\"], INTERVENTIONS)\n    with pytest.raises(ValueError, match=\"has no original\"):\n        intervention_pairwise_losses(\n            ideal_output(),\n            [\"p\"] * 5,\n            INTERVENTIONS[1:],\n        )\n\n\ndef test_frame_anchor_penalizes_jointly_low_preserved_frames() -> None:\n    high = ideal_output()\n    low = ideal_output()\n    low[\"frame_logit\"] = torch.tensor(\n        [-5.0, -5.0, -5.0, -1.0, -1.0, -5.0], requires_grad=True\n    )\n    high_losses = intervention_pairwise_losses(high, PAIR_IDS, INTERVENTIONS)\n    low_losses = intervention_pairwise_losses(low, PAIR_IDS, INTERVENTIONS)\n    assert low_losses[\"frame_preserve\"].item() == 0.0\n    assert low_losses[\"frame_anchor\"] > high_losses[\"frame_anchor\"]\n    assert low_losses[\"total\"] > high_losses[\"total\"]\n"
+    },
+    "after": {
+      "identity": {
+        "commit": "f972d6b3049de12a73301ad4200fbeaf20043f93",
+        "path": "tests/test_intervention_losses.py",
+        "blob": "b39a3fa6dac4aeaa99f0f9aa3373b6e70b14b84a",
+        "object_type": "commit",
+        "bytes": 4899,
+        "sha256": "22ab87b0f7b2813e416557168d9eb65ad9cdd25b56e53e8f455b272f29cbf0e2"
+      },
+      "evidence_file": "evidence\\036_after_companion_test_intervention_losses.py",
+      "text_projection": "from __future__ import annotations\n\nimport pytest\nimport torch\n\nfrom contramamba.losses import intervention_pairwise_losses\n\n\nPAIR_IDS = [\"p\"] * 6\nINTERVENTIONS = [\n    \"none\",\n    \"paraphrase\",\n    \"predicate_swap\",\n    \"evidence_deletion\",\n    \"evidence_truncation\",\n    \"polarity_flip\",\n]\n\n\ndef ideal_output() -> dict[str, torch.Tensor]:\n    return {\n        \"frame_logit\": torch.tensor([1.0, 1.0, 1.0, -1.0, -1.0, 1.0], requires_grad=True),\n        \"predicate_coverage_logit\": torch.tensor(\n            [1.0, 1.0, 0.0, 1.0, 1.0, 1.0], requires_grad=True\n        ),\n        \"sufficiency_logit\": torch.tensor(\n            [1.0, 1.0, 1.0, 0.0, 0.0, 1.0], requires_grad=True\n        ),\n        \"entitlement_prob\": torch.tensor(\n            [0.8, 0.8, 0.2, 0.1, 0.1, 0.8], requires_grad=True\n        ),\n        \"polarity_margin\": torch.tensor(\n            [2.0, 2.0, 0.0, 0.0, 0.0, -2.0], requires_grad=True\n        ),\n        \"logits\": torch.tensor(\n            [\n                [0.0, 0.0, 2.0],\n                [0.0, 0.0, 2.0],\n                [0.0, 2.0, 0.0],\n                [0.0, 2.0, 0.0],\n                [0.0, 2.0, 0.0],\n                [2.0, 0.0, 0.0],\n            ],\n            requires_grad=True,\n        ),\n    }\n\n\ndef test_ideal_intervention_relations_have_zero_loss() -> None:\n    losses = intervention_pairwise_losses(\n        ideal_output(),\n        PAIR_IDS,\n        INTERVENTIONS,\n        ranking_margin=0.5,\n        lambda_frame_anchor=0.0,\n        lambda_predicate_anchor=0.0,\n    )\n    assert torch.equal(losses[\"total\"], torch.tensor(0.0))\n    assert set(losses) == {\n        \"total\",\n        \"frame_preserve\",\n        \"frame_anchor\",\n        \"predicate_contrast\",\n        \"predicate_anchor\",\n        \"sufficiency_contrast\",\n        \"polarity_flip\",\n        \"polarity_margin_anchor\",\n        \"paraphrase_preserve\",\n        \"entitlement_preserve\",\n        \"logit_preserve\",\n    }\n\n\ndef test_violations_produce_loss_and_gradients() -> None:\n    output = ideal_output()\n    output[\"frame_logit\"] = torch.tensor(\n        [1.0, -1.0, -1.0, -1.0, -1.0, -1.0], requires_grad=True\n    )\n    output[\"predicate_coverage_logit\"] = torch.tensor(\n        [0.0, 0.0, 1.0, 0.0, 0.0, 0.0], requires_grad=True\n    )\n    output[\"sufficiency_logit\"] = torch.tensor(\n        [0.0, 0.0, 0.0, 1.0, 1.0, 0.0], requires_grad=True\n    )\n    output[\"entitlement_prob\"] = torch.tensor(\n        [0.9, 0.2, 0.2, 0.1, 0.1, 0.1], requires_grad=True\n    )\n    output[\"polarity_margin\"] = torch.tensor(\n        [2.0, 0.0, 0.0, 0.0, 0.0, 2.0], requires_grad=True\n    )\n    losses = intervention_pairwise_losses(output, PAIR_IDS, INTERVENTIONS)\n    losses[\"total\"].backward()\n    assert losses[\"total\"].item() > 0\n    assert output[\"frame_logit\"].grad is not None\n    assert output[\"polarity_margin\"].grad is not None\n\n\ndef test_pair_metadata_validation() -> None:\n    with pytest.raises(ValueError, match=\"equal length\"):\n        intervention_pairwise_losses(ideal_output(), [\"p\"], INTERVENTIONS)\n    with pytest.raises(ValueError, match=\"has no original\"):\n        intervention_pairwise_losses(\n            ideal_output(),\n            [\"p\"] * 5,\n            INTERVENTIONS[1:],\n        )\n\n    with pytest.raises(ValueError, match=\"polarity_margin_min\"):\n        intervention_pairwise_losses(\n            ideal_output(), PAIR_IDS, INTERVENTIONS, polarity_margin_min=-0.1\n        )\n\n\ndef test_frame_anchor_penalizes_jointly_low_preserved_frames() -> None:\n    high = ideal_output()\n    low = ideal_output()\n    low[\"frame_logit\"] = torch.tensor(\n        [-5.0, -5.0, -5.0, -1.0, -1.0, -5.0], requires_grad=True\n    )\n    high_losses = intervention_pairwise_losses(high, PAIR_IDS, INTERVENTIONS)\n    low_losses = intervention_pairwise_losses(low, PAIR_IDS, INTERVENTIONS)\n    assert low_losses[\"frame_preserve\"].item() == 0.0\n    assert low_losses[\"frame_anchor\"] > high_losses[\"frame_anchor\"]\n    assert low_losses[\"total\"] > high_losses[\"total\"]\n\n\ndef test_zero_symmetric_polarity_margins_are_anchored() -> None:\n    output = ideal_output()\n    output[\"polarity_margin\"] = torch.zeros(6, requires_grad=True)\n    losses = intervention_pairwise_losses(\n        output, PAIR_IDS, INTERVENTIONS, polarity_margin_min=1.0\n    )\n    assert losses[\"polarity_flip\"].item() == 0.0\n    assert losses[\"polarity_margin_anchor\"].item() == pytest.approx(1.0)\n\n\ndef test_opposite_nonzero_margins_are_preferred_to_zero() -> None:\n    nonzero = intervention_pairwise_losses(\n        ideal_output(), PAIR_IDS, INTERVENTIONS, polarity_margin_min=1.0\n    )\n    zero_output = ideal_output()\n    zero_output[\"polarity_margin\"] = torch.zeros(6, requires_grad=True)\n    zero = intervention_pairwise_losses(\n        zero_output, PAIR_IDS, INTERVENTIONS, polarity_margin_min=1.0\n    )\n    assert nonzero[\"polarity_flip\"].item() == 0.0\n    assert nonzero[\"polarity_margin_anchor\"].item() == 0.0\n    assert zero[\"total\"] > nonzero[\"total\"]\n"
+    },
+    "path": "tests/test_intervention_losses.py",
+    "diff": [
+      "--- \n",
+      "+++ \n",
+      "@@ -65,4 +65,5 @@\n",
+      "         \"sufficiency_contrast\",",
+      "         \"polarity_flip\",",
+      "+        \"polarity_margin_anchor\",",
+      "         \"paraphrase_preserve\",",
+      "         \"entitlement_preserve\",",
+      "@@ -105,4 +106,9 @@\n",
+      "         )",
+      " ",
+      "+    with pytest.raises(ValueError, match=\"polarity_margin_min\"):",
+      "+        intervention_pairwise_losses(",
+      "+            ideal_output(), PAIR_IDS, INTERVENTIONS, polarity_margin_min=-0.1",
+      "+        )",
+      "+",
+      " ",
+      " def test_frame_anchor_penalizes_jointly_low_preserved_frames() -> None:",
+      "@@ -117,2 +123,26 @@\n",
+      "     assert low_losses[\"frame_anchor\"] > high_losses[\"frame_anchor\"]",
+      "     assert low_losses[\"total\"] > high_losses[\"total\"]",
+      "+",
+      "+",
+      "+def test_zero_symmetric_polarity_margins_are_anchored() -> None:",
+      "+    output = ideal_output()",
+      "+    output[\"polarity_margin\"] = torch.zeros(6, requires_grad=True)",
+      "+    losses = intervention_pairwise_losses(",
+      "+        output, PAIR_IDS, INTERVENTIONS, polarity_margin_min=1.0",
+      "+    )",
+      "+    assert losses[\"polarity_flip\"].item() == 0.0",
+      "+    assert losses[\"polarity_margin_anchor\"].item() == pytest.approx(1.0)",
+      "+",
+      "+",
+      "+def test_opposite_nonzero_margins_are_preferred_to_zero() -> None:",
+      "+    nonzero = intervention_pairwise_losses(",
+      "+        ideal_output(), PAIR_IDS, INTERVENTIONS, polarity_margin_min=1.0",
+      "+    )",
+      "+    zero_output = ideal_output()",
+      "+    zero_output[\"polarity_margin\"] = torch.zeros(6, requires_grad=True)",
+      "+    zero = intervention_pairwise_losses(",
+      "+        zero_output, PAIR_IDS, INTERVENTIONS, polarity_margin_min=1.0",
+      "+    )",
+      "+    assert nonzero[\"polarity_flip\"].item() == 0.0",
+      "+    assert nonzero[\"polarity_margin_anchor\"].item() == 0.0",
+      "+    assert zero[\"total\"] > nonzero[\"total\"]"
+    ]
+  }
+]

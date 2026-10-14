@@ -1,0 +1,863 @@
+{
+  "schema_version": "publication_semantic_validation.v1",
+  "phase": "CENSUS_RECOVERY_ONLY",
+  "validated_at": "2026-10-14T05:54:40.713029+00:00",
+  "status": "PASS_WITH_AUTHENTICATED_NONBLOCKING_REF_MOVEMENT",
+  "output_scope_and_serialized_readback": "PASS",
+  "candidate_universe": [
+    "HV000103",
+    "HV000107",
+    "HV000113",
+    "HV000114",
+    "HV000116",
+    "HV000117",
+    "HV000121",
+    "HV000133",
+    "HV000137",
+    "HV000138",
+    "HV000139",
+    "HV000140"
+  ],
+  "adjudicated_owners": [
+    "HV000103",
+    "HV000107",
+    "HV000113"
+  ],
+  "explicitly_deferred": [
+    "HV000114",
+    "HV000116",
+    "HV000117",
+    "HV000121",
+    "HV000133",
+    "HV000137",
+    "HV000138",
+    "HV000139",
+    "HV000140"
+  ],
+  "accounting": {
+    "original": 222,
+    "satisfied": 17,
+    "strict_remaining": 195
+  },
+  "applied_closure_credit": 0,
+  "checks": [
+    {
+      "name": "EXACT_UNIVERSE_12",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "AT_MOST_THREE_ORIGINAL_OWNERS",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "NINE_EXPLICIT_DEFERRALS",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "COMPLETED_ASSESSMENT_BYTES_PRESERVED",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "PINNED_ORIGINAL_DEBT_ROOT_SOURCE_IDENTITIES",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "HV000116_TREE_CHRONOLOGY_LIMIT_RETAINED",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "EVERY_ORIGINAL_REQUIREMENT_SEPARATELY_MAPPED",
+      "status": "PASS",
+      "detail": "3 literal requirements and 15 clause mappings"
+    },
+    {
+      "name": "EVERY_POSITIVE_FINDING_HAS_EXACT_VALID_LOCATORS",
+      "status": "PASS",
+      "detail": {
+        "locator_checks_so_far": 249
+      }
+    },
+    {
+      "name": "DOCUMENTARY_HISTORICAL_SCIENTIFIC_LEVELS_SEPARATED",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "ZERO_APPLIED_CLOSURE_CREDIT",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "COMPLETE_COMPANION_COMPARISONS_REPRODUCED",
+      "status": "PASS",
+      "detail": "40/84/40 JSON operations; 3/18/3 complete README hunks"
+    },
+    {
+      "name": "EXISTING_NUMERICAL_ENDPOINTS_UNCHANGED",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "ORIGINAL_VISUALS_INSPECTED_NO_OCR_OR_UNSEEN_INFERENCE",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "FROZEN_DECLARED_INPUT_HASHES",
+      "status": "PASS",
+      "detail": {
+        "checks": 77
+      }
+    },
+    {
+      "name": "ACCOUNTING_222_17_195_UNCHANGED",
+      "status": "PASS",
+      "detail": {
+        "original": 222,
+        "satisfied": 17,
+        "strict_remaining": 195
+      }
+    },
+    {
+      "name": "ALL_EXISTING_ARTIFACTS_BYTE_PRESERVED",
+      "status": "PASS",
+      "detail": {
+        "baseline_files": 4376,
+        "mutated": []
+      }
+    },
+    {
+      "name": "HEAD_INDEX_BRANCH_TRACKED_STAGED_PRESERVED",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "REFS_STABLE_SINCE_QUALIFIED_OBSERVATION",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "FULL_REF_ENDPOINT_COMPARISON_COMPLETE",
+      "status": "PASS",
+      "detail": {
+        "start_show_ref_entries": 65,
+        "end_show_ref_entries": 65,
+        "start_ref_metadata_entries": 64,
+        "end_ref_metadata_entries": 64,
+        "raw_unchanged_status": "FAIL_REFS_MOVED",
+        "movement_count": 2
+      }
+    },
+    {
+      "name": "NONBLOCKING_MOVEMENT_NONDESTRUCTIVE_AND_PIN_INDEPENDENT",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "HISTORICAL_AND_CURRENT_RAW_REF_FAILS_RETAINED",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "UNCERTIFIED_INTERVALS_EXPLICIT",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "BASELINE_TRACKED_UNTRACKED_MEMBERSHIP_PRESERVED",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "OUTPUT_SCOPE_PREVALIDATION",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "NO_OUTSIDE_SCOPE_NEW_AUDIT_FILES",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "NO_OUTSIDE_SCOPE_NEW_UNTRACKED_FILES",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "GIT_DIFF_CHECK",
+      "status": "PASS",
+      "detail": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "name": "TRACKED_STAGED_DIFF_STATS_EMPTY",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "FINAL_EXACT_FIVE_OUTPUT_SCOPE",
+      "status": "PASS",
+      "detail": [
+        "checkpoint.json",
+        "evidence_manifest.json",
+        "publication_assessments.jsonl",
+        "report.md",
+        "validation.json"
+      ]
+    },
+    {
+      "name": "FINAL_SERIALIZED_ALL_OUTPUT_READBACK_AND_HASHES",
+      "status": "PASS",
+      "detail": "All three JSON objects and all three JSONL rows re-read; four excluding-self hashes match; report UTF-8 readback nonempty; original completed line hashes retained"
+    },
+    {
+      "name": "FINAL_FULL_REF_METADATA_AND_INDEX_RECHECK",
+      "status": "PASS",
+      "detail": "No further movement after recorded qualified endpoints; both initial movements and raw FAIL retained"
+    }
+  ],
+  "blocking_failed_checks": [],
+  "raw_failed_checks_retained": [
+    {
+      "name": "ALL_GIT_REFS_UNCHANGED",
+      "status": "FAIL_REFS_MOVED",
+      "qualification": {
+        "raw_endpoint_unchanged": "FAIL_REFS_MOVED",
+        "historical_failures_unchanged": true,
+        "qualified_result": "PASS_AUTHENTICATED_UNRELATED_FAST_FORWARD_PINNED_INPUT_INDEPENDENCE",
+        "exact_movements": [
+          {
+            "ref": "refs/heads/gen5-causal-role-state-ownership",
+            "before": "bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b",
+            "after": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+            "after_object_type": "commit",
+            "classification": "NON_DESTRUCTIVE_FAST_FORWARD",
+            "non_destructive_authenticated": true,
+            "source": "External to this task: no ref-writing command was executed; actor/cause/time not certified"
+          },
+          {
+            "ref": "refs/remotes/origin/gen5-causal-role-state-ownership",
+            "before": "bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b",
+            "after": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+            "after_object_type": "commit",
+            "classification": "NON_DESTRUCTIVE_FAST_FORWARD",
+            "non_destructive_authenticated": true,
+            "source": "External to this task: no ref-writing command was executed; actor/cause/time not certified"
+          }
+        ],
+        "independence_checks": [
+          {
+            "ref": "refs/heads/gen5-causal-role-state-ownership",
+            "before": "bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b",
+            "after": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+            "full_changed_paths": [
+              "src/contramamba/gen5_shared_bypass_g2_loaded_parent_bridge.py",
+              "tests/test_gen5_shared_bypass_g2_loaded_parent_bridge_synthetic.py"
+            ],
+            "pinned_dependency_path_overlap": [],
+            "all_paths_in_gen5_namespace": true,
+            "history_status": "NON_DESTRUCTIVE_FAST_FORWARD",
+            "pinned_input_independence": "PASS_FIXED_COMMIT_BLOB_AND_SAVED_BYTE_BINDINGS_NO_MOVING_REF_INPUT"
+          },
+          {
+            "ref": "refs/remotes/origin/gen5-causal-role-state-ownership",
+            "before": "bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b",
+            "after": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+            "full_changed_paths": [
+              "src/contramamba/gen5_shared_bypass_g2_loaded_parent_bridge.py",
+              "tests/test_gen5_shared_bypass_g2_loaded_parent_bridge_synthetic.py"
+            ],
+            "pinned_dependency_path_overlap": [],
+            "all_paths_in_gen5_namespace": true,
+            "history_status": "NON_DESTRUCTIVE_FAST_FORWARD",
+            "pinned_input_independence": "PASS_FIXED_COMMIT_BLOB_AND_SAVED_BYTE_BINDINGS_NO_MOVING_REF_INPUT"
+          }
+        ],
+        "uncertified_intervals": [
+          "Before this task baseline; historical checks retained separately",
+          "Between endpoint observations, transient changes returning to identical endpoints are not certified"
+        ],
+        "actor_cause_wall_clock_time": "UNDETERMINED; no ref-writing command by this task"
+      }
+    }
+  ],
+  "historical_failures_retained": [
+    {
+      "evidence": {
+        "file": "audits/full_history_20261013/parallel_20261013/wave_04/rs125_130m_parent_provenance/validation.json",
+        "file_sha256": "73fce08697f524a7a3fe80e8886cae9376cb77e965c850a91ebda3fe26b963b8",
+        "json_pointer": "/overall_static_validation"
+      },
+      "status": "FAIL_REQUIRED_REFS_UNCHANGED_CHECK",
+      "preserved_without_relabeling": true
+    },
+    {
+      "evidence": {
+        "file": "audits/full_history_20261013/parallel_20261013/wave_04/rs125_130m_parent_provenance/validation.json",
+        "file_sha256": "73fce08697f524a7a3fe80e8886cae9376cb77e965c850a91ebda3fe26b963b8",
+        "json_pointer": "/overall_static_validation"
+      },
+      "status": "FAIL_REQUIRED_REFS_UNCHANGED_CHECK",
+      "preserved_without_relabeling": true
+    }
+  ],
+  "git_start": {
+    "head": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571",
+    "branch": "",
+    "status_porcelain": "?? audits/\n",
+    "refs_show_ref_head_dereference": [
+      "ff806bd5bd8efc62fcf6420cf8b097a63ed70571 HEAD",
+      "4a950cff26a485ef9e0077ecbc0f91daf57160f4 refs/codex/turn-diffs/captures/1791955905036/cfe326cc-2a3a-4cf6-9ac2-5fa60681ca7e/base",
+      "303f2863736d4ecb723314dab8a7616c43e49207 refs/codex/turn-diffs/checkpoints/223e1b2ada891dccb924639f161a2a3f/0ba828004d8e7d49ba2b56f724de1a4d/1791823846684/8d45a963-b920-48ce-a5ed-5cb274d1ce7e",
+      "549f185452112dba5732677ce795ede5425558e4 refs/codex/turn-diffs/checkpoints/7105d3700b4f3531e0883a54cf3062dc/8e71ee7397078937da7fe9a90a85ad61/1791938529851/4ac24cf8-6fc9-4112-ac57-d0be3adf252c",
+      "99597caddf0a24e5810e33654c45c4fa33f2b72a refs/codex/turn-diffs/checkpoints/8ffd7ca6edb92ce8b1b25f8e3dcf896f/1254ddec5f4b1aa8e0a4a6fc223f391d/1791898161392/a8d9618a-42dc-4a98-a7b7-3259fcc382e8",
+      "93b906efb2c2e96084f9cbd6bbd48cf89920cdba refs/codex/turn-diffs/checkpoints/9f1765da2bcafc78693789aef0d73a7d/8773496cdc31c140db02a853f36c31ee/1791822079155/9ba675fc-7f6e-4a8d-8e06-e2aa662f3777",
+      "18a14e7cf07de24c5cb8b3ad3b421337324fcebd refs/heads/g4k-seed181-checkpoint-replication-prep",
+      "ab80d9fbab103c73aaa459b10c5caeaa2f69dfd4 refs/heads/gen-series",
+      "27ad8cd9a0962bf6e5e3c79c5a7e277e54a86317 refs/heads/gen4-behavioral-restoration-bridge",
+      "8496ece911e0d461f0abbdf1a0fa619f8a2f22ab refs/heads/gen4-k-directional-alignment-transport",
+      "88de940d1b24b4b02c670a9ae67a2046aa082b38 refs/heads/gen4-k-family-subspace-sensitivity",
+      "ad375c88385eef507e151f95717e951919a6a3fe refs/heads/gen4-k-fast-cuda-equivalence",
+      "a4d661a04b8547f4955c1ecf28e21698c53ec74e refs/heads/gen4-k-large-correction-prospective-validation",
+      "41f4678d09f7c779a8edc2eec6cc08a9effd9f41 refs/heads/gen4-k-transport-failure-static-decomposition",
+      "29e0cc6330b5e5270b6057a02c1b86fdeb45ca96 refs/heads/gen4-k-xg1-cross-generator-replication",
+      "2c237fa7d2f4d2fdf7029826599a164c69455f36 refs/heads/gen4-k-xg2-basis-holdout",
+      "6e5db0a69e05417938bd05038cf9dba1a39846bf refs/heads/gen4-k-xg2-xg4-local-jacobian",
+      "593199d8e849572fc77b1b0bc7475d3d19468d12 refs/heads/gen4-mamba1-five-scale-coordinate-free-geometry",
+      "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69 refs/heads/gen4-mamba1-five-scale-ladder-extension",
+      "ea03cdaa5394de03389d31aa1089b51e10340a57 refs/heads/gen4-mamba370m-core-replication",
+      "a738b4c169d30b0a7e21563c3aba2c29c481c456 refs/heads/gen4-phase-d-cache-validator-correction",
+      "bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b refs/heads/gen5-causal-role-state-ownership",
+      "b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7 refs/heads/iclr2027-mamba-five-scale-paper",
+      "5f5f4d6a80085ad8baf43445475d1c3049535c22 refs/heads/longterm-k-series-native-state-kinematics",
+      "75b56b5b9390c0d1dcbbc38330d5dfdba8f44d75 refs/heads/main",
+      "ca1419603f397aaf4e157504c15b58cb403377de refs/heads/main-readme-sync",
+      "ff2fb076f6e66a34a632515bb8502d8b1c90ad7f refs/heads/o0c-minimal-scientific-runner-implementation",
+      "b32d73dfa49b6b9dfabf3093802904323cf679cd refs/heads/p3w7-a0-seed180-normal-reference-freeze",
+      "fb4f0e2c2a8382a642f1272b66f29552adaecb0e refs/heads/p3w7-a0-seed181-replacement-result",
+      "82739bdfc8eee184de10ed8f55434f203a6d59a5 refs/heads/p3w7-a0-seed182-result",
+      "be6bf6477d6b97b3da9aea117ca49f970a186b21 refs/heads/p3w7-a1-a2-a3-factorial-execution-authority-n3",
+      "91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea refs/heads/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2",
+      "ba3fd1a82cba029dac05ba38a86d518252ab858f refs/heads/p3w7-current-lineage-calibration-authority",
+      "3d2691afcc8ec6c0f59ba304f73631b6bc903208 refs/migration/pre-migration-stash-0",
+      "7816ed12332bd5be3ec6e93214cefa7f728e8c6e refs/migration/pre-migration-stash-1",
+      "ca1419603f397aaf4e157504c15b58cb403377de refs/remotes/origin/HEAD",
+      "18a14e7cf07de24c5cb8b3ad3b421337324fcebd refs/remotes/origin/g4k-seed181-checkpoint-replication-prep",
+      "27ad8cd9a0962bf6e5e3c79c5a7e277e54a86317 refs/remotes/origin/gen4-behavioral-restoration-bridge",
+      "8496ece911e0d461f0abbdf1a0fa619f8a2f22ab refs/remotes/origin/gen4-k-directional-alignment-transport",
+      "88de940d1b24b4b02c670a9ae67a2046aa082b38 refs/remotes/origin/gen4-k-family-subspace-sensitivity",
+      "ad375c88385eef507e151f95717e951919a6a3fe refs/remotes/origin/gen4-k-fast-cuda-equivalence",
+      "a4d661a04b8547f4955c1ecf28e21698c53ec74e refs/remotes/origin/gen4-k-large-correction-prospective-validation",
+      "41f4678d09f7c779a8edc2eec6cc08a9effd9f41 refs/remotes/origin/gen4-k-transport-failure-static-decomposition",
+      "29e0cc6330b5e5270b6057a02c1b86fdeb45ca96 refs/remotes/origin/gen4-k-xg1-cross-generator-replication",
+      "2c237fa7d2f4d2fdf7029826599a164c69455f36 refs/remotes/origin/gen4-k-xg2-basis-holdout",
+      "6e5db0a69e05417938bd05038cf9dba1a39846bf refs/remotes/origin/gen4-k-xg2-xg4-local-jacobian",
+      "593199d8e849572fc77b1b0bc7475d3d19468d12 refs/remotes/origin/gen4-mamba1-five-scale-coordinate-free-geometry",
+      "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69 refs/remotes/origin/gen4-mamba1-five-scale-ladder-extension",
+      "ea03cdaa5394de03389d31aa1089b51e10340a57 refs/remotes/origin/gen4-mamba370m-core-replication",
+      "a738b4c169d30b0a7e21563c3aba2c29c481c456 refs/remotes/origin/gen4-phase-d-cache-validator-correction",
+      "bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b refs/remotes/origin/gen5-causal-role-state-ownership",
+      "b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7 refs/remotes/origin/iclr2027-mamba-five-scale-paper",
+      "5f5f4d6a80085ad8baf43445475d1c3049535c22 refs/remotes/origin/longterm-k-series-native-state-kinematics",
+      "ca1419603f397aaf4e157504c15b58cb403377de refs/remotes/origin/main",
+      "ff2fb076f6e66a34a632515bb8502d8b1c90ad7f refs/remotes/origin/o0c-minimal-scientific-runner-implementation",
+      "b32d73dfa49b6b9dfabf3093802904323cf679cd refs/remotes/origin/p3w7-a0-seed180-normal-reference-freeze",
+      "fb4f0e2c2a8382a642f1272b66f29552adaecb0e refs/remotes/origin/p3w7-a0-seed181-replacement-result",
+      "82739bdfc8eee184de10ed8f55434f203a6d59a5 refs/remotes/origin/p3w7-a0-seed182-result",
+      "be6bf6477d6b97b3da9aea117ca49f970a186b21 refs/remotes/origin/p3w7-a1-a2-a3-factorial-execution-authority-n3",
+      "91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea refs/remotes/origin/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2",
+      "ba3fd1a82cba029dac05ba38a86d518252ab858f refs/remotes/origin/p3w7-current-lineage-calibration-authority",
+      "3d2691afcc8ec6c0f59ba304f73631b6bc903208 refs/stash",
+      "60b430fccec9e51e4d1f12131eabf37d03a8be66 refs/tags/gen4-name-q1q3-states-60b430f",
+      "4a2ef821122a36c8e48ec261012519102b63d6c3 refs/tags/gen4-native-mamba-phase-d-states-4a2ef82",
+      "cf0826174c2ab1b2203f68afbdeed9da3ff64aa2 refs/tags/gen4-r5-evaluator-checkpoints-cf08261"
+    ],
+    "refs_metadata": [
+      "refs/codex/turn-diffs/captures/1791955905036/cfe326cc-2a3a-4cf6-9ac2-5fa60681ca7e/base|4a950cff26a485ef9e0077ecbc0f91daf57160f4|tree||",
+      "refs/codex/turn-diffs/checkpoints/223e1b2ada891dccb924639f161a2a3f/0ba828004d8e7d49ba2b56f724de1a4d/1791823846684/8d45a963-b920-48ce-a5ed-5cb274d1ce7e|303f2863736d4ecb723314dab8a7616c43e49207|tree||",
+      "refs/codex/turn-diffs/checkpoints/7105d3700b4f3531e0883a54cf3062dc/8e71ee7397078937da7fe9a90a85ad61/1791938529851/4ac24cf8-6fc9-4112-ac57-d0be3adf252c|549f185452112dba5732677ce795ede5425558e4|tree||",
+      "refs/codex/turn-diffs/checkpoints/8ffd7ca6edb92ce8b1b25f8e3dcf896f/1254ddec5f4b1aa8e0a4a6fc223f391d/1791898161392/a8d9618a-42dc-4a98-a7b7-3259fcc382e8|99597caddf0a24e5810e33654c45c4fa33f2b72a|tree||",
+      "refs/codex/turn-diffs/checkpoints/9f1765da2bcafc78693789aef0d73a7d/8773496cdc31c140db02a853f36c31ee/1791822079155/9ba675fc-7f6e-4a8d-8e06-e2aa662f3777|93b906efb2c2e96084f9cbd6bbd48cf89920cdba|tree||",
+      "refs/heads/g4k-seed181-checkpoint-replication-prep|18a14e7cf07de24c5cb8b3ad3b421337324fcebd|commit||",
+      "refs/heads/gen-series|ab80d9fbab103c73aaa459b10c5caeaa2f69dfd4|commit||",
+      "refs/heads/gen4-behavioral-restoration-bridge|27ad8cd9a0962bf6e5e3c79c5a7e277e54a86317|commit||",
+      "refs/heads/gen4-k-directional-alignment-transport|8496ece911e0d461f0abbdf1a0fa619f8a2f22ab|commit||",
+      "refs/heads/gen4-k-family-subspace-sensitivity|88de940d1b24b4b02c670a9ae67a2046aa082b38|commit||",
+      "refs/heads/gen4-k-fast-cuda-equivalence|ad375c88385eef507e151f95717e951919a6a3fe|commit||",
+      "refs/heads/gen4-k-large-correction-prospective-validation|a4d661a04b8547f4955c1ecf28e21698c53ec74e|commit||",
+      "refs/heads/gen4-k-transport-failure-static-decomposition|41f4678d09f7c779a8edc2eec6cc08a9effd9f41|commit||",
+      "refs/heads/gen4-k-xg1-cross-generator-replication|29e0cc6330b5e5270b6057a02c1b86fdeb45ca96|commit||",
+      "refs/heads/gen4-k-xg2-basis-holdout|2c237fa7d2f4d2fdf7029826599a164c69455f36|commit||",
+      "refs/heads/gen4-k-xg2-xg4-local-jacobian|6e5db0a69e05417938bd05038cf9dba1a39846bf|commit||",
+      "refs/heads/gen4-mamba1-five-scale-coordinate-free-geometry|593199d8e849572fc77b1b0bc7475d3d19468d12|commit||",
+      "refs/heads/gen4-mamba1-five-scale-ladder-extension|3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69|commit||",
+      "refs/heads/gen4-mamba370m-core-replication|ea03cdaa5394de03389d31aa1089b51e10340a57|commit||",
+      "refs/heads/gen4-phase-d-cache-validator-correction|a738b4c169d30b0a7e21563c3aba2c29c481c456|commit||",
+      "refs/heads/gen5-causal-role-state-ownership|bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b|commit||",
+      "refs/heads/iclr2027-mamba-five-scale-paper|b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7|commit||",
+      "refs/heads/longterm-k-series-native-state-kinematics|5f5f4d6a80085ad8baf43445475d1c3049535c22|commit||",
+      "refs/heads/main|75b56b5b9390c0d1dcbbc38330d5dfdba8f44d75|commit||",
+      "refs/heads/main-readme-sync|ca1419603f397aaf4e157504c15b58cb403377de|commit||",
+      "refs/heads/o0c-minimal-scientific-runner-implementation|ff2fb076f6e66a34a632515bb8502d8b1c90ad7f|commit||",
+      "refs/heads/p3w7-a0-seed180-normal-reference-freeze|b32d73dfa49b6b9dfabf3093802904323cf679cd|commit||",
+      "refs/heads/p3w7-a0-seed181-replacement-result|fb4f0e2c2a8382a642f1272b66f29552adaecb0e|commit||",
+      "refs/heads/p3w7-a0-seed182-result|82739bdfc8eee184de10ed8f55434f203a6d59a5|commit||",
+      "refs/heads/p3w7-a1-a2-a3-factorial-execution-authority-n3|be6bf6477d6b97b3da9aea117ca49f970a186b21|commit||",
+      "refs/heads/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2|91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea|commit||",
+      "refs/heads/p3w7-current-lineage-calibration-authority|ba3fd1a82cba029dac05ba38a86d518252ab858f|commit||",
+      "refs/migration/pre-migration-stash-0|3d2691afcc8ec6c0f59ba304f73631b6bc903208|commit||",
+      "refs/migration/pre-migration-stash-1|7816ed12332bd5be3ec6e93214cefa7f728e8c6e|commit||",
+      "refs/remotes/origin/HEAD|ca1419603f397aaf4e157504c15b58cb403377de|commit||refs/remotes/origin/main",
+      "refs/remotes/origin/g4k-seed181-checkpoint-replication-prep|18a14e7cf07de24c5cb8b3ad3b421337324fcebd|commit||",
+      "refs/remotes/origin/gen4-behavioral-restoration-bridge|27ad8cd9a0962bf6e5e3c79c5a7e277e54a86317|commit||",
+      "refs/remotes/origin/gen4-k-directional-alignment-transport|8496ece911e0d461f0abbdf1a0fa619f8a2f22ab|commit||",
+      "refs/remotes/origin/gen4-k-family-subspace-sensitivity|88de940d1b24b4b02c670a9ae67a2046aa082b38|commit||",
+      "refs/remotes/origin/gen4-k-fast-cuda-equivalence|ad375c88385eef507e151f95717e951919a6a3fe|commit||",
+      "refs/remotes/origin/gen4-k-large-correction-prospective-validation|a4d661a04b8547f4955c1ecf28e21698c53ec74e|commit||",
+      "refs/remotes/origin/gen4-k-transport-failure-static-decomposition|41f4678d09f7c779a8edc2eec6cc08a9effd9f41|commit||",
+      "refs/remotes/origin/gen4-k-xg1-cross-generator-replication|29e0cc6330b5e5270b6057a02c1b86fdeb45ca96|commit||",
+      "refs/remotes/origin/gen4-k-xg2-basis-holdout|2c237fa7d2f4d2fdf7029826599a164c69455f36|commit||",
+      "refs/remotes/origin/gen4-k-xg2-xg4-local-jacobian|6e5db0a69e05417938bd05038cf9dba1a39846bf|commit||",
+      "refs/remotes/origin/gen4-mamba1-five-scale-coordinate-free-geometry|593199d8e849572fc77b1b0bc7475d3d19468d12|commit||",
+      "refs/remotes/origin/gen4-mamba1-five-scale-ladder-extension|3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69|commit||",
+      "refs/remotes/origin/gen4-mamba370m-core-replication|ea03cdaa5394de03389d31aa1089b51e10340a57|commit||",
+      "refs/remotes/origin/gen4-phase-d-cache-validator-correction|a738b4c169d30b0a7e21563c3aba2c29c481c456|commit||",
+      "refs/remotes/origin/gen5-causal-role-state-ownership|bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b|commit||",
+      "refs/remotes/origin/iclr2027-mamba-five-scale-paper|b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7|commit||",
+      "refs/remotes/origin/longterm-k-series-native-state-kinematics|5f5f4d6a80085ad8baf43445475d1c3049535c22|commit||",
+      "refs/remotes/origin/main|ca1419603f397aaf4e157504c15b58cb403377de|commit||",
+      "refs/remotes/origin/o0c-minimal-scientific-runner-implementation|ff2fb076f6e66a34a632515bb8502d8b1c90ad7f|commit||",
+      "refs/remotes/origin/p3w7-a0-seed180-normal-reference-freeze|b32d73dfa49b6b9dfabf3093802904323cf679cd|commit||",
+      "refs/remotes/origin/p3w7-a0-seed181-replacement-result|fb4f0e2c2a8382a642f1272b66f29552adaecb0e|commit||",
+      "refs/remotes/origin/p3w7-a0-seed182-result|82739bdfc8eee184de10ed8f55434f203a6d59a5|commit||",
+      "refs/remotes/origin/p3w7-a1-a2-a3-factorial-execution-authority-n3|be6bf6477d6b97b3da9aea117ca49f970a186b21|commit||",
+      "refs/remotes/origin/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2|91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea|commit||",
+      "refs/remotes/origin/p3w7-current-lineage-calibration-authority|ba3fd1a82cba029dac05ba38a86d518252ab858f|commit||",
+      "refs/stash|3d2691afcc8ec6c0f59ba304f73631b6bc903208|commit||",
+      "refs/tags/gen4-name-q1q3-states-60b430f|60b430fccec9e51e4d1f12131eabf37d03a8be66|commit||",
+      "refs/tags/gen4-native-mamba-phase-d-states-4a2ef82|4a2ef821122a36c8e48ec261012519102b63d6c3|commit||",
+      "refs/tags/gen4-r5-evaluator-checkpoints-cf08261|cf0826174c2ab1b2203f68afbdeed9da3ff64aa2|commit||"
+    ],
+    "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "index_path": "C:\\Users\\Home1\\Desktop\\ContraMamba\\.git\\worktrees\\cm-full-audit-20261013\\index",
+    "index_sha256": "223983e5960be89db1bdfa3532706d4d1e7064f71ceeb37c99188703b22ff68f"
+  },
+  "git_end": {
+    "head": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571",
+    "branch": "",
+    "status_porcelain": "?? audits/\n",
+    "refs_show_ref_head_dereference": [
+      "ff806bd5bd8efc62fcf6420cf8b097a63ed70571 HEAD",
+      "4a950cff26a485ef9e0077ecbc0f91daf57160f4 refs/codex/turn-diffs/captures/1791955905036/cfe326cc-2a3a-4cf6-9ac2-5fa60681ca7e/base",
+      "303f2863736d4ecb723314dab8a7616c43e49207 refs/codex/turn-diffs/checkpoints/223e1b2ada891dccb924639f161a2a3f/0ba828004d8e7d49ba2b56f724de1a4d/1791823846684/8d45a963-b920-48ce-a5ed-5cb274d1ce7e",
+      "549f185452112dba5732677ce795ede5425558e4 refs/codex/turn-diffs/checkpoints/7105d3700b4f3531e0883a54cf3062dc/8e71ee7397078937da7fe9a90a85ad61/1791938529851/4ac24cf8-6fc9-4112-ac57-d0be3adf252c",
+      "99597caddf0a24e5810e33654c45c4fa33f2b72a refs/codex/turn-diffs/checkpoints/8ffd7ca6edb92ce8b1b25f8e3dcf896f/1254ddec5f4b1aa8e0a4a6fc223f391d/1791898161392/a8d9618a-42dc-4a98-a7b7-3259fcc382e8",
+      "93b906efb2c2e96084f9cbd6bbd48cf89920cdba refs/codex/turn-diffs/checkpoints/9f1765da2bcafc78693789aef0d73a7d/8773496cdc31c140db02a853f36c31ee/1791822079155/9ba675fc-7f6e-4a8d-8e06-e2aa662f3777",
+      "18a14e7cf07de24c5cb8b3ad3b421337324fcebd refs/heads/g4k-seed181-checkpoint-replication-prep",
+      "ab80d9fbab103c73aaa459b10c5caeaa2f69dfd4 refs/heads/gen-series",
+      "27ad8cd9a0962bf6e5e3c79c5a7e277e54a86317 refs/heads/gen4-behavioral-restoration-bridge",
+      "8496ece911e0d461f0abbdf1a0fa619f8a2f22ab refs/heads/gen4-k-directional-alignment-transport",
+      "88de940d1b24b4b02c670a9ae67a2046aa082b38 refs/heads/gen4-k-family-subspace-sensitivity",
+      "ad375c88385eef507e151f95717e951919a6a3fe refs/heads/gen4-k-fast-cuda-equivalence",
+      "a4d661a04b8547f4955c1ecf28e21698c53ec74e refs/heads/gen4-k-large-correction-prospective-validation",
+      "41f4678d09f7c779a8edc2eec6cc08a9effd9f41 refs/heads/gen4-k-transport-failure-static-decomposition",
+      "29e0cc6330b5e5270b6057a02c1b86fdeb45ca96 refs/heads/gen4-k-xg1-cross-generator-replication",
+      "2c237fa7d2f4d2fdf7029826599a164c69455f36 refs/heads/gen4-k-xg2-basis-holdout",
+      "6e5db0a69e05417938bd05038cf9dba1a39846bf refs/heads/gen4-k-xg2-xg4-local-jacobian",
+      "593199d8e849572fc77b1b0bc7475d3d19468d12 refs/heads/gen4-mamba1-five-scale-coordinate-free-geometry",
+      "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69 refs/heads/gen4-mamba1-five-scale-ladder-extension",
+      "ea03cdaa5394de03389d31aa1089b51e10340a57 refs/heads/gen4-mamba370m-core-replication",
+      "a738b4c169d30b0a7e21563c3aba2c29c481c456 refs/heads/gen4-phase-d-cache-validator-correction",
+      "d11f355fe9d33aee36da4a6515dd80d87aec0010 refs/heads/gen5-causal-role-state-ownership",
+      "b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7 refs/heads/iclr2027-mamba-five-scale-paper",
+      "5f5f4d6a80085ad8baf43445475d1c3049535c22 refs/heads/longterm-k-series-native-state-kinematics",
+      "75b56b5b9390c0d1dcbbc38330d5dfdba8f44d75 refs/heads/main",
+      "ca1419603f397aaf4e157504c15b58cb403377de refs/heads/main-readme-sync",
+      "ff2fb076f6e66a34a632515bb8502d8b1c90ad7f refs/heads/o0c-minimal-scientific-runner-implementation",
+      "b32d73dfa49b6b9dfabf3093802904323cf679cd refs/heads/p3w7-a0-seed180-normal-reference-freeze",
+      "fb4f0e2c2a8382a642f1272b66f29552adaecb0e refs/heads/p3w7-a0-seed181-replacement-result",
+      "82739bdfc8eee184de10ed8f55434f203a6d59a5 refs/heads/p3w7-a0-seed182-result",
+      "be6bf6477d6b97b3da9aea117ca49f970a186b21 refs/heads/p3w7-a1-a2-a3-factorial-execution-authority-n3",
+      "91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea refs/heads/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2",
+      "ba3fd1a82cba029dac05ba38a86d518252ab858f refs/heads/p3w7-current-lineage-calibration-authority",
+      "3d2691afcc8ec6c0f59ba304f73631b6bc903208 refs/migration/pre-migration-stash-0",
+      "7816ed12332bd5be3ec6e93214cefa7f728e8c6e refs/migration/pre-migration-stash-1",
+      "ca1419603f397aaf4e157504c15b58cb403377de refs/remotes/origin/HEAD",
+      "18a14e7cf07de24c5cb8b3ad3b421337324fcebd refs/remotes/origin/g4k-seed181-checkpoint-replication-prep",
+      "27ad8cd9a0962bf6e5e3c79c5a7e277e54a86317 refs/remotes/origin/gen4-behavioral-restoration-bridge",
+      "8496ece911e0d461f0abbdf1a0fa619f8a2f22ab refs/remotes/origin/gen4-k-directional-alignment-transport",
+      "88de940d1b24b4b02c670a9ae67a2046aa082b38 refs/remotes/origin/gen4-k-family-subspace-sensitivity",
+      "ad375c88385eef507e151f95717e951919a6a3fe refs/remotes/origin/gen4-k-fast-cuda-equivalence",
+      "a4d661a04b8547f4955c1ecf28e21698c53ec74e refs/remotes/origin/gen4-k-large-correction-prospective-validation",
+      "41f4678d09f7c779a8edc2eec6cc08a9effd9f41 refs/remotes/origin/gen4-k-transport-failure-static-decomposition",
+      "29e0cc6330b5e5270b6057a02c1b86fdeb45ca96 refs/remotes/origin/gen4-k-xg1-cross-generator-replication",
+      "2c237fa7d2f4d2fdf7029826599a164c69455f36 refs/remotes/origin/gen4-k-xg2-basis-holdout",
+      "6e5db0a69e05417938bd05038cf9dba1a39846bf refs/remotes/origin/gen4-k-xg2-xg4-local-jacobian",
+      "593199d8e849572fc77b1b0bc7475d3d19468d12 refs/remotes/origin/gen4-mamba1-five-scale-coordinate-free-geometry",
+      "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69 refs/remotes/origin/gen4-mamba1-five-scale-ladder-extension",
+      "ea03cdaa5394de03389d31aa1089b51e10340a57 refs/remotes/origin/gen4-mamba370m-core-replication",
+      "a738b4c169d30b0a7e21563c3aba2c29c481c456 refs/remotes/origin/gen4-phase-d-cache-validator-correction",
+      "d11f355fe9d33aee36da4a6515dd80d87aec0010 refs/remotes/origin/gen5-causal-role-state-ownership",
+      "b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7 refs/remotes/origin/iclr2027-mamba-five-scale-paper",
+      "5f5f4d6a80085ad8baf43445475d1c3049535c22 refs/remotes/origin/longterm-k-series-native-state-kinematics",
+      "ca1419603f397aaf4e157504c15b58cb403377de refs/remotes/origin/main",
+      "ff2fb076f6e66a34a632515bb8502d8b1c90ad7f refs/remotes/origin/o0c-minimal-scientific-runner-implementation",
+      "b32d73dfa49b6b9dfabf3093802904323cf679cd refs/remotes/origin/p3w7-a0-seed180-normal-reference-freeze",
+      "fb4f0e2c2a8382a642f1272b66f29552adaecb0e refs/remotes/origin/p3w7-a0-seed181-replacement-result",
+      "82739bdfc8eee184de10ed8f55434f203a6d59a5 refs/remotes/origin/p3w7-a0-seed182-result",
+      "be6bf6477d6b97b3da9aea117ca49f970a186b21 refs/remotes/origin/p3w7-a1-a2-a3-factorial-execution-authority-n3",
+      "91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea refs/remotes/origin/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2",
+      "ba3fd1a82cba029dac05ba38a86d518252ab858f refs/remotes/origin/p3w7-current-lineage-calibration-authority",
+      "3d2691afcc8ec6c0f59ba304f73631b6bc903208 refs/stash",
+      "60b430fccec9e51e4d1f12131eabf37d03a8be66 refs/tags/gen4-name-q1q3-states-60b430f",
+      "4a2ef821122a36c8e48ec261012519102b63d6c3 refs/tags/gen4-native-mamba-phase-d-states-4a2ef82",
+      "cf0826174c2ab1b2203f68afbdeed9da3ff64aa2 refs/tags/gen4-r5-evaluator-checkpoints-cf08261"
+    ],
+    "refs_metadata": [
+      "refs/codex/turn-diffs/captures/1791955905036/cfe326cc-2a3a-4cf6-9ac2-5fa60681ca7e/base|4a950cff26a485ef9e0077ecbc0f91daf57160f4|tree||",
+      "refs/codex/turn-diffs/checkpoints/223e1b2ada891dccb924639f161a2a3f/0ba828004d8e7d49ba2b56f724de1a4d/1791823846684/8d45a963-b920-48ce-a5ed-5cb274d1ce7e|303f2863736d4ecb723314dab8a7616c43e49207|tree||",
+      "refs/codex/turn-diffs/checkpoints/7105d3700b4f3531e0883a54cf3062dc/8e71ee7397078937da7fe9a90a85ad61/1791938529851/4ac24cf8-6fc9-4112-ac57-d0be3adf252c|549f185452112dba5732677ce795ede5425558e4|tree||",
+      "refs/codex/turn-diffs/checkpoints/8ffd7ca6edb92ce8b1b25f8e3dcf896f/1254ddec5f4b1aa8e0a4a6fc223f391d/1791898161392/a8d9618a-42dc-4a98-a7b7-3259fcc382e8|99597caddf0a24e5810e33654c45c4fa33f2b72a|tree||",
+      "refs/codex/turn-diffs/checkpoints/9f1765da2bcafc78693789aef0d73a7d/8773496cdc31c140db02a853f36c31ee/1791822079155/9ba675fc-7f6e-4a8d-8e06-e2aa662f3777|93b906efb2c2e96084f9cbd6bbd48cf89920cdba|tree||",
+      "refs/heads/g4k-seed181-checkpoint-replication-prep|18a14e7cf07de24c5cb8b3ad3b421337324fcebd|commit||",
+      "refs/heads/gen-series|ab80d9fbab103c73aaa459b10c5caeaa2f69dfd4|commit||",
+      "refs/heads/gen4-behavioral-restoration-bridge|27ad8cd9a0962bf6e5e3c79c5a7e277e54a86317|commit||",
+      "refs/heads/gen4-k-directional-alignment-transport|8496ece911e0d461f0abbdf1a0fa619f8a2f22ab|commit||",
+      "refs/heads/gen4-k-family-subspace-sensitivity|88de940d1b24b4b02c670a9ae67a2046aa082b38|commit||",
+      "refs/heads/gen4-k-fast-cuda-equivalence|ad375c88385eef507e151f95717e951919a6a3fe|commit||",
+      "refs/heads/gen4-k-large-correction-prospective-validation|a4d661a04b8547f4955c1ecf28e21698c53ec74e|commit||",
+      "refs/heads/gen4-k-transport-failure-static-decomposition|41f4678d09f7c779a8edc2eec6cc08a9effd9f41|commit||",
+      "refs/heads/gen4-k-xg1-cross-generator-replication|29e0cc6330b5e5270b6057a02c1b86fdeb45ca96|commit||",
+      "refs/heads/gen4-k-xg2-basis-holdout|2c237fa7d2f4d2fdf7029826599a164c69455f36|commit||",
+      "refs/heads/gen4-k-xg2-xg4-local-jacobian|6e5db0a69e05417938bd05038cf9dba1a39846bf|commit||",
+      "refs/heads/gen4-mamba1-five-scale-coordinate-free-geometry|593199d8e849572fc77b1b0bc7475d3d19468d12|commit||",
+      "refs/heads/gen4-mamba1-five-scale-ladder-extension|3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69|commit||",
+      "refs/heads/gen4-mamba370m-core-replication|ea03cdaa5394de03389d31aa1089b51e10340a57|commit||",
+      "refs/heads/gen4-phase-d-cache-validator-correction|a738b4c169d30b0a7e21563c3aba2c29c481c456|commit||",
+      "refs/heads/gen5-causal-role-state-ownership|d11f355fe9d33aee36da4a6515dd80d87aec0010|commit||",
+      "refs/heads/iclr2027-mamba-five-scale-paper|b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7|commit||",
+      "refs/heads/longterm-k-series-native-state-kinematics|5f5f4d6a80085ad8baf43445475d1c3049535c22|commit||",
+      "refs/heads/main|75b56b5b9390c0d1dcbbc38330d5dfdba8f44d75|commit||",
+      "refs/heads/main-readme-sync|ca1419603f397aaf4e157504c15b58cb403377de|commit||",
+      "refs/heads/o0c-minimal-scientific-runner-implementation|ff2fb076f6e66a34a632515bb8502d8b1c90ad7f|commit||",
+      "refs/heads/p3w7-a0-seed180-normal-reference-freeze|b32d73dfa49b6b9dfabf3093802904323cf679cd|commit||",
+      "refs/heads/p3w7-a0-seed181-replacement-result|fb4f0e2c2a8382a642f1272b66f29552adaecb0e|commit||",
+      "refs/heads/p3w7-a0-seed182-result|82739bdfc8eee184de10ed8f55434f203a6d59a5|commit||",
+      "refs/heads/p3w7-a1-a2-a3-factorial-execution-authority-n3|be6bf6477d6b97b3da9aea117ca49f970a186b21|commit||",
+      "refs/heads/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2|91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea|commit||",
+      "refs/heads/p3w7-current-lineage-calibration-authority|ba3fd1a82cba029dac05ba38a86d518252ab858f|commit||",
+      "refs/migration/pre-migration-stash-0|3d2691afcc8ec6c0f59ba304f73631b6bc903208|commit||",
+      "refs/migration/pre-migration-stash-1|7816ed12332bd5be3ec6e93214cefa7f728e8c6e|commit||",
+      "refs/remotes/origin/HEAD|ca1419603f397aaf4e157504c15b58cb403377de|commit||refs/remotes/origin/main",
+      "refs/remotes/origin/g4k-seed181-checkpoint-replication-prep|18a14e7cf07de24c5cb8b3ad3b421337324fcebd|commit||",
+      "refs/remotes/origin/gen4-behavioral-restoration-bridge|27ad8cd9a0962bf6e5e3c79c5a7e277e54a86317|commit||",
+      "refs/remotes/origin/gen4-k-directional-alignment-transport|8496ece911e0d461f0abbdf1a0fa619f8a2f22ab|commit||",
+      "refs/remotes/origin/gen4-k-family-subspace-sensitivity|88de940d1b24b4b02c670a9ae67a2046aa082b38|commit||",
+      "refs/remotes/origin/gen4-k-fast-cuda-equivalence|ad375c88385eef507e151f95717e951919a6a3fe|commit||",
+      "refs/remotes/origin/gen4-k-large-correction-prospective-validation|a4d661a04b8547f4955c1ecf28e21698c53ec74e|commit||",
+      "refs/remotes/origin/gen4-k-transport-failure-static-decomposition|41f4678d09f7c779a8edc2eec6cc08a9effd9f41|commit||",
+      "refs/remotes/origin/gen4-k-xg1-cross-generator-replication|29e0cc6330b5e5270b6057a02c1b86fdeb45ca96|commit||",
+      "refs/remotes/origin/gen4-k-xg2-basis-holdout|2c237fa7d2f4d2fdf7029826599a164c69455f36|commit||",
+      "refs/remotes/origin/gen4-k-xg2-xg4-local-jacobian|6e5db0a69e05417938bd05038cf9dba1a39846bf|commit||",
+      "refs/remotes/origin/gen4-mamba1-five-scale-coordinate-free-geometry|593199d8e849572fc77b1b0bc7475d3d19468d12|commit||",
+      "refs/remotes/origin/gen4-mamba1-five-scale-ladder-extension|3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69|commit||",
+      "refs/remotes/origin/gen4-mamba370m-core-replication|ea03cdaa5394de03389d31aa1089b51e10340a57|commit||",
+      "refs/remotes/origin/gen4-phase-d-cache-validator-correction|a738b4c169d30b0a7e21563c3aba2c29c481c456|commit||",
+      "refs/remotes/origin/gen5-causal-role-state-ownership|d11f355fe9d33aee36da4a6515dd80d87aec0010|commit||",
+      "refs/remotes/origin/iclr2027-mamba-five-scale-paper|b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7|commit||",
+      "refs/remotes/origin/longterm-k-series-native-state-kinematics|5f5f4d6a80085ad8baf43445475d1c3049535c22|commit||",
+      "refs/remotes/origin/main|ca1419603f397aaf4e157504c15b58cb403377de|commit||",
+      "refs/remotes/origin/o0c-minimal-scientific-runner-implementation|ff2fb076f6e66a34a632515bb8502d8b1c90ad7f|commit||",
+      "refs/remotes/origin/p3w7-a0-seed180-normal-reference-freeze|b32d73dfa49b6b9dfabf3093802904323cf679cd|commit||",
+      "refs/remotes/origin/p3w7-a0-seed181-replacement-result|fb4f0e2c2a8382a642f1272b66f29552adaecb0e|commit||",
+      "refs/remotes/origin/p3w7-a0-seed182-result|82739bdfc8eee184de10ed8f55434f203a6d59a5|commit||",
+      "refs/remotes/origin/p3w7-a1-a2-a3-factorial-execution-authority-n3|be6bf6477d6b97b3da9aea117ca49f970a186b21|commit||",
+      "refs/remotes/origin/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2|91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea|commit||",
+      "refs/remotes/origin/p3w7-current-lineage-calibration-authority|ba3fd1a82cba029dac05ba38a86d518252ab858f|commit||",
+      "refs/stash|3d2691afcc8ec6c0f59ba304f73631b6bc903208|commit||",
+      "refs/tags/gen4-name-q1q3-states-60b430f|60b430fccec9e51e4d1f12131eabf37d03a8be66|commit||",
+      "refs/tags/gen4-native-mamba-phase-d-states-4a2ef82|4a2ef821122a36c8e48ec261012519102b63d6c3|commit||",
+      "refs/tags/gen4-r5-evaluator-checkpoints-cf08261|cf0826174c2ab1b2203f68afbdeed9da3ff64aa2|commit||"
+    ],
+    "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "index_sha256": "223983e5960be89db1bdfa3532706d4d1e7064f71ceeb37c99188703b22ff68f",
+    "observed_at": "2026-10-14T05:54:40.173560+00:00"
+  },
+  "full_ref_endpoint_observations": [
+    {
+      "observed_at": "2026-10-14T05:47:51.958291+00:00",
+      "show_ref_head_dereference": [
+        "ff806bd5bd8efc62fcf6420cf8b097a63ed70571 HEAD",
+        "4a950cff26a485ef9e0077ecbc0f91daf57160f4 refs/codex/turn-diffs/captures/1791955905036/cfe326cc-2a3a-4cf6-9ac2-5fa60681ca7e/base",
+        "303f2863736d4ecb723314dab8a7616c43e49207 refs/codex/turn-diffs/checkpoints/223e1b2ada891dccb924639f161a2a3f/0ba828004d8e7d49ba2b56f724de1a4d/1791823846684/8d45a963-b920-48ce-a5ed-5cb274d1ce7e",
+        "549f185452112dba5732677ce795ede5425558e4 refs/codex/turn-diffs/checkpoints/7105d3700b4f3531e0883a54cf3062dc/8e71ee7397078937da7fe9a90a85ad61/1791938529851/4ac24cf8-6fc9-4112-ac57-d0be3adf252c",
+        "99597caddf0a24e5810e33654c45c4fa33f2b72a refs/codex/turn-diffs/checkpoints/8ffd7ca6edb92ce8b1b25f8e3dcf896f/1254ddec5f4b1aa8e0a4a6fc223f391d/1791898161392/a8d9618a-42dc-4a98-a7b7-3259fcc382e8",
+        "93b906efb2c2e96084f9cbd6bbd48cf89920cdba refs/codex/turn-diffs/checkpoints/9f1765da2bcafc78693789aef0d73a7d/8773496cdc31c140db02a853f36c31ee/1791822079155/9ba675fc-7f6e-4a8d-8e06-e2aa662f3777",
+        "18a14e7cf07de24c5cb8b3ad3b421337324fcebd refs/heads/g4k-seed181-checkpoint-replication-prep",
+        "ab80d9fbab103c73aaa459b10c5caeaa2f69dfd4 refs/heads/gen-series",
+        "27ad8cd9a0962bf6e5e3c79c5a7e277e54a86317 refs/heads/gen4-behavioral-restoration-bridge",
+        "8496ece911e0d461f0abbdf1a0fa619f8a2f22ab refs/heads/gen4-k-directional-alignment-transport",
+        "88de940d1b24b4b02c670a9ae67a2046aa082b38 refs/heads/gen4-k-family-subspace-sensitivity",
+        "ad375c88385eef507e151f95717e951919a6a3fe refs/heads/gen4-k-fast-cuda-equivalence",
+        "a4d661a04b8547f4955c1ecf28e21698c53ec74e refs/heads/gen4-k-large-correction-prospective-validation",
+        "41f4678d09f7c779a8edc2eec6cc08a9effd9f41 refs/heads/gen4-k-transport-failure-static-decomposition",
+        "29e0cc6330b5e5270b6057a02c1b86fdeb45ca96 refs/heads/gen4-k-xg1-cross-generator-replication",
+        "2c237fa7d2f4d2fdf7029826599a164c69455f36 refs/heads/gen4-k-xg2-basis-holdout",
+        "6e5db0a69e05417938bd05038cf9dba1a39846bf refs/heads/gen4-k-xg2-xg4-local-jacobian",
+        "593199d8e849572fc77b1b0bc7475d3d19468d12 refs/heads/gen4-mamba1-five-scale-coordinate-free-geometry",
+        "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69 refs/heads/gen4-mamba1-five-scale-ladder-extension",
+        "ea03cdaa5394de03389d31aa1089b51e10340a57 refs/heads/gen4-mamba370m-core-replication",
+        "a738b4c169d30b0a7e21563c3aba2c29c481c456 refs/heads/gen4-phase-d-cache-validator-correction",
+        "d11f355fe9d33aee36da4a6515dd80d87aec0010 refs/heads/gen5-causal-role-state-ownership",
+        "b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7 refs/heads/iclr2027-mamba-five-scale-paper",
+        "5f5f4d6a80085ad8baf43445475d1c3049535c22 refs/heads/longterm-k-series-native-state-kinematics",
+        "75b56b5b9390c0d1dcbbc38330d5dfdba8f44d75 refs/heads/main",
+        "ca1419603f397aaf4e157504c15b58cb403377de refs/heads/main-readme-sync",
+        "ff2fb076f6e66a34a632515bb8502d8b1c90ad7f refs/heads/o0c-minimal-scientific-runner-implementation",
+        "b32d73dfa49b6b9dfabf3093802904323cf679cd refs/heads/p3w7-a0-seed180-normal-reference-freeze",
+        "fb4f0e2c2a8382a642f1272b66f29552adaecb0e refs/heads/p3w7-a0-seed181-replacement-result",
+        "82739bdfc8eee184de10ed8f55434f203a6d59a5 refs/heads/p3w7-a0-seed182-result",
+        "be6bf6477d6b97b3da9aea117ca49f970a186b21 refs/heads/p3w7-a1-a2-a3-factorial-execution-authority-n3",
+        "91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea refs/heads/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2",
+        "ba3fd1a82cba029dac05ba38a86d518252ab858f refs/heads/p3w7-current-lineage-calibration-authority",
+        "3d2691afcc8ec6c0f59ba304f73631b6bc903208 refs/migration/pre-migration-stash-0",
+        "7816ed12332bd5be3ec6e93214cefa7f728e8c6e refs/migration/pre-migration-stash-1",
+        "ca1419603f397aaf4e157504c15b58cb403377de refs/remotes/origin/HEAD",
+        "18a14e7cf07de24c5cb8b3ad3b421337324fcebd refs/remotes/origin/g4k-seed181-checkpoint-replication-prep",
+        "27ad8cd9a0962bf6e5e3c79c5a7e277e54a86317 refs/remotes/origin/gen4-behavioral-restoration-bridge",
+        "8496ece911e0d461f0abbdf1a0fa619f8a2f22ab refs/remotes/origin/gen4-k-directional-alignment-transport",
+        "88de940d1b24b4b02c670a9ae67a2046aa082b38 refs/remotes/origin/gen4-k-family-subspace-sensitivity",
+        "ad375c88385eef507e151f95717e951919a6a3fe refs/remotes/origin/gen4-k-fast-cuda-equivalence",
+        "a4d661a04b8547f4955c1ecf28e21698c53ec74e refs/remotes/origin/gen4-k-large-correction-prospective-validation",
+        "41f4678d09f7c779a8edc2eec6cc08a9effd9f41 refs/remotes/origin/gen4-k-transport-failure-static-decomposition",
+        "29e0cc6330b5e5270b6057a02c1b86fdeb45ca96 refs/remotes/origin/gen4-k-xg1-cross-generator-replication",
+        "2c237fa7d2f4d2fdf7029826599a164c69455f36 refs/remotes/origin/gen4-k-xg2-basis-holdout",
+        "6e5db0a69e05417938bd05038cf9dba1a39846bf refs/remotes/origin/gen4-k-xg2-xg4-local-jacobian",
+        "593199d8e849572fc77b1b0bc7475d3d19468d12 refs/remotes/origin/gen4-mamba1-five-scale-coordinate-free-geometry",
+        "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69 refs/remotes/origin/gen4-mamba1-five-scale-ladder-extension",
+        "ea03cdaa5394de03389d31aa1089b51e10340a57 refs/remotes/origin/gen4-mamba370m-core-replication",
+        "a738b4c169d30b0a7e21563c3aba2c29c481c456 refs/remotes/origin/gen4-phase-d-cache-validator-correction",
+        "d11f355fe9d33aee36da4a6515dd80d87aec0010 refs/remotes/origin/gen5-causal-role-state-ownership",
+        "b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7 refs/remotes/origin/iclr2027-mamba-five-scale-paper",
+        "5f5f4d6a80085ad8baf43445475d1c3049535c22 refs/remotes/origin/longterm-k-series-native-state-kinematics",
+        "ca1419603f397aaf4e157504c15b58cb403377de refs/remotes/origin/main",
+        "ff2fb076f6e66a34a632515bb8502d8b1c90ad7f refs/remotes/origin/o0c-minimal-scientific-runner-implementation",
+        "b32d73dfa49b6b9dfabf3093802904323cf679cd refs/remotes/origin/p3w7-a0-seed180-normal-reference-freeze",
+        "fb4f0e2c2a8382a642f1272b66f29552adaecb0e refs/remotes/origin/p3w7-a0-seed181-replacement-result",
+        "82739bdfc8eee184de10ed8f55434f203a6d59a5 refs/remotes/origin/p3w7-a0-seed182-result",
+        "be6bf6477d6b97b3da9aea117ca49f970a186b21 refs/remotes/origin/p3w7-a1-a2-a3-factorial-execution-authority-n3",
+        "91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea refs/remotes/origin/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2",
+        "ba3fd1a82cba029dac05ba38a86d518252ab858f refs/remotes/origin/p3w7-current-lineage-calibration-authority",
+        "3d2691afcc8ec6c0f59ba304f73631b6bc903208 refs/stash",
+        "60b430fccec9e51e4d1f12131eabf37d03a8be66 refs/tags/gen4-name-q1q3-states-60b430f",
+        "4a2ef821122a36c8e48ec261012519102b63d6c3 refs/tags/gen4-native-mamba-phase-d-states-4a2ef82",
+        "cf0826174c2ab1b2203f68afbdeed9da3ff64aa2 refs/tags/gen4-r5-evaluator-checkpoints-cf08261"
+      ],
+      "refs_metadata": [
+        "refs/codex/turn-diffs/captures/1791955905036/cfe326cc-2a3a-4cf6-9ac2-5fa60681ca7e/base|4a950cff26a485ef9e0077ecbc0f91daf57160f4|tree||",
+        "refs/codex/turn-diffs/checkpoints/223e1b2ada891dccb924639f161a2a3f/0ba828004d8e7d49ba2b56f724de1a4d/1791823846684/8d45a963-b920-48ce-a5ed-5cb274d1ce7e|303f2863736d4ecb723314dab8a7616c43e49207|tree||",
+        "refs/codex/turn-diffs/checkpoints/7105d3700b4f3531e0883a54cf3062dc/8e71ee7397078937da7fe9a90a85ad61/1791938529851/4ac24cf8-6fc9-4112-ac57-d0be3adf252c|549f185452112dba5732677ce795ede5425558e4|tree||",
+        "refs/codex/turn-diffs/checkpoints/8ffd7ca6edb92ce8b1b25f8e3dcf896f/1254ddec5f4b1aa8e0a4a6fc223f391d/1791898161392/a8d9618a-42dc-4a98-a7b7-3259fcc382e8|99597caddf0a24e5810e33654c45c4fa33f2b72a|tree||",
+        "refs/codex/turn-diffs/checkpoints/9f1765da2bcafc78693789aef0d73a7d/8773496cdc31c140db02a853f36c31ee/1791822079155/9ba675fc-7f6e-4a8d-8e06-e2aa662f3777|93b906efb2c2e96084f9cbd6bbd48cf89920cdba|tree||",
+        "refs/heads/g4k-seed181-checkpoint-replication-prep|18a14e7cf07de24c5cb8b3ad3b421337324fcebd|commit||",
+        "refs/heads/gen-series|ab80d9fbab103c73aaa459b10c5caeaa2f69dfd4|commit||",
+        "refs/heads/gen4-behavioral-restoration-bridge|27ad8cd9a0962bf6e5e3c79c5a7e277e54a86317|commit||",
+        "refs/heads/gen4-k-directional-alignment-transport|8496ece911e0d461f0abbdf1a0fa619f8a2f22ab|commit||",
+        "refs/heads/gen4-k-family-subspace-sensitivity|88de940d1b24b4b02c670a9ae67a2046aa082b38|commit||",
+        "refs/heads/gen4-k-fast-cuda-equivalence|ad375c88385eef507e151f95717e951919a6a3fe|commit||",
+        "refs/heads/gen4-k-large-correction-prospective-validation|a4d661a04b8547f4955c1ecf28e21698c53ec74e|commit||",
+        "refs/heads/gen4-k-transport-failure-static-decomposition|41f4678d09f7c779a8edc2eec6cc08a9effd9f41|commit||",
+        "refs/heads/gen4-k-xg1-cross-generator-replication|29e0cc6330b5e5270b6057a02c1b86fdeb45ca96|commit||",
+        "refs/heads/gen4-k-xg2-basis-holdout|2c237fa7d2f4d2fdf7029826599a164c69455f36|commit||",
+        "refs/heads/gen4-k-xg2-xg4-local-jacobian|6e5db0a69e05417938bd05038cf9dba1a39846bf|commit||",
+        "refs/heads/gen4-mamba1-five-scale-coordinate-free-geometry|593199d8e849572fc77b1b0bc7475d3d19468d12|commit||",
+        "refs/heads/gen4-mamba1-five-scale-ladder-extension|3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69|commit||",
+        "refs/heads/gen4-mamba370m-core-replication|ea03cdaa5394de03389d31aa1089b51e10340a57|commit||",
+        "refs/heads/gen4-phase-d-cache-validator-correction|a738b4c169d30b0a7e21563c3aba2c29c481c456|commit||",
+        "refs/heads/gen5-causal-role-state-ownership|d11f355fe9d33aee36da4a6515dd80d87aec0010|commit||",
+        "refs/heads/iclr2027-mamba-five-scale-paper|b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7|commit||",
+        "refs/heads/longterm-k-series-native-state-kinematics|5f5f4d6a80085ad8baf43445475d1c3049535c22|commit||",
+        "refs/heads/main|75b56b5b9390c0d1dcbbc38330d5dfdba8f44d75|commit||",
+        "refs/heads/main-readme-sync|ca1419603f397aaf4e157504c15b58cb403377de|commit||",
+        "refs/heads/o0c-minimal-scientific-runner-implementation|ff2fb076f6e66a34a632515bb8502d8b1c90ad7f|commit||",
+        "refs/heads/p3w7-a0-seed180-normal-reference-freeze|b32d73dfa49b6b9dfabf3093802904323cf679cd|commit||",
+        "refs/heads/p3w7-a0-seed181-replacement-result|fb4f0e2c2a8382a642f1272b66f29552adaecb0e|commit||",
+        "refs/heads/p3w7-a0-seed182-result|82739bdfc8eee184de10ed8f55434f203a6d59a5|commit||",
+        "refs/heads/p3w7-a1-a2-a3-factorial-execution-authority-n3|be6bf6477d6b97b3da9aea117ca49f970a186b21|commit||",
+        "refs/heads/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2|91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea|commit||",
+        "refs/heads/p3w7-current-lineage-calibration-authority|ba3fd1a82cba029dac05ba38a86d518252ab858f|commit||",
+        "refs/migration/pre-migration-stash-0|3d2691afcc8ec6c0f59ba304f73631b6bc903208|commit||",
+        "refs/migration/pre-migration-stash-1|7816ed12332bd5be3ec6e93214cefa7f728e8c6e|commit||",
+        "refs/remotes/origin/HEAD|ca1419603f397aaf4e157504c15b58cb403377de|commit||refs/remotes/origin/main",
+        "refs/remotes/origin/g4k-seed181-checkpoint-replication-prep|18a14e7cf07de24c5cb8b3ad3b421337324fcebd|commit||",
+        "refs/remotes/origin/gen4-behavioral-restoration-bridge|27ad8cd9a0962bf6e5e3c79c5a7e277e54a86317|commit||",
+        "refs/remotes/origin/gen4-k-directional-alignment-transport|8496ece911e0d461f0abbdf1a0fa619f8a2f22ab|commit||",
+        "refs/remotes/origin/gen4-k-family-subspace-sensitivity|88de940d1b24b4b02c670a9ae67a2046aa082b38|commit||",
+        "refs/remotes/origin/gen4-k-fast-cuda-equivalence|ad375c88385eef507e151f95717e951919a6a3fe|commit||",
+        "refs/remotes/origin/gen4-k-large-correction-prospective-validation|a4d661a04b8547f4955c1ecf28e21698c53ec74e|commit||",
+        "refs/remotes/origin/gen4-k-transport-failure-static-decomposition|41f4678d09f7c779a8edc2eec6cc08a9effd9f41|commit||",
+        "refs/remotes/origin/gen4-k-xg1-cross-generator-replication|29e0cc6330b5e5270b6057a02c1b86fdeb45ca96|commit||",
+        "refs/remotes/origin/gen4-k-xg2-basis-holdout|2c237fa7d2f4d2fdf7029826599a164c69455f36|commit||",
+        "refs/remotes/origin/gen4-k-xg2-xg4-local-jacobian|6e5db0a69e05417938bd05038cf9dba1a39846bf|commit||",
+        "refs/remotes/origin/gen4-mamba1-five-scale-coordinate-free-geometry|593199d8e849572fc77b1b0bc7475d3d19468d12|commit||",
+        "refs/remotes/origin/gen4-mamba1-five-scale-ladder-extension|3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69|commit||",
+        "refs/remotes/origin/gen4-mamba370m-core-replication|ea03cdaa5394de03389d31aa1089b51e10340a57|commit||",
+        "refs/remotes/origin/gen4-phase-d-cache-validator-correction|a738b4c169d30b0a7e21563c3aba2c29c481c456|commit||",
+        "refs/remotes/origin/gen5-causal-role-state-ownership|d11f355fe9d33aee36da4a6515dd80d87aec0010|commit||",
+        "refs/remotes/origin/iclr2027-mamba-five-scale-paper|b4d20e3fe61ec97af35a699b4bd454a5bd0eecb7|commit||",
+        "refs/remotes/origin/longterm-k-series-native-state-kinematics|5f5f4d6a80085ad8baf43445475d1c3049535c22|commit||",
+        "refs/remotes/origin/main|ca1419603f397aaf4e157504c15b58cb403377de|commit||",
+        "refs/remotes/origin/o0c-minimal-scientific-runner-implementation|ff2fb076f6e66a34a632515bb8502d8b1c90ad7f|commit||",
+        "refs/remotes/origin/p3w7-a0-seed180-normal-reference-freeze|b32d73dfa49b6b9dfabf3093802904323cf679cd|commit||",
+        "refs/remotes/origin/p3w7-a0-seed181-replacement-result|fb4f0e2c2a8382a642f1272b66f29552adaecb0e|commit||",
+        "refs/remotes/origin/p3w7-a0-seed182-result|82739bdfc8eee184de10ed8f55434f203a6d59a5|commit||",
+        "refs/remotes/origin/p3w7-a1-a2-a3-factorial-execution-authority-n3|be6bf6477d6b97b3da9aea117ca49f970a186b21|commit||",
+        "refs/remotes/origin/p3w7-a1-a2-a3-factorial-execution-authority-n3-v2|91c3dcd7abadcd6cf0d6d2f1c299f3d6fa6e28ea|commit||",
+        "refs/remotes/origin/p3w7-current-lineage-calibration-authority|ba3fd1a82cba029dac05ba38a86d518252ab858f|commit||",
+        "refs/stash|3d2691afcc8ec6c0f59ba304f73631b6bc903208|commit||",
+        "refs/tags/gen4-name-q1q3-states-60b430f|60b430fccec9e51e4d1f12131eabf37d03a8be66|commit||",
+        "refs/tags/gen4-native-mamba-phase-d-states-4a2ef82|4a2ef821122a36c8e48ec261012519102b63d6c3|commit||",
+        "refs/tags/gen4-r5-evaluator-checkpoints-cf08261|cf0826174c2ab1b2203f68afbdeed9da3ff64aa2|commit||"
+      ],
+      "movement_vs_start": [
+        {
+          "ref": "refs/heads/gen5-causal-role-state-ownership",
+          "before": "bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b",
+          "after": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+          "after_object_type": "commit",
+          "classification": "NON_DESTRUCTIVE_FAST_FORWARD",
+          "non_destructive_authenticated": true,
+          "source": "External to this task: no ref-writing command was executed; actor/cause/time not certified"
+        },
+        {
+          "ref": "refs/remotes/origin/gen5-causal-role-state-ownership",
+          "before": "bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b",
+          "after": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+          "after_object_type": "commit",
+          "classification": "NON_DESTRUCTIVE_FAST_FORWARD",
+          "non_destructive_authenticated": true,
+          "source": "External to this task: no ref-writing command was executed; actor/cause/time not certified"
+        }
+      ],
+      "raw_refs_unchanged_status": "FAIL_REFS_MOVED",
+      "conditional_nonblocking_status": "PASS_AUTHENTICATED_UNRELATED_FAST_FORWARD_PINNED_INPUT_INDEPENDENCE",
+      "independence_checks": [
+        {
+          "ref": "refs/heads/gen5-causal-role-state-ownership",
+          "before": "bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b",
+          "after": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+          "full_changed_paths": [
+            "src/contramamba/gen5_shared_bypass_g2_loaded_parent_bridge.py",
+            "tests/test_gen5_shared_bypass_g2_loaded_parent_bridge_synthetic.py"
+          ],
+          "pinned_dependency_path_overlap": [],
+          "all_paths_in_gen5_namespace": true,
+          "history_status": "NON_DESTRUCTIVE_FAST_FORWARD",
+          "pinned_input_independence": "PASS_FIXED_COMMIT_BLOB_AND_SAVED_BYTE_BINDINGS_NO_MOVING_REF_INPUT"
+        },
+        {
+          "ref": "refs/remotes/origin/gen5-causal-role-state-ownership",
+          "before": "bf0fd63b6ec537d1e46b861a08a7aaa9cd976f7b",
+          "after": "d11f355fe9d33aee36da4a6515dd80d87aec0010",
+          "full_changed_paths": [
+            "src/contramamba/gen5_shared_bypass_g2_loaded_parent_bridge.py",
+            "tests/test_gen5_shared_bypass_g2_loaded_parent_bridge_synthetic.py"
+          ],
+          "pinned_dependency_path_overlap": [],
+          "all_paths_in_gen5_namespace": true,
+          "history_status": "NON_DESTRUCTIVE_FAST_FORWARD",
+          "pinned_input_independence": "PASS_FIXED_COMMIT_BLOB_AND_SAVED_BYTE_BINDINGS_NO_MOVING_REF_INPUT"
+        }
+      ]
+    }
+  ],
+  "preservation": {
+    "baseline_files": 4376,
+    "tracked_files": 3593,
+    "existing_untracked_files": 782,
+    "mutated_files": [],
+    "tracked_staged_diff_stats": {
+      "tracked": "",
+      "staged": ""
+    }
+  },
+  "locator_check_count": 249,
+  "output_sha256_excluding_self": {
+    "checkpoint.json": "ea62344740f2dd34c407a2e4b96766d539875b9d03559b0c0a47248ef3165838",
+    "evidence_manifest.json": "e164a60ccc25620413e1221bb6252ebfdeece9fd8ac7cf7a2cbec4286f8d74d8",
+    "publication_assessments.jsonl": "45c83cac1e05bbc9f99bb76be4ca6f159823554170e94e97908fea4cbf275942",
+    "report.md": "aa65fb26a19e84b90d929b930807b745484b987d37c882b3764261b4ab9b2f62"
+  },
+  "commands_actually_executed": [
+    "git status --porcelain=v1",
+    "git branch --show-current",
+    "git rev-parse HEAD",
+    "rg --files",
+    "PowerShell Get-ChildItem/Get-Content",
+    "inline Python standard-library JSON/JSONL and SHA256",
+    "git ls-files -z",
+    "git ls-files --others --exclude-standard -z",
+    "git show-ref --head --dereference",
+    "git for-each-ref",
+    "git diff --binary",
+    "git diff --cached --binary",
+    "git rev-parse --git-path index",
+    "git rev-parse <pinned object>:<path>",
+    "git cat-file -t <pinned object>",
+    "git cat-file blob <pinned blob>",
+    "git merge-base --is-ancestor <pinned before> <pinned after>",
+    "bundled pypdf read-only PDF text and page enumeration",
+    "bundled Pillow read-only dimensions/pixel-difference bounding box",
+    "pdftoppm -png -singlefile -scale-to 1800/2400 <authenticated PDF> (in-memory via Node child_process.execFileSync)",
+    "view_image on authenticated original PNGs",
+    "Node in-memory PDF rendering and emitImage",
+    "inline standard-library complete JSON pointer/text hunk comparisons",
+    "git diff --name-only <old ref endpoint> <new ref endpoint> (two bounded movement-independence checks)",
+    "git diff --check",
+    "git diff --stat",
+    "git diff --cached --stat",
+    "independent fresh serialized JSON/JSONL readback and full comparison/locator/accounting/preservation assertions"
+  ],
+  "warnings": [
+    "System Python reports stale-installation-location warning despite successful execution; bundled Python used for PDF/image checks",
+    "One exploratory read failed with cp949 UnicodeDecodeError before mutation and was repeated with explicit UTF-8",
+    "Early broad exploratory console outputs were truncated; subsequent comparisons and saved artifacts are complete and bounded summaries used"
+  ],
+  "uncertified_intervals": [
+    "Before this task baseline; historical checks retained separately",
+    "Between endpoint observations, transient changes returning to identical endpoints are not certified"
+  ],
+  "activity": {
+    "training": false,
+    "evaluation": false,
+    "model_execution": false,
+    "checkpoint_loading": false,
+    "data_regeneration": false,
+    "ocr": false,
+    "kaggle_gpu": false,
+    "commit_push": false,
+    "fetch": false,
+    "ref_write": false,
+    "prior_audit_producer_execution": false,
+    "independent_candidate_verification": false
+  },
+  "limits": [
+    "Candidate proposals only; independent verification required before separate authorized integration",
+    "Documentary satisfaction does not certify scientific validity, adoption, historical run identity or snapshot capture time",
+    "Raw ref-preservation FAIL retained; conditional acceptance supported only for observed authenticated unrelated fast-forwards",
+    "Other nine owners explicitly deferred; no census-wide closure conclusion"
+  ],
+  "post_write_readback_at": "2026-10-14T05:55:28.748680+00:00",
+  "checks_passed": 31
+}

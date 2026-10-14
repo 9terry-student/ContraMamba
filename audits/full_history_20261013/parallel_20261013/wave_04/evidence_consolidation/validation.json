@@ -1,0 +1,3238 @@
+{
+  "authenticated_alias_blobs": {
+    "07ea35b9b18bf4ba77a717cec2583b1d7e30f1be": {
+      "blob": "07ea35b9b18bf4ba77a717cec2583b1d7e30f1be",
+      "bytes": 877100,
+      "commit_or_tree": "f430a61f716c31d9d178dea619bbe49ccb92bb02",
+      "commit_path_binding_verified": true,
+      "git_blob_identity_verified": true,
+      "path": "data/stage75_targeted_residual_bridge.jsonl",
+      "sha256": "520904773988629ace96ec7ac363622561bcab4f7eec8b4ae9e5e811d0a63607"
+    },
+    "22e445e60e6ec6dc75a628a28dbc9860ea60fca4": {
+      "blob": "22e445e60e6ec6dc75a628a28dbc9860ea60fca4",
+      "bytes": 158739,
+      "commit_or_tree": "b759d3896ea67350617c9ed8d35f8fd17a701c2c",
+      "commit_path_binding_verified": true,
+      "git_blob_identity_verified": true,
+      "path": "data/stage31_coverage_entailment_probe.jsonl",
+      "sha256": "4e716889fbfcdbc389784ba648a1d4f10f2f7cd2a0bce8d0d18597c5b1cc8529"
+    },
+    "32fab9210c90fb07eb3409dc6748619d7765a408": {
+      "blob": "32fab9210c90fb07eb3409dc6748619d7765a408",
+      "bytes": 9856,
+      "commit_or_tree": "7fb89e1a0b8ed6bc73e9f57fe22a1a8a42329d0e",
+      "commit_path_binding_verified": true,
+      "git_blob_identity_verified": true,
+      "path": "reports/reason_router_gen4_operator_cell_structural_identifiability_static_analysis_report_candidate.md",
+      "sha256": "b21babaff7b5f68ac34f1158dcacbddd1e2329c6f648b6192949af0ab96e32eb"
+    },
+    "500ff2fefe80408b8263cd6258d8f1844f21226d": {
+      "blob": "500ff2fefe80408b8263cd6258d8f1844f21226d",
+      "bytes": 513396,
+      "commit_or_tree": "60b430fccec9e51e4d1f12131eabf37d03a8be66",
+      "commit_path_binding_verified": true,
+      "git_blob_identity_verified": true,
+      "path": "reports/reason_router_gen4_native_mamba_state_bridge_name_q1_q3_scientific_extraction_v1/kinematic_endpoints.jsonl",
+      "sha256": "b47e32496f73f5493e8737b040b30bc4a23dd8cd22454a85244fa812273b6605"
+    },
+    "8832b4805d520ce76f1e4f66e8047a729da95249": {
+      "blob": "8832b4805d520ce76f1e4f66e8047a729da95249",
+      "bytes": 327400,
+      "commit_or_tree": "1383f2117447bc1730d7018bc6acf5f111301fc8",
+      "commit_path_binding_verified": true,
+      "git_blob_identity_verified": true,
+      "path": "data/stage34a_heldout_coverage_probe.jsonl",
+      "sha256": "827216d70fe64f32f50aa654bd505346daab53e5dedeaf36931202ce70f69d25"
+    },
+    "8c8d98a9a3b2a7b9e6851a2aaa6e795c73e1fe1c": {
+      "blob": "8c8d98a9a3b2a7b9e6851a2aaa6e795c73e1fe1c",
+      "bytes": 1879999,
+      "commit_or_tree": "ae3339bc6e732c1d53229ed350154039ac712469",
+      "commit_path_binding_verified": true,
+      "git_blob_identity_verified": true,
+      "path": "data/controlled_v5_v3_without_time_swap.jsonl",
+      "sha256": "089e36396dd0469a01949b0b85bed1e76cc608d249601a6e0f74cb0c5e64f009"
+    },
+    "a2e1139f85565d677997d088ab0fd20c79205c38": {
+      "blob": "a2e1139f85565d677997d088ab0fd20c79205c38",
+      "bytes": 652541,
+      "commit_or_tree": "14d8f8635d96cf9003822b9e3d538b0e731628dd",
+      "commit_path_binding_verified": true,
+      "git_blob_identity_verified": true,
+      "path": "data/stage66_residual_bridge.jsonl",
+      "sha256": "3a0dc6e9ea0b2bd021cc5092acfe15f45b8061421b6b6cd76210918071eae3e9"
+    },
+    "a6c3d8b55db46dbdd46368d6930bc802f7e9550d": {
+      "blob": "a6c3d8b55db46dbdd46368d6930bc802f7e9550d",
+      "bytes": 439249,
+      "commit_or_tree": "7089ee8aecb972fa4b1234ac9e0710bb6869408b",
+      "commit_path_binding_verified": true,
+      "git_blob_identity_verified": true,
+      "path": "data/stage80a_conservative_stage75v2_bridge.jsonl",
+      "sha256": "dfd1fd3cbb3ff9e183db45bc5eff2abe82461bb6c155dd67cbc206375f0bd8b2"
+    },
+    "a76b6f5119e36dcc5c532deee195e241f35c3dc6": {
+      "blob": "a76b6f5119e36dcc5c532deee195e241f35c3dc6",
+      "bytes": 1880002,
+      "commit_or_tree": "b38b66fa2c4e5cf413be43c5dada00175bc5dee7",
+      "commit_path_binding_verified": true,
+      "git_blob_identity_verified": true,
+      "path": "data/controlled_v5_v3_without_time_swap.jsonl",
+      "sha256": "14d2f008da421e8d33054e48ffc5b45b096b3762d4a254ac79b9c442875017a6"
+    },
+    "b6e766db38118258fc4cb81f19d153929d1117da": {
+      "blob": "b6e766db38118258fc4cb81f19d153929d1117da",
+      "bytes": 93939,
+      "commit_or_tree": "764e050f0b8f83f774774b75242c04b94381357c",
+      "commit_path_binding_verified": true,
+      "git_blob_identity_verified": true,
+      "path": "data/stage31_coverage_entailment_probe.jsonl",
+      "sha256": "77cc3397d319aa44288623f30800848b492a1702c3dda090bfe20d53d4f444e7"
+    },
+    "d04c4310980c9085df47e1dc7119962e6ab2e563": {
+      "blob": "d04c4310980c9085df47e1dc7119962e6ab2e563",
+      "bytes": 1879999,
+      "commit_or_tree": "abfa83d0bf34eb92b44da177c5fa48e9297b4759",
+      "commit_path_binding_verified": true,
+      "git_blob_identity_verified": true,
+      "path": "data/controlled_v5_v3_without_time_swap.jsonl",
+      "sha256": "f5525866860c2c153c63296e28cac27321f4e140c56c37400844cb0baefbb640"
+    },
+    "e78fdc3d14e3d4fe739d1eb82a3cb850a8d2352f": {
+      "blob": "e78fdc3d14e3d4fe739d1eb82a3cb850a8d2352f",
+      "bytes": 374520,
+      "commit_or_tree": "c1f2f1b6f6c986d61d1603a4897f304399f1eb87",
+      "commit_path_binding_verified": true,
+      "git_blob_identity_verified": true,
+      "path": "data/stage57_nonleaking_external_bridge.jsonl",
+      "sha256": "460b7aad85246029fcab6648b41ef50478ad81bb1e648bab26f4c0b648474003"
+    },
+    "e7cc3bbab61113badef3379706f707e45a5798d3": {
+      "blob": "e7cc3bbab61113badef3379706f707e45a5798d3",
+      "bytes": 657821,
+      "commit_or_tree": "a2e824cecb0f6343a5724e1abd18ee72ddbebaa0",
+      "commit_path_binding_verified": true,
+      "git_blob_identity_verified": true,
+      "path": "data/stage66_residual_bridge.jsonl",
+      "sha256": "aaaf22cd5dd6b5597af59a0044938579f98fd0bd6a6d99921da300fb0c9c8a29"
+    }
+  },
+  "carried_prior_semantic_closures": 4,
+  "commit_push_git_mutation": "NOT_PERFORMED",
+  "decision": "PASS_DETERMINISTIC_ACCOUNTING_AND_PRESERVATION_ONLY",
+  "declared_hash_checks": [
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/git_exact_path_reconciliation/exact_path_reconciliation.jsonl",
+      "sha256": "93fab3b1d7495318df43d4ed2ec7b9d684dd33c99bfff97880eecfca0b94de87"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/git_exact_path_reconciliation/historical_blob_lineages.jsonl",
+      "sha256": "e68ff0c272afe2e81b093a1fac3024753bad665ac56ab9540ad1ad6a09b1017c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/git_exact_path_reconciliation/remaining_true_missing_originals.jsonl",
+      "sha256": "581b72c195a78bc44f71bc2f81a4a9335a0ed54a6074f55e5f5e4f5f36ccfd4f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/git_exact_path_reconciliation/report.md",
+      "sha256": "e5b90d55956c3bbe7eed1c3f7c5e60d7c588fbaee984094628233529b22910d1"
+    },
+    {
+      "file": "audits/full_history_20261013/anomaly_candidates.jsonl",
+      "sha256": "284593926b913194badffdb62bbe5a63addd6b60b1af63f493ae7ea5a238bc81"
+    },
+    {
+      "file": "audits/full_history_20261013/coverage_report.md",
+      "sha256": "833e010150915da9a0f94e6bec768dd1ca1a15d617ee21ee5ab095dd49d6b0a7"
+    },
+    {
+      "file": "audits/full_history_20261013/evidence_graph.jsonl",
+      "sha256": "44fa23d6a8ea4f9f8ff41a424307557e46d5bd1278519ac6844cb8563d93f138"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_01/expansion_report.md",
+      "sha256": "a474af7eb1adaf865248b18f2a6ce461d5533d782d3c1309860cf010dfe4ba51"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_01/historical_unreachable_commit_audit.json",
+      "sha256": "39386d6e6fa26ccdb6c988901273282ce4d59fe4dea64a0267e424dc2afec8fd"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_01/ledger_correction_candidates.jsonl",
+      "sha256": "8022873df992016cf8d525e0ac7d7f8fc0055efd063dd27003ad724563b0a9af"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_01/new_anomaly_candidates.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_01/omitted_reports_inventory.jsonl",
+      "sha256": "938d57a2b954d1621f7f02c3e780c7fab4713a5b4195668888e0160f1c85645f"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_01/recovered_scientific_records.jsonl",
+      "sha256": "7b8b6807876d6e0d18957382a492a47741a42482d5225cf054ed9408a9246f82"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_01/remaining_coverage_manifest.json",
+      "sha256": "bb22809386e5d0d2e69e4c841b5cbd829e6d02bf125e7f672ccfe72005f85c0c"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_02/evidence_relationships.jsonl",
+      "sha256": "d4c23f55e95e02b2084b99ca2c9407e0ded48ade4a569bbf2f33ef40ce203990"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_02/execution_run_ledger.jsonl",
+      "sha256": "13dcfd85860e07d8ac2b2945c58354b1afa4ce8a7331f7e0b0e1a3bd333ebe85"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_02/historical_revision_analysis.jsonl",
+      "sha256": "a06db2f1db1aaed291dbd28265bf2c19c27cf47ac65f0c41ad49ff6fdb5f1bbc"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_02/reconciliation_report.md",
+      "sha256": "352cec73d5fcf68abac7b25bfd2f25a5e02a42eff7de8e664779a2b3f46f160c"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_02/remaining_coverage_manifest.json",
+      "sha256": "b965f9dedecf596db2bcd66c29e11f6310bb5cf7e96c205675001ab40684105c"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_02/source_to_study_mapping.jsonl",
+      "sha256": "896f9e5ee26194888c041aea7d1c7416a644e385d1525500b21e43e18fb86a83"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_02/static_discrepancy_candidates.jsonl",
+      "sha256": "59a0e24db4010122258f296a59f54c6a3f37265283cef34bf869d340966701c0"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_02/study_identity_ledger.jsonl",
+      "sha256": "843fc6d2f7aab77ce476dce5885aa04c650b048982d9edeeb52348621f0f0743"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_03/build_inventory.py",
+      "sha256": "594254a4418dc9a033fe5c7ee20cc3d7a62d4c2a501833069dbf5c6803e22527"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_03/coverage_reconciliation.json",
+      "sha256": "202646e961cefad364c310879f70e544c553e5058b609d78f736376ab777c184"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_03/expansion_report.md",
+      "sha256": "3eb0ff97128ee63e45fa5502859de53d0e54ccf0b83cc78d079b113c68c9fe50"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_03/historical_source_versions.jsonl",
+      "sha256": "d7547e41638682fb6cfdd60c58b0c011d330fb1cd770b31b568a38f45a4f5a55"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_03/remaining_candidate_inventory.jsonl",
+      "sha256": "436842f1c4681ec21830bba37979bb57546dc5787e692d29722848f0369086e3"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_03/source_classification_ledger.jsonl",
+      "sha256": "c43293e5e776f50eb4ca7311128ab0b78f0261c42848fc7f203d37a256bd2b17"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_03/source_universe_manifest.jsonl",
+      "sha256": "99f06aa10eed279c6431bbde6a4fdc954b46f8636acf261be42f09b02e0f71f5"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_03/unprocessed_source_manifest.jsonl",
+      "sha256": "988707a118012ac811325f784426600768f7127b1aa99ba7f2dcce3125e6a89a"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_03/unresolved_identity_links.jsonl",
+      "sha256": "b54fa0f499e6a033adf94ad893f1db8451af3b8548b4568c76b312b8a51e59b8"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_03/validate_inventory.py",
+      "sha256": "2eedeba95ddc28cf3cfd66a2ac4fb294348f7d996cb3d27ce7509eb215b79c90"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_04a/completed_source_inspections.jsonl",
+      "sha256": "324758c72124723d44e617c21187fc9a89bcb3d2189da2be377f239fce32773f"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_04a/coverage_validation.json",
+      "sha256": "5ba2b6a9ba1653ec864c9f0c8fa196936d9bf9f0c33495480c0cec6173f66deb"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_04a/enhance_inspections.py",
+      "sha256": "08638ee687404a512d0c865a284f0c4fb419419ece8d4c6b742eea9577a71f14"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_04a/expansion_report.md",
+      "sha256": "a04eb0cc1ec8ac51c3d9eca426b52c8ff698345a818f8f9f30abcc0822ec7fb8"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_04a/inspect_sources.py",
+      "sha256": "73a065db9e2b3f116a02e08d39958b28425a721f355c398b68a5786e93c615ea"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_04a/record_visual_inspection.py",
+      "sha256": "5e70b5199387f07b1fb05d8c69603e0f4868c426e0c3c1c818845a6455ca435e"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_04a/scientific_source_extractions.jsonl",
+      "sha256": "f831416ee900d219ea6da28a98391829b57cbe479f0789bbe9733c7c054866f7"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_04a/source_relationship_candidates.jsonl",
+      "sha256": "52288f5d6f2ef5f80d3b52ec4419a3b6cf1b2410d0fd67f38c40d5f246a022eb"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_04a/target_manifest.jsonl",
+      "sha256": "8c5c6e1ef1aa28846a259c4fd1ef981dceaf0e33de70fa23cc53d61e33e4e451"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_04a/unresolved_sources.jsonl",
+      "sha256": "9b9b26fac0f4d8830d8823bc84625ec08c1550f36324dca7536ecc67d444bb7f"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_04a/validate_coverage.py",
+      "sha256": "ee98fa41181456c9449efb98070a3013948197f2ac4f79d984d280ec3e03e331"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_04a_recovery/coverage_reconciliation.json",
+      "sha256": "5bd1b2a1a054540ed6c7d57ffd8f4aadd37e980bebc305bce4aff050e738758e"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_04a_recovery/frozen_target_manifest.jsonl",
+      "sha256": "98605a01c70d34f26aece173b957c655cc86bc0bc4a7075cdf72e6a5ebb7d791"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_04a_recovery/inspect_recovery.py",
+      "sha256": "0980146dd0810b0ff47d00b0769e5ba42d0904fa444e5e6cdc92965538157b55"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_04a_recovery/recovered_scientific_content.jsonl",
+      "sha256": "ce837ed69c399569c36ddc72a1554543a3c66fc3c58ef6b4f09077ff55abec3a"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_04a_recovery/recovery_report.md",
+      "sha256": "5a1450129135b8fba017de835b0cb20fce1e483236f5d92caffd500748ead74c"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_04a_recovery/source_recovery_results.jsonl",
+      "sha256": "acc7c11725f28124e3f0e9fdbe3f697099ee78815ea1b136b080e0bf5d4ce49b"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_04a_recovery/source_relationship_candidates.jsonl",
+      "sha256": "d60ddc3e0d3b23bb687102fbd2dc2283d1ba72b0f9d55313df1853c889cdb87e"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_04a_recovery/unavailable_evidence_registry.jsonl",
+      "sha256": "9a8ddd037946061a7ae170ff8f2ac318957e5b252936be1ffd26c2266f2fba4c"
+    },
+    {
+      "file": "audits/full_history_20261013/experiment_ledger.jsonl",
+      "sha256": "9d6b97012b2596e9f647e5b34d070ce86c4266055a8e4b20b4073d84d3af1f8a"
+    },
+    {
+      "file": "audits/full_history_20261013/hypothesis_ledger.jsonl",
+      "sha256": "8d5fd3493033826db64b3c7641d23126100354ebed26677e18c2045263f8e1e9"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/integration_01/historical_version_reconciliation.jsonl",
+      "sha256": "0b0869fd6beb060c03537ece04637e7f75bbd60982a3902b99db29a49f352ce1"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/integration_01/input_fingerprints.json",
+      "sha256": "13fb3e4ff3873271a6182804c74b68ac20fb46502d2f631ac40709468423c5e3"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/integration_01/integrated_relationship_candidates.jsonl",
+      "sha256": "54e75c49961c4dc7f4763330b32840f4ca90a425cd12c00e93033848c3639e35"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/integration_01/integrated_source_coverage.jsonl",
+      "sha256": "fa5eb04ad94267cdc79a252ea4c63e5e2b43d18b0391895cf1350f2dad092e12"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/integration_01/integration_report.md",
+      "sha256": "ed251ddf267adc55785d8bb81f29bf949ab2396aa20791981411e9bdc768de24"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/integration_01/integration_validation.json",
+      "sha256": "c4592fb6d25dca9bc19718c6112862af64a8fdb1dbdca73906c9cafe3e6ddbf9"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/integration_01/provisional_study_identity_links.jsonl",
+      "sha256": "2c5b677c9ab256b0f39a5281aafc1c387fe256f2b4465b29a1b09b19897b2151"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/integration_01/reconcile.py",
+      "sha256": "f0bb0d97d4489ec65b7f2cc39495a755189bb9d1dd288100198f78dfa5805dc2"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/integration_01/remaining_work_queue.jsonl",
+      "sha256": "54e3ea2afffcdaa2fa498919717d49d4c2f881e498e21dd24b3542cbb27338c5"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/integration_01/validate_outputs.py",
+      "sha256": "cf00c5cc65a686b5d9b7fb631699f24d6a7d07bc003a018bde6077a301fe6a76"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/relationships_321/adjudicated_relationship_candidates.jsonl",
+      "sha256": "ef1d76219f19da258709d14e206a6f186fda82938a113ad091136c4ae5c48c7e"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/relationships_321/coverage_validation.json",
+      "sha256": "51f70de7ccd19a9b2ac3d8b85426d4002fd46827819d0534295409573c60a583"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/relationships_321/graph_self_link_audit.jsonl",
+      "sha256": "4f808b6b37674d927c4d85e891b7b220e0ac5ed8c32ca3d6e0c844c32ba538f5"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/relationships_321/relationship_target_manifest.jsonl",
+      "sha256": "dd121966ebf1ab67c9d98d31b7932461d1b62b7c4cc7708c2dc2233320c43a45"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/relationships_321/report.md",
+      "sha256": "036ecb782b824a3a7a70c9db18144bef810331692b0562b2ceda2f21f84031b4"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/relationships_321/unsupported_or_unresolved_edges.jsonl",
+      "sha256": "eea9ac7e700dd2bb8be862d5979e407af75b8ce60b0b61c11c425b2dc194a5e0"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/semantic_88/adjudicated_classifications.jsonl",
+      "sha256": "c0c635c3f8a2c527a7569d4246fd58f3a30397b8c0a0f1863ad109b7b51452cc"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/semantic_88/coverage_validation.json",
+      "sha256": "54d721817723f26810fb998844fe69b0f918b255ccda99957c341cfb3d31985e"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/semantic_88/report.md",
+      "sha256": "2d7644c3f1ed2173503580a4980e76aac5608eff6bb9085e09123369c6e55ca1"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/semantic_88/source_role_relationships.jsonl",
+      "sha256": "7686ae95074f47947973fb16edadd45d28c1477a83004a9b8c5d27aa37019e85"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/semantic_88/target_manifest.jsonl",
+      "sha256": "971d2cc4923914d67fbade8ea0272bbf27d140a1007e649e70eff4960db6d410"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/semantic_88/unresolved_classifications.jsonl",
+      "sha256": "9071063946dea91908f46be1b333ee8a77cee556428616700eb044a33b406160"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/study_identity_116/coverage_validation.json",
+      "sha256": "0e2028c566f6230f66e5e324aca7fb611c81ce2d214da3ab2bddfeffec84da1a"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/study_identity_116/provisional_study_identity_links.jsonl",
+      "sha256": "5a3a4fe72114356aaaedb2f0be2ba5be2944966d627ad9e7e507ce16a30992d1"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/study_identity_116/report.md",
+      "sha256": "dc419730aadd2c6da175d0de62e2e5b07750d85d356c5dc1d4ecc2934264f6f8"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/study_identity_116/study_identity_evidence.jsonl",
+      "sha256": "a87384b5229fd79e7aefb0470f3c6c74831587166a7f07faee606f1075fbbf73"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/study_identity_116/target_manifest.jsonl",
+      "sha256": "0d9cf1a45460c4e4689562909ec04186626e9ea27ea00322a0c9dbcffcc01289"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/study_identity_116/unresolved_identity_dependencies.jsonl",
+      "sha256": "b2cfb0f219fb3b71e4bf5deac87d3e684d934e0e4d0b951d722fdab0895f252d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/tensor_06/coverage_validation.json",
+      "sha256": "ebd7d7a10cadd5735ff438b9ad5550e99034b91e5708864ece4b4bc16836ca0d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/tensor_06/remaining_gaps.jsonl",
+      "sha256": "76b89c6cf5a1b97f80a6651c35043dbf4e94423ac8eb9f05721afcb0b5d01f53"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/tensor_06/report.md",
+      "sha256": "b22820daedacb837d9da7a20394e2f4aff93877668b7011bdb7f43389c74989d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/tensor_06/target_manifest.jsonl",
+      "sha256": "94f50f10a69079f5bc1613349dc27da4679ee3881203f2f53d68b0bdcbd8fe23"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/tensor_06/tensor_inspection_results.jsonl",
+      "sha256": "03604d818941eaa1301a2ceef727ead2cfb9d147513c34befa697b696c2a15b1"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_0/coverage_validation.json",
+      "sha256": "600c963fc5d7c6705f2d0a2f5f4b9527130968d04e779ec38a7b814d4661c704"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_0/historical_version_chains.jsonl",
+      "sha256": "7647c5af86c21212343dc8430d1b04f53b81be28cf933c8ec09524e09d70e1a7"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_0/report.md",
+      "sha256": "ea01f248bce7dff677f8026563206027291745f3da611e013608e3659ba522a2"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_0/selected_targets.jsonl",
+      "sha256": "6bb909169514674427e3fc46bde6674d185148f9834b1acc7d3b7538529a78e0"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_0/semantic_revision_records.jsonl",
+      "sha256": "039806c47a14958c0a6890ae830a5a7b8523f91ff40e6bf0d885d1d9acd9e5df"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_0/unresolved_versions.jsonl",
+      "sha256": "8b4a70e5d88f48f69c825a414c2809ae1d2218732d8472779ea03652f8a8fd45"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_1/coverage_validation.json",
+      "sha256": "15440b509f057223ccaa3e14dca2e3efdab485585fcf8f3c8a7943feb1ffc21f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_1/historical_version_chains.jsonl",
+      "sha256": "dc98df77b521a2eddd141270a19d7f4e18102e13afadf6ba014d1f00542b17f0"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_1/report.md",
+      "sha256": "58e064fcf6a62f2eda123e8bb4fd2e0124347cb642120c9cfa3f23d90096ac08"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_1/selected_targets.jsonl",
+      "sha256": "0bc8babf148b1e3fb2061323877eed888a88b8681775fc48dcf1430abb98bf6a"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_1/semantic_revision_records.jsonl",
+      "sha256": "6ceee3b63729d26db1778fa9dfd4500bf3018827a0b5f9fc57366c20ceb45f19"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/versions_shard_1/unresolved_versions.jsonl",
+      "sha256": "ac3ec39fbe0fff69510eddb89291ca378ed2796652fac7aa7bf7737a9ff4c4c9"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/chronology/coverage_validation.json",
+      "sha256": "408c788f8710a82f6104be5bda8c883860ee8ffafaba727702fbd94d930b0a25"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/chronology/predecessor_resolution.jsonl",
+      "sha256": "50289c53cb20e409ec07bf1cf7c3ed3be7eec122760dfdd80cc517d2fb6d938d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/chronology/report.md",
+      "sha256": "d4d651f7df38814fe1756ab1c82a63fe8ac604032416563d166bbba7d18fab57"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/chronology/target_manifest.jsonl",
+      "sha256": "bac58df07efb1af598692802770033b23ed781d1c8c8fee0719c1ea3e66abb7c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/chronology/tree_chronology_records.jsonl",
+      "sha256": "327df24d48e58421c820f66958651c5f38740e08e34f19b7e6002010f96509de"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/chronology/unresolved_chronology.jsonl",
+      "sha256": "20fe545f1e3824f60ce77673ddb114689ccba4934d2c2f54470f7d100fbb51d1"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/binary_source_inspections.jsonl",
+      "sha256": "50588ee6b5194addabc699e024ac7105a889d9c95e446d951af444b2de921007"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/bounded_content_inspections.jsonl",
+      "sha256": "39e911a5132bdf9aa4c650bb6c4e443c28d4db0fc9e7a99ef29b41c5dbf4d048"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/coverage_validation.json",
+      "sha256": "a6338dc60f8d8874e28602695a5be0dc8c4d3c9c4168b007ebc1f5bd007e37c7"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/recovered_source_evidence.jsonl",
+      "sha256": "b7f45d79e28164b5f001f7d902bb6d5cd179cbbcd71b97ee42e9b37d2d86cede"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/remaining_content_gaps.jsonl",
+      "sha256": "3566dec43a1957c42a214c7e8c420c15842130e172df88e4de56fa03d8d2f21d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/report.md",
+      "sha256": "ada9cddddcc31ba430e0c9380510c141c273e3aca6aa4c566c561afac252c04a"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/content_completion/target_manifest.jsonl",
+      "sha256": "3bd293137bfaed10383a7b035a78dcb09b22c5427884d9453af812ac315ceb73"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/coverage_validation.json",
+      "sha256": "970b924d69c0a7a4ae04cbd44c2c430e547fd5766ddca10077ab47d8624424c2"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/graph_correction_proposals.jsonl",
+      "sha256": "e25c355b2024d3803ba2c9829f17d1c2f2fedde35933897ea2cdfd70a29bf88b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/relationship_adjudications.jsonl",
+      "sha256": "63d39f590ee7b17d5ffb3812b505557fa1b097b205934f53d95ee1614b876b78"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/report.md",
+      "sha256": "b84f924aebbb4141f6522bc0a7a4a3f4d1a43a5fb2307897fabf96dda2bfdb84"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/target_manifest.jsonl",
+      "sha256": "20ac272923b756457a829effafc09069b644c0fdcd2ce60d3d37871e986755c8"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/graph_reconciliation/unresolved_graph_items.jsonl",
+      "sha256": "f29fc1faf7e8be1489ac52d7aea67f54233568ebdf8467784dba2cc94929a97a"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/git_reference_stability_audit.json",
+      "sha256": "87994615d894085572721c20fe453b24a2e491a61d7213a2d57dad1abb9b4540"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/graph_relationship_reconciliation.jsonl",
+      "sha256": "10513adbbc2f6f977eabe9cdd136395fa80115e1893deaf7ac949e28853c392a"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/historical_transition_reconciliation.jsonl",
+      "sha256": "bb6038907f9c4638340bc29e210e356f3ace4e4c26ca15c687db1fa3605afe05"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/input_fingerprints.json",
+      "sha256": "9826a34404a5bddf6170e54bd73a5e45d8fa440ff33106f88d3b68eab60b490d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/integrate.py",
+      "sha256": "a5a156ad49791929b2249d9f2cad5b5c05a67a9c8f19ab9cc52bb5375b115a51"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/integration_report.md",
+      "sha256": "d5c85bb7652cee4ef33155e4aa0c44321f1bb56fa1767d087ee31fc939a9d2a7"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/integration_validation.json",
+      "sha256": "ca9722530167d71ec538bf875792b209b0e1ed242b76d218380587ba0e11fd4b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/remaining_census_work_queue.jsonl",
+      "sha256": "d1246cf4c90cf93e5f28735e97155dd9fafdfdf8138bc99eb2f98dfc3622ec17"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/study_identity_reconciliation.jsonl",
+      "sha256": "27d97627dc73bff27eee03d007a4caa414d229b754c9cb0a9915a1217ba8772d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/verify_and_report.py",
+      "sha256": "379f7889493adf0ea91d17ada4aa972f4ac8400418c84b02f6fb891613abb725"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/wave02_target_reconciliation.jsonl",
+      "sha256": "31faaba799271374c53932b6244e52e26d6b1d14da76e6b10f4985a79413842d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/candidate_study_memberships.jsonl",
+      "sha256": "f29c6b4bcb5cbe30acbec58bbfadc34764d251ecd4f37758bc08d5b6dc3ec619"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/coverage_validation.json",
+      "sha256": "df479f1bbd9e02e655431005dec93e96b7c26c4dacb9329e8aa18450d93bdfee"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/empty_source_dispositions.jsonl",
+      "sha256": "ea7ed8309556ad6fc7d842cf4cc1813ec37874f524997abbde9524cf02610d0b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/report.md",
+      "sha256": "2546d2e8d2b9987034d877bb40a97f3a0052f0569ab0a36f7319fa2557412470"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/study_identity_adjudications.jsonl",
+      "sha256": "22c6fc8f0dbb82ad0559c4f5f049c13af7a96b72b9f72f806f07e5785836c71f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/target_manifest.jsonl",
+      "sha256": "657c4fd1e14500b5612d8a793a958031ad4c829aace0dac0c1197866cd9ff6c7"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/unresolved_study_dependencies.jsonl",
+      "sha256": "327b8530dff3c5ed44584908b052bdea92024e53b0619814e5a693f97cfd6101"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/coverage_validation.json",
+      "sha256": "0a8b3117dc4dd8ded20ed41ba9b4488424e3416d4cc7168b670d7a4c2091d6e6"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/reconstruct.py",
+      "sha256": "3aecb72cd4e40b388e287fee03becf6efb4a51292e362a664c17f6d831fff888"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/report.md",
+      "sha256": "f818444b5e9d6be59d6e95493dc52ed28aba91abb18919040929e9544fa143c4"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/scientifically_consequential_revisions.jsonl",
+      "sha256": "ed60e8296d5608e5670005a773b74c4d391dfcc48806c36bddb7b8c9feb1407a"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/selected_targets.jsonl",
+      "sha256": "6027970b43147da6e6f1e16fcbd79466a644fd595b5008fc6ae6a4ca55fe5ad4"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/transition_review.jsonl",
+      "sha256": "96ead7cbae233e4992303e9b92c919725581185abee3930afe6dd34e62bf4aaa"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/unresolved_transitions.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_0/validate_outputs.py",
+      "sha256": "c5a0824f1465c28b2263bf6540388fe305947e56b40232532dfc1bf7f85cc6ca"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/coverage_validation.json",
+      "sha256": "bb5e218cc48757813897fa9ea90561db37c5ccba58f255bf47502d154585238a"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/report.md",
+      "sha256": "41179aa1cf9459090af477bdd3178e71295248fdd7fccc45041ffcd043f3a85e"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/scientifically_consequential_revisions.jsonl",
+      "sha256": "deb7fe14115b8578eb881124d0988bed7f12f3f7873f0ccd89dc3ae59b95781d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/selected_targets.jsonl",
+      "sha256": "979c0c67a8f717f59f32e944e4ae7c6bec4a8c4a35e496cd7c9324ea027f14c1"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/transition_review.jsonl",
+      "sha256": "c98a8861a064756fd48562b7631bc1e9d64dd043518d4ca8255f314ba1ce373b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/transitions_shard_1/unresolved_transitions.jsonl",
+      "sha256": "fbe4057aa832dc510f5deb41cc226f424e6e645efc79a0d73902c5055cc27008"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/batch_01_checkpoint.json",
+      "sha256": "33dcacb1af1087ff6f0bc51f01448d8983d0ad71e36e95b7f68a88727970e817"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/batch_02_local_probe_checkpoint.json",
+      "sha256": "1c7629b2819bca5f8dfcd64c5f95ea95635cbd22fd14ef47b965713de16015f2"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/batch_02b_o0c_companion_checkpoint.json",
+      "sha256": "bc6c447e0f0726fdbdcedf7efeded3ee518dfde17801b6d1fa496851d0989280"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/batch_03_checkpoint.json",
+      "sha256": "0ab3b43cec3d0cfa2ef3f7b322e8ad755923c713bf6ca36368b653ee65ed8649"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/closure_report.md",
+      "sha256": "9402dd401b3ff6b2a384022d116d2594c7e3df73eea8f2929021da6cf4c4d888"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/closure_validation.json",
+      "sha256": "ee22f494c41dd6db4a2070ec99389cb7ce9cbc3b206234b87752074a3de834c7"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/frozen_211_target_manifest.jsonl",
+      "sha256": "d501aa7fa375a21721e3d9fc1fa731e004776f462605522535b330b95125df8b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/input_preservation_checkpoint.json",
+      "sha256": "3fdde813fbfb070af62593fd11775ad144abd23cde4aaa3e514aede8e5ef0ffb"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/recover_closure.py",
+      "sha256": "ef505e20cf51524a16ebb8149aa6368134c6b18e8b3ab806932fa481fe299b66"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/remaining_external_evidence.jsonl",
+      "sha256": "a9bc0a89707d1766b43f8f96ecfba8d2451abe9cc10ff7a0409f75cf80ec0e08"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+      "sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/source_recovery_results.jsonl",
+      "sha256": "911f00bc3a4a9c34aa7e47683abd0fa2c2e20104fd6284c74b861705ab5f40cf"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/study_identity_dependency_groups.jsonl",
+      "sha256": "0724a4e3cb5a57ee92067db6d33317a6e8ad9b583e29b6069a70a2de17d95f81"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/verify_and_report.py",
+      "sha256": "fc0e46e9e9e788909025186a5eb98686a818e92ef0e32b1ad9bc12b935d4e3c7"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/coverage_validation.json",
+      "sha256": "eb6f0e86c58bb752a62417f0c10e14d20a8b3e12ff3b3a6f6faf038b580a320a"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/recovered_scientific_source_records.jsonl",
+      "sha256": "ca9728c6b34a6977c4b6073cadf329dc985aa8e914889370296353d183737827"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/remaining_content_gaps.jsonl",
+      "sha256": "3b6b06299ffa74c940bbc357b9b134a612461d1b0e12a328e460fb37e40a89fb"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/report.md",
+      "sha256": "9f94ddd47e6a8061865269468cb650df603a6032a8d5fb267b473a31c27961e8"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/source_content_recovery.jsonl",
+      "sha256": "c9e2f548eba81a4b796f5ea40f1d4061c78e7a5bd212ae497adba00931968771"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/source_damage_registry.jsonl",
+      "sha256": "2f9850fdbb6de22d871822e04126af81d1998b1564f951f48fccc44a32dde733"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/target_manifest.jsonl",
+      "sha256": "555caaf4779443c1e3c5bf38bb4317ccd442a7cfcfdb85500cbaf644d0f86a08"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/coverage_validation.json",
+      "sha256": "c1fffc32bbfd80dfc9fef195f1de11519f6af8d569dec997528f13aeca91e33b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/git_attribution_assessment.json",
+      "sha256": "09de7e9244b68adc1fd3b09aa8f09e42bd444b6e63427e432d94d611b4fdd823"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/relationship_adjudications.jsonl",
+      "sha256": "f1360bb90913925fd30d1b377a724eee3062b47f97171ad2fd0a3ea64e9b2a98"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/remaining_provenance_gaps.jsonl",
+      "sha256": "fbf531fcaff797d007d58e95063c325350ec2fc91f6a9164d294f4d740f3027c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/report.md",
+      "sha256": "70e6dbbc3e504cab1267af7c417c3b4cb6dcc5cc362e0508cbf61a57876afcd9"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/snapshot_chronology_assessment.json",
+      "sha256": "bc36e4843bebc1af974682e1926423bc1d7245f20ea6efd2703a4c7961285d34"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/target_manifest.jsonl",
+      "sha256": "3a97218525d3f703f88f9ef20472aacc66a487e11ec86b37ffa5fd8e35dd247c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/consolidate.py",
+      "sha256": "2a61cf80390faf92023d611973b8c4facba7ce8033c8aac0352d8b9acff8171b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/consolidation_report.md",
+      "sha256": "08c846ed512b5604a5d58ca778093ec8e701083d61ab8a20356badb25f352e9e"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/coverage_validation.json",
+      "sha256": "703c3966de5f5254f93730bee24801c27db764d38f5123d630708fa9824966fb"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/deferred_scientific_validation.jsonl",
+      "sha256": "baf261b8f3a1ad8dac8620aceab9c2459cdf0b49f04bd24f406cfdb586faa891"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/input_fingerprints.json",
+      "sha256": "d77296f761db310d364be680c05f528c9019bd8a50f8d3a47b311266ef0cf8ca"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/provisional_study_memberships.jsonl",
+      "sha256": "f4ec48438e8f709b3254263e26d5498ee766a6194dbdce6ae7cb0cb5524d6cd9"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/study_identity_76.jsonl",
+      "sha256": "c6d93552982859e98abab90901ef8db297f5a1b3c63e498ec218ab424cc6c76d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/unresolved_census_debt.jsonl",
+      "sha256": "0f253d2039aade659f80b1d560295af9a3c9c051e16d2f1993ea8c71c961d631"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/verify_and_report.py",
+      "sha256": "72d6f651ba97639a5ba5ae56f1bc3ec8460e3176777f77765731af2f8037302e"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/wave03_result_reconciliation.jsonl",
+      "sha256": "cafff20a422e4f3d148fa8dfe0abafcd3066c680810690cbeaa1318d4a00ff69"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/__pycache__/reconstruct.cpython-313.pyc",
+      "sha256": "ad6f69f2fe87266ef65a24d134ef82720875eba0712fa1bae64a7b68d10896f8"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/adjudications.py",
+      "sha256": "dc2d37a37f3fe77ec919967e5fc3969f2f9a7d7bb7b2a5fd287d7f63502738be"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/companions.py",
+      "sha256": "a7009ee3cfdfe3e69ef6d9ee7e9598ed8c30e57b9bddd797eac7844f20cef963"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/coverage_validation.json",
+      "sha256": "b144763d0ecb18a7c9deccb779a1a3e909fe33a9854c36aa9497e3701243da91"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/000.json",
+      "sha256": "61f7f209f5559f17768e706337f52289c705d3c0639b9dfe34c8935bcd802291"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/000_after.txt",
+      "sha256": "622eada52fb11bc4335dea5d353d365d4456f3ebb9cb31def0e08210c5a8e39a"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/000_before.txt",
+      "sha256": "eff8c17acafec7255d25226f1a4df14671a2bd39ecb12c61d06d717761e5eca7"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/001.json",
+      "sha256": "900e3f7a6268b5c72d7c22c2d21f28ecbb8ba82768d6448b8c76e770b699d16a"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/001_after.txt",
+      "sha256": "619e733b8a7ab0922209937a2087b5634666447ac03fbedfdf02e795420862d5"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/001_before.txt",
+      "sha256": "c8a61d3f57a273fc97f01534f83d68fc82022df4c32a7df42444f0442be6a5db"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/002.json",
+      "sha256": "4d7b1e2b848509508786acb1be3ef883df3e8fcdbd3d72fa0863369a6748b23d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/002_after.txt",
+      "sha256": "3828434a4756dc2c7d5dcfe05fcc990d613fd61b37926c467b7078cb12ac4088"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/002_before.txt",
+      "sha256": "faff8eeca02c5f29bb65e433f978265d637ed4179bd86e7d87c9818d123e6019"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/003.json",
+      "sha256": "20e3bf92fb247b43d56cdc9467de3eb1a6ce099b6b731b006c33a27a62735340"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/003_after.txt",
+      "sha256": "49da717bc4b750e79c7ae1dbba24679673d8612234b33dfcc6041b1151016379"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/003_before.txt",
+      "sha256": "752213a4e8d2af19d32f8f3f6d199a0a1abc6464dc09ff26350137f019bea233"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/004.json",
+      "sha256": "f458dc1485b165caf6dcbfd7885cbb628837cd525d91e0c894e90f3358b2a524"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/004_after.txt",
+      "sha256": "0e24ea79dc9f783eeae3c4755a7238c65767ae249e3b6361512dd730a1c5f72e"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/004_before.txt",
+      "sha256": "1d01bb5b85b51ad989076d1f584593685049160006fb3209d8ec18999038da23"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/005.json",
+      "sha256": "5d605c083fb3f1f95097733f66f887686ac0d20411a14c9cf07540a330906fcb"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/005_after.txt",
+      "sha256": "96be25cfdda9ee6628fdbbdd4475bc3d176ba16cc5aceca1e0d9af7e3592fe54"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/005_before.txt",
+      "sha256": "e32ade0fd2703969fee249676aa07d19155ee36fb4646dcc04adc8c775143bfd"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/006.json",
+      "sha256": "9afd3b0edcd3254d8d3e79dfd89248a48a7fe520ccf83980383d206b4cc5289e"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/006_after.txt",
+      "sha256": "a8706e0b6d0dd920e93442fcd2720c81cd1e20f01e71511c7cb7ba40cf7a1909"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/006_before.txt",
+      "sha256": "c4f99c940a8e64b80c7f87079989e6b4e5754c86b5a8a9e049db21d322de4925"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/007.json",
+      "sha256": "e88c025623f4696a5d8b98dfdf39d1e3e9be9a9579ef3732dfd713544bdf0325"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/007_after.txt",
+      "sha256": "6da57afdea1a09dd9dad9f6618e13595e1955ac7d6737cefc923a2cf15ad226f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/007_before.txt",
+      "sha256": "bd27e56b28c88414a5ac8bcf697d43018c1c581a519526ae3e8ab584e2825555"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/008.json",
+      "sha256": "c83842c165af7b3759e391e06b15351773937f2fd97ecb874dd269a210c01738"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/008_after.txt",
+      "sha256": "0c3fe69aaf7b5d199b709c10dc3c1be5844af5df6f7e4dafe7bccb46be4cd35d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/008_before.txt",
+      "sha256": "6b543b52211be0f871bd3ba121219ee46947d45830117c438e8cc69f7f5000b7"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/009.json",
+      "sha256": "02e8dd74ab6d962d63753ed5cd283f96e23561950b1f8cdfada409ed100af1ec"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/009_after.txt",
+      "sha256": "37e9555daeb4bbddb3ab2ce44308874119f9c3373bf1f7092227548b5da3037f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/009_before.txt",
+      "sha256": "183e438cf0f9776afc9bd628e59cb807521327b440911a290a1347b441e0e707"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/010.json",
+      "sha256": "bec236c98f4fb1a29b1808e245843b4d2a060861e7f3fa81bc8f1e6d8e3c049a"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/010_after.txt",
+      "sha256": "259edd6881decc3f75329d4857356f0737794f393de1aae6ce7856d87ee7cdd9"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/010_before.txt",
+      "sha256": "671d9e53811a3ba8eb691d930631e4cfbf64e47557c522a3a75a6f203f63a349"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/011.json",
+      "sha256": "f0852a53592005f54ea271e4b8f6562b7af975e54368a5bd1b52df582b7085b8"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/011_after.txt",
+      "sha256": "226f9a6f32999267623f8d0a0d23e196737399ed40af9b05ec083ca483fa245d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/011_before.txt",
+      "sha256": "d4e7747cba1b9b1702007b802b7cc7b1e57390beaea2f3613503dfd6ff295a0b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/012.json",
+      "sha256": "5d2d8f9c580bc5b01b533860977bc4c3103ad90fcaad6a6ac5b447f2325c84ef"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/012_after.txt",
+      "sha256": "1f7b6481de65ff8efd509d505b4425a3e924f19edbf3e929e02569a814537fe7"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/012_before.txt",
+      "sha256": "3043daf559c253453db5b6c001139e1c7c2ea8b0f244bb5d1158629a85c3636b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/013.json",
+      "sha256": "be9a2d37d2fbaa9759810d2bd8f39f6b120e8c36c6a2438362adb575a7f60216"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/013_after.txt",
+      "sha256": "0f9ed552ed5fafe5cf8f9eb0220df6615bec8de2799d5610329d4c7857d43ed5"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/013_before.txt",
+      "sha256": "e2b9e74abf9b4eb8a14af9f5cc8fa56c56f9031fc3d97f0ad9c26e3123f3cbd3"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/014.json",
+      "sha256": "cd36c146ea0ab41012065dc211502c3478c149ba2ec6ade4870847227c7b02c0"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/014_after.pdf",
+      "sha256": "5f52c66a3ee7099e203713333986d46e5c7c439e9f687995c8035ea2ade065da"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/014_after.txt",
+      "sha256": "24f72100584d977e8d81c395decf39a757f7b09f14fd733e5d9461589a514308"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/014_after_companion_README.md",
+      "sha256": "675fcc357b69678374ab061a285e5ef8bd09cd1d978dfb51d4f83e20ab4ea203"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/014_after_companion_appendix.tex",
+      "sha256": "3ddb2da9b2d2903b7e8325ef1eb2ed349fb862aa4287f308289d39786ab6e7f6"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/014_after_companion_figure_data_manifest.json",
+      "sha256": "50c621f3240bd31cd05688da1fb78082840e16928be3281797d63e24ee49a252"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/014_after_companion_main.tex",
+      "sha256": "3ba8fe90a6c967f2d34313439ec8d6f6833778632258aaf59da14a063f9c1e02"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/014_before.pdf",
+      "sha256": "796220e97dead65b61a96f14ce9e7cb0f621ae4ce9ac2920ba9467335163165a"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/014_before.txt",
+      "sha256": "acf84ecde17cab41371d1aef72d4cfb3597badcf6502af54f4328a9876a8b2d8"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/014_before_companion_README.md",
+      "sha256": "92210260da911a5cb98433f768f6a60e622d50e04e68c75fcef50cf5dc2a5b26"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/014_before_companion_appendix.tex",
+      "sha256": "3ddb2da9b2d2903b7e8325ef1eb2ed349fb862aa4287f308289d39786ab6e7f6"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/014_before_companion_figure_data_manifest.json",
+      "sha256": "ba72e7185f71505c162431ba617414f372af363e8df4d2b45975445a54b2308c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/014_before_companion_main.tex",
+      "sha256": "3ba8fe90a6c967f2d34313439ec8d6f6833778632258aaf59da14a063f9c1e02"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/014_companions.json",
+      "sha256": "f6096b2ace58a8ab7252beba2dab8db92f6d84ef793aa6089b3cbdccd7dd8907"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/015.json",
+      "sha256": "b9556f744818d42932d5a6f0afb11c368520b80a08eb141503005bb5da1087ca"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/015_after.txt",
+      "sha256": "b31d003db179a5ff56c85e666e63e1a40e3a53be6d56f75432f2a103fa7a9d45"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/015_before.txt",
+      "sha256": "79182c70a9113ab4ccc3283ce3b817b6f03632de15cfba42ec46d36cc8a4f551"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/016.json",
+      "sha256": "3de6d0008fa3c83103acbf55101dfec0a84f0c712cefa2541bafbb7ebb491642"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/016_after.txt",
+      "sha256": "8d4cfa58072b2ed93f82c5de72ab561cdc1212a0130274a93a6d19758ec639f8"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/016_before.txt",
+      "sha256": "8c231478649f282be1b642f1f33014f0b4376114185ae522e608d08ac39a72dd"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/017.json",
+      "sha256": "0e204c7c928dccbab46ed8514efca434f0f72dca9311b890b84f6c6c227e35c3"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/017_after.txt",
+      "sha256": "9fa0b66b1dd2a85b85e8d6c18d070f5d9ec593d59f96aaf2887451c3d7961abf"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/017_before.txt",
+      "sha256": "acfd6a84361dd0232921b4989fcf42be7f759bb226dcdb7fa1e7515009b8c2c2"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/018.json",
+      "sha256": "46462686068772da0d1ec29b309532e9d436a1d2cca311378b51702d09c5aad5"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/018_after.txt",
+      "sha256": "971cc74027a4bc12ec9dd5dc2630b2ada5810fd4a48b2abc4769ba210ada1577"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/018_before.txt",
+      "sha256": "de89242fbd980d49769fcebd1b059b88b69c8baf993cd1911c94cd7effcd70bd"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/019.json",
+      "sha256": "e67ab93c6b5d855247bcd0c267802ff7507f294f0c69868d46b3dcf2bfe189bc"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/019_after.txt",
+      "sha256": "d4e7747cba1b9b1702007b802b7cc7b1e57390beaea2f3613503dfd6ff295a0b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/019_before.txt",
+      "sha256": "f544ce1a40ceb5e9f20d32e845b9dee0f24e830555618c9d24de104d1b3d5e97"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/020.json",
+      "sha256": "b759de7dfad9231e1dc204ee25868f8909583fecd42819183a2c611b3dcdb442"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/020_after.txt",
+      "sha256": "41aa8a7d2b621c6b3236d093d7edcca85c34ab6dadc50617ae7dd6bef272ae1f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/020_before.txt",
+      "sha256": "e07c442bce6bfb66faf840e9342d459f77b9f6a01bd004538eb0e12c050edd4f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/021.json",
+      "sha256": "7431f19670d591c64d433a34e32e1ace1b872c5b089448b8eaf51a5b1d61c523"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/021_after.txt",
+      "sha256": "b16a459a10c8f92bc3c18842d107dbb7364c82f0c644102353cf58c7f9bdd125"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/021_before.txt",
+      "sha256": "33fc6c041158bc0444454313eca74c9a1e6a0ed62e8d872cb82bb37fb08a531a"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/022.json",
+      "sha256": "b30115cb27fd9b1e15225f6dd494e6d761ed4c5630287db3f9b6c00875a9471d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/022_after.txt",
+      "sha256": "b1e10afc407ab3bd787931f0011816668ec2888d7e4b60380dbc23ae559ef067"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/022_before.txt",
+      "sha256": "a42b3179192225b0c797739b95ce2b728c6d9fa37bda823d4cce5682aec8ba2d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/023.json",
+      "sha256": "4c19f466833837f2ff08642d527f8bcb5a192d7a86561512c41e7fc084a17095"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/023_after.txt",
+      "sha256": "0555ac7c7c7272dbb0cec4302fdca41ff22ccb2673238d1d9224896868d4e34e"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/023_before.txt",
+      "sha256": "d71123982b7c88b3896bbe15a7a3db6c8774dd6c63dba66034d6b93836e5b160"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/024.json",
+      "sha256": "23bd2314ed26a66375aefc7f7964a31c0b89c94bd262f04516c2be53506f8b67"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/024_after.txt",
+      "sha256": "32058bc7dd4c7287d28b7c3bd7b09208838da6013062e9ee1fd5bcf65dbf393c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/024_before.txt",
+      "sha256": "30e5fb5ef0638d7bc4bc0e8b59ed6049ef2b8b8523c6b137a0186b44b7d28b20"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/025.json",
+      "sha256": "e9cc824f8228cf1538c5cc1f6466c8a0edc5bdfc828bb657ab7734f8bf72dc1b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/025_after.txt",
+      "sha256": "ec8070b157448da2e9a727354b0f957a574fbdebfe0cdf945cd8c49202ea012c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/025_before.txt",
+      "sha256": "1c0496cea80c48c8a0b534a5241d22c27910289f00d33e9f3fd26ce09785f643"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/026.json",
+      "sha256": "12218cf26be4713ce924a5110e0eae5bae9e3276e44ec12551097e2604fa1343"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/026_after.txt",
+      "sha256": "04bbdc40dd36ebfb527f79b74aefae4b01468068c75ff4c08eb9a928f4a011e4"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/026_before.txt",
+      "sha256": "82b5d721d83ff3e11e88a72b4b8f1a58505230e178865a513d7e305751fc8bfd"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/027.json",
+      "sha256": "74cfc73cf19865910fb405832f0191c62c26bd9a8fa047cc958f17a6ed6a7b59"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/027_after.txt",
+      "sha256": "65f6157ced7165cab3f6fd677f614cad92a5219097d8c52bed3b10059bac77bf"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/027_before.txt",
+      "sha256": "35ded373b00ce5ee8722f9ae78b6c086cbe9010cdf4a429f3e41968ba3178fab"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/028.json",
+      "sha256": "8dc07cee43f8bc31803fa51fbc8b56f049a680beb7b9507556e7dd2132fb0b51"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/028_after.txt",
+      "sha256": "ab3d3c556a0f23a672adc3f718f54b41cf9d9ac809d4a6f17f65bcbd331e1d4e"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/028_before.txt",
+      "sha256": "b2eb4b756d4785dc6b37c8dde8d6b169382c0580ab87bb9b9ffa07d9aaa9ae6c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/029.json",
+      "sha256": "eec9ac4566aee5a0615e288e2379ede3482e9e4f63162df97cd684532b82fbda"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/029_after.txt",
+      "sha256": "525a3e3c1865a9539b5a962d6b848261a8911bc73d92035fa57ed36e3e9238eb"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/029_before.txt",
+      "sha256": "fdb32a56e5af0a5ae39a781549ba22ec941319ead4e91f72e477338c3ac72d17"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/030.json",
+      "sha256": "8e5baba351cdfa7ff9f02de8509207c83cd51e1e53d08f6058260f90eac065fc"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/030_after.txt",
+      "sha256": "cf39207af5d71d1711231e833c7fa06d7d3462bef1d77fc52ff999257aaafb6e"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/030_before.txt",
+      "sha256": "e4769dd70e852a60bde8e5530d34d06fa28b9b541dd1d3b9eda8c53d5e91acf7"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/031.json",
+      "sha256": "5e713fde2f2de182ad2b35b93fe558fe854b8d58b52852a5a1b0bc7bfee4c335"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/031_after.png",
+      "sha256": "49727ec818b226ca83af7a371ea6a39c631f50fabc167a015acb94c76ae83b34"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/031_after.txt",
+      "sha256": "08368f4afc6f3223f785d7c87208d7fa44c6ac979cf328f2672155264332a82b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/031_after_companion_README.md",
+      "sha256": "92210260da911a5cb98433f768f6a60e622d50e04e68c75fcef50cf5dc2a5b26"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/031_after_companion_fig3_five_scale_recurrence_reorganization.pdf",
+      "sha256": "61a314c1edc58a4acda6a4407ddc8de561d8ead601d3f0f0a020d0fb8ce5477d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/031_after_companion_figure_data_manifest.json",
+      "sha256": "ba72e7185f71505c162431ba617414f372af363e8df4d2b45975445a54b2308c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/031_before.png",
+      "sha256": "80ec094f6bf96d80957e81f95e1734ce40783f362ab852a578db85ff1342fcc3"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/031_before.txt",
+      "sha256": "08368f4afc6f3223f785d7c87208d7fa44c6ac979cf328f2672155264332a82b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/031_before_companion_README.md",
+      "sha256": "6921ef531792442386b5a728d9488de89e597b702a1c1ee3adb459575516c653"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/031_before_companion_fig3_five_scale_recurrence_reorganization.pdf",
+      "sha256": "f62ce8455f61f6fb9f36438e129438e94181fdcd3ae04ded08cd53b91040f3f9"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/031_before_companion_figure_data_manifest.json",
+      "sha256": "c478fa4b1dbacb38bebe3be9aa8a14955b8fde30f5a5df3732a526f2866c4d25"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/031_companions.json",
+      "sha256": "e69d1d27525994217313c02834a064fbe5beffc69ed6c288c02cd46d7e19d508"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/032.json",
+      "sha256": "273de8ccf995f57962c7617205258627f5ff2fec7d0b3f83e9f1590e9e845209"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/032_after.txt",
+      "sha256": "39530763675378cdbebfe56d2f0cfbd901089e2f8094072bd034d8bf5fd01a59"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/032_before.txt",
+      "sha256": "32538747b3b447381b60b49c6eee8b0baf3f82a126ad38b9caaaa12f2296b78b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/033.json",
+      "sha256": "e0be1ca653f23d9e2320bfe853342fbfef66a0a84c67965a3a96d06b6005f454"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/033_after.txt",
+      "sha256": "9b41fe4ce24142f12ece3d7d0396c983a9649ae9feec2c0a9f25f872c9a53dc5"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/033_after_companion_test_controlled_v5_data.py",
+      "sha256": "200d7a16e541a148b5c0e576089f5ce081bb8125b423354011d1df8aa5e94082"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/033_before.txt",
+      "sha256": "ed54f650284e577a72ee618741e794db24c53146a91034512df572a1fb1030b4"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/033_before_companion_test_controlled_v5_data.py",
+      "sha256": "52a4cfd118c7751dcc413a27ce7c8de59afbb138cb890a875d54c66d0368f423"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/033_companions.json",
+      "sha256": "51c34321cf5cdb93af0e9c2f59ad984b4febc4235de1361df5fdf116beade469"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/034.json",
+      "sha256": "7b9ffccbb299c75f490b915048605dfd29027f4bee2e19d3905f7471b5907e77"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/034_after.txt",
+      "sha256": "c957f569323aa67f4da95bdbc47b3ed29e4c60b03cf4164a4847f95274b00de6"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/034_before.txt",
+      "sha256": "cb09df5705648c0e74e443bdc3f275d81ce3c5b6835ce366e692c466aed86c9f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/035.json",
+      "sha256": "c18922d091fba1ad1c87327cf5f603197097c1ea34fcfaf258829c381719ab42"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/035_after.txt",
+      "sha256": "de89242fbd980d49769fcebd1b059b88b69c8baf993cd1911c94cd7effcd70bd"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/035_before.txt",
+      "sha256": "70a18a36ecdc443ce43f54f4ffa018636c3798879a5e6507c667c45594b68909"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/036.json",
+      "sha256": "8d82c5fba63d3bb877677f63616a106251fc56315e14ad4484de82892a952391"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/036_after.txt",
+      "sha256": "80ea18cef0cd8fdc749802fbe88d02e568979b8ba3f830657c1dd6cf82dc6a89"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/036_after_companion_test_intervention_losses.py",
+      "sha256": "22ab87b0f7b2813e416557168d9eb65ad9cdd25b56e53e8f455b272f29cbf0e2"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/036_before.txt",
+      "sha256": "ad0b465fd7f99ac4cbc0ddeb944b30d46040408e5bf21304f5307486ec526ae6"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/036_before_companion_test_intervention_losses.py",
+      "sha256": "3c89aa66a1e4d27b7615c712a4f6661a6a2cff5f9a9cc241ec54b39c9ee07a96"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/036_companions.json",
+      "sha256": "c2d7ba4d82572d878586461e58f96938c2aee66d1e82ae4cec96bd4cb5af5cb7"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/037.json",
+      "sha256": "9cccf3aec85ef08b9512281925b18b878f69d9bbfa1f1698284db2dbdd41151f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/037_after.txt",
+      "sha256": "cc45bf97137dcfda7b3ce241cd12540d417b1b16a2ecdc8e8c84ae5d4ef42677"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/037_before.txt",
+      "sha256": "e6c625996fccf003aec8c18480d1ed437458de33f6bdd24ae6638e17fe215a30"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/038.json",
+      "sha256": "d78b2b08db82b51ed7817e955296a67091a6f66d60d5aad3bbe5e8b38f4fc5be"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/038_after.pdf",
+      "sha256": "ac6e2646b3fba77cbc84226308d84c17dcb5394f1023e12a43ac71c35a5aecaa"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/038_after.txt",
+      "sha256": "ae9dd2812a8a75c853b0fce25c83fc38249fb6b6e1f6cc93f5856a06e22c19a8"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/038_after_companion_README.md",
+      "sha256": "675fcc357b69678374ab061a285e5ef8bd09cd1d978dfb51d4f83e20ab4ea203"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/038_after_companion_appendix.tex",
+      "sha256": "3ddb2da9b2d2903b7e8325ef1eb2ed349fb862aa4287f308289d39786ab6e7f6"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/038_after_companion_figure_data_manifest.json",
+      "sha256": "50c621f3240bd31cd05688da1fb78082840e16928be3281797d63e24ee49a252"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/038_after_companion_main.tex",
+      "sha256": "91dd0adfeee7368793813c140e78d82d5a54073eedefcb03f83da9a3b0931518"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/038_before.pdf",
+      "sha256": "a597783f635f30578f019d3028ec2579be8c0ee43905d7d9e3ad6cf99a0f3d36"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/038_before.txt",
+      "sha256": "f71d9af2623359014733cc7d5ae562c4d507ab3d9d1f31ba1c4377761c49358a"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/038_before_companion_README.md",
+      "sha256": "675fcc357b69678374ab061a285e5ef8bd09cd1d978dfb51d4f83e20ab4ea203"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/038_before_companion_appendix.tex",
+      "sha256": "3ddb2da9b2d2903b7e8325ef1eb2ed349fb862aa4287f308289d39786ab6e7f6"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/038_before_companion_figure_data_manifest.json",
+      "sha256": "50c621f3240bd31cd05688da1fb78082840e16928be3281797d63e24ee49a252"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/038_before_companion_main.tex",
+      "sha256": "5f307eb5a6e1c6e32dfc9cc4a2dd52ed87b1a116aaa111e9feee6ed1cfa76832"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/038_companions.json",
+      "sha256": "1d224760f3f771d5beb0dc2a8d0bfcb2244dfb0600ab4b5e1bf04b78665202ec"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/039.json",
+      "sha256": "feedd926b70bf16909285c0b9c559be46a999b4dfe8a62dc703eac904b920095"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/039_after.txt",
+      "sha256": "d71123982b7c88b3896bbe15a7a3db6c8774dd6c63dba66034d6b93836e5b160"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/039_before.txt",
+      "sha256": "aa41a9dbb067fc41be90d83b305a0772e9c6b5248006994009683ba2a563a6dd"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/040.json",
+      "sha256": "4eb3fd1dc11d4faeb0ac6aec6d5a35a5a097e5e9ed3c093bb24d71cc0380c9ff"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/040_after.txt",
+      "sha256": "6f52c4d1cb45d9d38a799905deb8072bb3d4b0a94a44782c18cfc4073c838c86"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/040_before.txt",
+      "sha256": "c8fa76a2a3b0f0ff47473d01b0478569a039518085de3111af4f4fd720c2b1aa"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/041.json",
+      "sha256": "2fb6d58927a34f2fea0d9726b80c1e87041f72b3bc6f2eecbd031ebeb2b7e250"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/041_after.txt",
+      "sha256": "4ed26e5f429f6b185cbad9fe2af41e98c721ab7288ede5eb2f04b3ad0b7c4037"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/041_before.txt",
+      "sha256": "41aa8a7d2b621c6b3236d093d7edcca85c34ab6dadc50617ae7dd6bef272ae1f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/042.json",
+      "sha256": "94745360b6d342f52837fd609bde1a48df3f521c777c7d078fdbc9ab4684fb6f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/042_after.pdf",
+      "sha256": "61a314c1edc58a4acda6a4407ddc8de561d8ead601d3f0f0a020d0fb8ce5477d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/042_after.txt",
+      "sha256": "c4e455efc789294a0cfdcd38bce42b4bcd14e012ba8835aaf3c949e418769664"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/042_after_companion_README.md",
+      "sha256": "92210260da911a5cb98433f768f6a60e622d50e04e68c75fcef50cf5dc2a5b26"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/042_after_companion_fig3_five_scale_recurrence_reorganization.png",
+      "sha256": "49727ec818b226ca83af7a371ea6a39c631f50fabc167a015acb94c76ae83b34"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/042_after_companion_figure_data_manifest.json",
+      "sha256": "ba72e7185f71505c162431ba617414f372af363e8df4d2b45975445a54b2308c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/042_before.pdf",
+      "sha256": "f62ce8455f61f6fb9f36438e129438e94181fdcd3ae04ded08cd53b91040f3f9"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/042_before.txt",
+      "sha256": "0c536a7662820163098b2aa328f2c506e10660184e6447e70e40d5ade9467675"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/042_before_companion_README.md",
+      "sha256": "6921ef531792442386b5a728d9488de89e597b702a1c1ee3adb459575516c653"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/042_before_companion_fig3_five_scale_recurrence_reorganization.png",
+      "sha256": "80ec094f6bf96d80957e81f95e1734ce40783f362ab852a578db85ff1342fcc3"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/042_before_companion_figure_data_manifest.json",
+      "sha256": "c478fa4b1dbacb38bebe3be9aa8a14955b8fde30f5a5df3732a526f2866c4d25"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/042_companions.json",
+      "sha256": "7f56e35ac72def2e31e8bd48c5e599910003c632accb15ec9fa623771232898a"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/043.json",
+      "sha256": "3bad12567ce5d2a9479a097ac85219e036868748e18c609889d346f6699c1dcd"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/043_after.txt",
+      "sha256": "e2b9e74abf9b4eb8a14af9f5cc8fa56c56f9031fc3d97f0ad9c26e3123f3cbd3"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/043_before.txt",
+      "sha256": "2ec549711c09e4f8df7b415533659db48e47119b04a922ab94df8a40f61a08fc"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/044.json",
+      "sha256": "19c957e8f01e6f80010a99e454d8c7a7bf635fc6504f8ad9108bc457c33459a1"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/044_after.txt",
+      "sha256": "be068cfc176b924324e00dc016b6c34c359521ac5bb513e229236c2abcef8dfd"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/044_before.txt",
+      "sha256": "ea0f2198b5306776b09201e9eb6f1d092b207eaf2df8e5d2b7af69673886b507"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/045.json",
+      "sha256": "a5989c374ba34946321f8fb2394f4f9dce18a81f3222bed26e4673ed22d90062"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/045_after.txt",
+      "sha256": "b8206e83d8089bb0854ddea99933eebaa4336a6268c5e2322c638266c223e6b1"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/045_before.txt",
+      "sha256": "7d5667f4ecccbd75b4f0b82b9d8fcb4e6ed08e9039fb9243fc913d33cabf59fb"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/046.json",
+      "sha256": "93a48d61da260d3dc90f3933f4562987fb137ea65ec1413e000f44556e5c7542"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/046_after.txt",
+      "sha256": "205bfbf6ebffdc5517e732ac482fce13eb3b1c04796a8594782d8129a6a04e78"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/046_before.txt",
+      "sha256": "46bedc06d1873fc1ee0062f6697e6f9cdc26bdb2a3b5cdcfe6f0bcedb782bbf2"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/047.json",
+      "sha256": "7d60273b16778d24af96690a05e18cc6e63f1c8a1c665fcc118f706585208aa6"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/047_after.pdf",
+      "sha256": "80555dabd98eef614f81ea42d110bf2598ac85ef7d03a56c9f544b667ab7e5a6"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/047_after.txt",
+      "sha256": "7238372f5843acff18a1ff969e58ccde06f15eaefb73453605240ba5833ee4da"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/047_after_companion_README.md",
+      "sha256": "675fcc357b69678374ab061a285e5ef8bd09cd1d978dfb51d4f83e20ab4ea203"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/047_after_companion_appendix.tex",
+      "sha256": "3ddb2da9b2d2903b7e8325ef1eb2ed349fb862aa4287f308289d39786ab6e7f6"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/047_after_companion_figure_data_manifest.json",
+      "sha256": "50c621f3240bd31cd05688da1fb78082840e16928be3281797d63e24ee49a252"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/047_after_companion_main.tex",
+      "sha256": "823459328035135227afedb7bcd3380f3092e0bba27f9dd10b002756cbb352b7"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/047_before.pdf",
+      "sha256": "ac6e2646b3fba77cbc84226308d84c17dcb5394f1023e12a43ac71c35a5aecaa"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/047_before.txt",
+      "sha256": "ae9dd2812a8a75c853b0fce25c83fc38249fb6b6e1f6cc93f5856a06e22c19a8"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/047_before_companion_README.md",
+      "sha256": "675fcc357b69678374ab061a285e5ef8bd09cd1d978dfb51d4f83e20ab4ea203"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/047_before_companion_appendix.tex",
+      "sha256": "3ddb2da9b2d2903b7e8325ef1eb2ed349fb862aa4287f308289d39786ab6e7f6"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/047_before_companion_figure_data_manifest.json",
+      "sha256": "50c621f3240bd31cd05688da1fb78082840e16928be3281797d63e24ee49a252"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/047_before_companion_main.tex",
+      "sha256": "91dd0adfeee7368793813c140e78d82d5a54073eedefcb03f83da9a3b0931518"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/047_companions.json",
+      "sha256": "aacec992c09bb89b792bf6786e184605ecc080e382dc616081f107a898bf8811"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/048.json",
+      "sha256": "480fda8ca57a9a5a68a934754648b5c3f4aeb25fae7947488b1486ff749a3f22"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/048_after.pdf",
+      "sha256": "83cd056ff21128101e1c64e60dd56d403f689d5795e1927b8265c11818e8a3d6"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/048_after.txt",
+      "sha256": "b8b4e1c397e046d2a5e4f10c4bc95c00eb5a8f3f496be6683edb89a197ae4966"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/048_after_companion_README.md",
+      "sha256": "92210260da911a5cb98433f768f6a60e622d50e04e68c75fcef50cf5dc2a5b26"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/048_after_companion_appendix.tex",
+      "sha256": "dc13a9990a0fc9a67df721ae84ef2d0c3a03f2d607a0852f2fac72978067764c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/048_after_companion_figure_data_manifest.json",
+      "sha256": "ba72e7185f71505c162431ba617414f372af363e8df4d2b45975445a54b2308c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/048_after_companion_main.tex",
+      "sha256": "3ba8fe90a6c967f2d34313439ec8d6f6833778632258aaf59da14a063f9c1e02"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/048_before.pdf",
+      "sha256": "da6316a009096ec1672753d74b7752dc07c5319a5c1c3d3204febc208dc6d7ba"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/048_before.txt",
+      "sha256": "17e8fee6f9304838d38265e6c291758d2d5922b777b2bb83d67485fbf2dd0cbc"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/048_before_companion_README.md",
+      "sha256": "6921ef531792442386b5a728d9488de89e597b702a1c1ee3adb459575516c653"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/048_before_companion_appendix.tex",
+      "sha256": "4551743c71a729488572f225abcea170c7dd9e4884d70e340218836744cd22be"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/048_before_companion_figure_data_manifest.json",
+      "sha256": "c478fa4b1dbacb38bebe3be9aa8a14955b8fde30f5a5df3732a526f2866c4d25"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/048_before_companion_main.tex",
+      "sha256": "cad134dd09020ecdb3be6adbd77bf616ed2959cbc003155431693294c78f97b1"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/048_companions.json",
+      "sha256": "9526248e273a2f4e0ad6e0be68fc3b2b097804c3204169815031d63b880e24d3"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/049.json",
+      "sha256": "290abe71e63bce5bc6fc7d085052a76ee4d4f392f14f8b62351729207a6ba621"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/049_after.txt",
+      "sha256": "eff8c17acafec7255d25226f1a4df14671a2bd39ecb12c61d06d717761e5eca7"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/049_before.txt",
+      "sha256": "7373fb669e3d28c58053838a25b8ac0f631ec13e9ac5f16ed6040867353c910f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/050.json",
+      "sha256": "5323ae8a4f1589e17d6b8efb7bf784788598683f78bd1e0f02ea0638d2567ef8"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/050_after.txt",
+      "sha256": "533df6a2683df03f0f5013894024528c1499f081b0cbfeddb74a7b44c7ad4a42"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/050_before.txt",
+      "sha256": "6936134a6898151d0d24cf4a188961f85f069a6f687496e2b6bce799577a211f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/051.json",
+      "sha256": "510cfa74b42fa85e2104823f9919624341785dc5b9731aea1837b49509eede67"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/051_after.txt",
+      "sha256": "76d859c510364cd19458354814db3fe1b6aaece2512ec7ce208b79725a453824"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/051_before.txt",
+      "sha256": "5274f17941b1e21c9d426ab45b882ace49a7c5271def6dc31bde7c4533ed227e"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/052.json",
+      "sha256": "7b11fd398534a599949dc019995c4a678bc7fda2287957e3d8e23bd3b76edd0c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/052_after.txt",
+      "sha256": "a8be7ed66d8997c6476be0fc850bb58d46262d976a7be9627efb3bcdeb775b52"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/052_before.txt",
+      "sha256": "226f9a6f32999267623f8d0a0d23e196737399ed40af9b05ec083ca483fa245d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/053.json",
+      "sha256": "f37c078acfd25a8324df51c7c4aa773fb8a8c010556fff36812b6c2519b05330"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/053_after.txt",
+      "sha256": "368eaf36bc2eb026d3f70c1db2a100caee9d4b8db004e81c613059ec4a2f1e5b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/053_before.txt",
+      "sha256": "b6455c815844aa5ea149c0cac4c6d01d8a0875b91051f2ed98eb0be99058b71a"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/054.json",
+      "sha256": "4a94e5a5a8e00f761f33cdafa3d5d7af738cf4f2f716a74fbeaae6d39064f228"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/054_after.txt",
+      "sha256": "42319b0ca9ac10891eef5be609e11ce6a8b3c962b6dbab686397e752d1b88534"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/054_before.txt",
+      "sha256": "2be7c4564ee1c97d9e06ee6f2b4c4e48bc9f20cf8e86a69e56fe9e656e92a094"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/055.json",
+      "sha256": "8370d2bd9a3002779329d86bc6b860a8f24662b62c117486292b3998bf72e934"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/055_after.txt",
+      "sha256": "d623ba357b8a54f0263b639fe0ba7baee306322b167dd050fcc545e75835c91a"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/055_before.txt",
+      "sha256": "31e0245fac3d09375e462aa46f3a29498421e243695a6f7809564c63bbc73e13"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/056.json",
+      "sha256": "383a4f71f536e7c5af31383c41c1b43b0898a06b3cca755aca7b6322cb00d7f9"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/056_after.txt",
+      "sha256": "5a3cd4c592a0599ec408f7bffc05f42017d8236320f63753e33c22e8fd9c3a49"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/056_before.txt",
+      "sha256": "0016d414d8382e6b8dc049dc1e9b9a919e1231c2b57e6e76600a2686c5cfebe0"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/057.json",
+      "sha256": "7b3e4fc00b500717f03d4477e95e59b83c1133f8d387d10dc7a042c6a401ab2f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/057_after.txt",
+      "sha256": "b3303770e3ed029326af010d790454ea8b4a16827eabbf05f704a75e86b562f7"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/057_before.txt",
+      "sha256": "f1f80b259ac03086dfa047d4816b49bdae1ba17c33f12bc4288da8d2467418d5"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/058.json",
+      "sha256": "b009128e3f05d412d5e6d0e8326e07b8d21fed526f587872884d4365f710f8bd"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/058_after.txt",
+      "sha256": "2bbb1449ef5f320f7d882028cedf3c9de5abf6f645f1d105cf6a6460b40d264f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/058_before.txt",
+      "sha256": "619e733b8a7ab0922209937a2087b5634666447ac03fbedfdf02e795420862d5"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/059.json",
+      "sha256": "5b23faed143569d893e41f01489398bc273c6423fe4bfa956eeba3fd337e7537"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/059_after.txt",
+      "sha256": "18f4b3c92af3a2c46823f3e68b2a46e20199921588b0e3010896bde397195801"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/059_before.txt",
+      "sha256": "a668cdff1b2163695504b788577b73e932e1049a4092eb50fc7434c2d6151cbc"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/060.json",
+      "sha256": "1ed924bb64fd79b8bbf93f8b350f00b3d2752f5ed7c8914c2ae0967855564b66"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/060_after.pdf",
+      "sha256": "96372da7dc888552cf3551c45c7c7652948216e84678abf5d5ee0a80c8dbb793"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/060_after.txt",
+      "sha256": "e02dbea5edf0de5d336e818a85197fba207a52769be623cd973be73649d83a17"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/060_after_companion_README.md",
+      "sha256": "92210260da911a5cb98433f768f6a60e622d50e04e68c75fcef50cf5dc2a5b26"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/060_after_companion_fig4_objective_conditioned_functionalization.png",
+      "sha256": "76f45351604d09eaf6f120d7a9e317eb73edcd7fe04245955cbfaeceb8a87b4d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/060_after_companion_figure_data_manifest.json",
+      "sha256": "ba72e7185f71505c162431ba617414f372af363e8df4d2b45975445a54b2308c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/060_before.pdf",
+      "sha256": "8ca4156cd0f97feb8f9ebfd437e694d25dd8b4e1656bce6df72a0ce49f1fc43a"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/060_before.txt",
+      "sha256": "77b3699b06dbf4d89e844134a5e7b2e87c39e98b03e6eaf347c8db65d9c08172"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/060_before_companion_README.md",
+      "sha256": "6921ef531792442386b5a728d9488de89e597b702a1c1ee3adb459575516c653"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/060_before_companion_fig4_objective_conditioned_functionalization.png",
+      "sha256": "f2f907aba426e54a6e0fcc350659db9d46f940307cbbe3fdf98d56b43b4409a1"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/060_before_companion_figure_data_manifest.json",
+      "sha256": "c478fa4b1dbacb38bebe3be9aa8a14955b8fde30f5a5df3732a526f2866c4d25"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/060_companions.json",
+      "sha256": "28d73535764b74583f406479f5c78fbcf0a114495a5742ac08c2266fe370847c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/061.json",
+      "sha256": "814d571d0c48d41e7e6bdbe61f335f5cc20cef20d13c01042189518c0546664f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/061_after.txt",
+      "sha256": "1230c7aaf010886125b5dba799bb0cb0db1c4f949d3f7e5468d38eba95d1e9b1"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/061_before.txt",
+      "sha256": "71a7fdfe7e1982b90131edcda5b6578e26ec060380b718957ff7270737076e3a"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/062.json",
+      "sha256": "5df4b1025afde2fee088daeeff657d56b7065c82703485b6e0bd5a534e750b29"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/062_after.txt",
+      "sha256": "01541c0caa5c9d1cdf4cb81a89b092d9936f771e023b320a5625754992e7b94f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/062_before.txt",
+      "sha256": "9a2a41ab024bb7d099e40737ab2abfee4328c9c488f8dcc1320e786b5c7d026f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/063.json",
+      "sha256": "3aa9efa0484c9505020d50b8cbf0e82099553252386838999341941529965d95"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/063_after.txt",
+      "sha256": "058dab83d3d6e28afd70feff7b16559596cf5961f3db5acf2759a1232967451f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/063_after_companion_test_train_controlled_v5.py",
+      "sha256": "816c5f7161cb06b0544b3c719a304959759f6585af1abf52aa06427fab380a97"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/063_before.txt",
+      "sha256": "254038648163d1f0091487d81142aaa15c817185391d7465dd5af97670d99759"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/063_before_companion_test_train_controlled_v5.py",
+      "sha256": "6c4c5d388b2c11d403880f3933d4af7af7424f89f40b152d4c2f886c474c63ef"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/063_companions.json",
+      "sha256": "cf1a4c95068f6b8968e3b5a8f37fdeefefd385df5d8867e9b31472a7bc6ae41b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/064.json",
+      "sha256": "b16bda7f26347504b69759b2ee09fcaa310a409b62517c181be8dea4c85a4b82"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/064_after.pdf",
+      "sha256": "796220e97dead65b61a96f14ce9e7cb0f621ae4ce9ac2920ba9467335163165a"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/064_after.txt",
+      "sha256": "acf84ecde17cab41371d1aef72d4cfb3597badcf6502af54f4328a9876a8b2d8"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/064_after_companion_README.md",
+      "sha256": "92210260da911a5cb98433f768f6a60e622d50e04e68c75fcef50cf5dc2a5b26"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/064_after_companion_appendix.tex",
+      "sha256": "3ddb2da9b2d2903b7e8325ef1eb2ed349fb862aa4287f308289d39786ab6e7f6"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/064_after_companion_figure_data_manifest.json",
+      "sha256": "ba72e7185f71505c162431ba617414f372af363e8df4d2b45975445a54b2308c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/064_after_companion_main.tex",
+      "sha256": "3ba8fe90a6c967f2d34313439ec8d6f6833778632258aaf59da14a063f9c1e02"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/064_before.pdf",
+      "sha256": "83cd056ff21128101e1c64e60dd56d403f689d5795e1927b8265c11818e8a3d6"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/064_before.txt",
+      "sha256": "b8b4e1c397e046d2a5e4f10c4bc95c00eb5a8f3f496be6683edb89a197ae4966"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/064_before_companion_README.md",
+      "sha256": "92210260da911a5cb98433f768f6a60e622d50e04e68c75fcef50cf5dc2a5b26"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/064_before_companion_appendix.tex",
+      "sha256": "dc13a9990a0fc9a67df721ae84ef2d0c3a03f2d607a0852f2fac72978067764c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/064_before_companion_figure_data_manifest.json",
+      "sha256": "ba72e7185f71505c162431ba617414f372af363e8df4d2b45975445a54b2308c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/064_before_companion_main.tex",
+      "sha256": "3ba8fe90a6c967f2d34313439ec8d6f6833778632258aaf59da14a063f9c1e02"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/064_companions.json",
+      "sha256": "056979f62791b49babb998c925881424eadf428093bc36ad58a8c92675f532b1"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/065.json",
+      "sha256": "f16d7fdc9c34c83ab837d8d56eab4d309a2fd35ee3b7f9616934303c1cea188e"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/065_after.txt",
+      "sha256": "794d9c7bdd5ef9c3c0939e6ff85b3e2d5477997f137672017719a8b0daf574f1"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/065_before.txt",
+      "sha256": "80a4e926d83583240b182bedf093ac099c6392a84aceb50d1453b3796a89cce7"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/066.json",
+      "sha256": "6dd666910591981945d01a68d8acc6329778d226e7bc9db0280353366a0c0e59"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/066_after.txt",
+      "sha256": "3e5b5f6390f8c6b62ef45d9c3a82229cf0c6f4ffd21431db832c0184223a6a90"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/066_before.txt",
+      "sha256": "f75685ec0e86444213ceabd9725801ac0bed8d7237d1f4be0695e4c2cf87051f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/067.json",
+      "sha256": "2f64935b2d2ca49c2dc935fc39f2338caf21d882fdf2d1652648a92fbec01649"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/067_after.txt",
+      "sha256": "0219fdf2a20717480edc7020f637b95d19d4fec843f55296a11f943b9522ee11"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/067_before.txt",
+      "sha256": "68af7d05a23cff18f1a04815372ee4b8743f3b971220691f5e80042ae60bb528"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/068.json",
+      "sha256": "5c0cb4e4c7427319c57118d790b834bd3124cd151ddb37e854c3b8f02654e1fc"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/068_after.txt",
+      "sha256": "993049e3952eabe7c4da45a99011d7fec57550e8942bf22e29570cccaf78b4f2"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/068_before.txt",
+      "sha256": "6cc9678193d8438ff2c1052d1b3400b368ec111e176545948ddc046bda568a92"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/069.json",
+      "sha256": "2f12dbe61f229b60999060922af731a8c3dd8f5ef6fd3d24942197a2a78ae298"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/069_after.txt",
+      "sha256": "516462294d04701b4257a9b26d9d28b162d8616e7c03ecdb5ebd6634291c32a4"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/069_after_companion_losses.py",
+      "sha256": "87abedb7c75a82a9c81771f80604ea8eabb0741272b6d45dc2c955703f6d99cd"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/069_before.txt",
+      "sha256": "d52745687cb927ce4ced4c7b594e885d8b68ea36573d61ab863936cc645fe1f2"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/069_before_companion_losses.py",
+      "sha256": "4b3dad8c1182e6903169391328e8bd44fcb75c2787d9482577457518a6d1defe"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/069_companions.json",
+      "sha256": "62a9bdbea3e62d6fc6244b7c6ff18fd62b756b1d46b348fac07403eb73a784ad"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/070.json",
+      "sha256": "db627b684d0b134409cbf73942e70dc31348c560bdcd4b97a7d93c9ace6b7cb2"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/070_after.txt",
+      "sha256": "7efb1f8a4205c1d2c59a9cc05aa127a016871be77b5273e5c02d19ac83b5fbbd"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/070_before.txt",
+      "sha256": "3a6f26958cfd44ce5c1ca9687a0f4b40ea23a392a66d8ed8d641b841c536befc"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/071.json",
+      "sha256": "91a6854155563beb4b24d979f2a8ba77be3fa9cff472a0e925b95c1c4724c602"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/071_after.pdf",
+      "sha256": "f62ce8455f61f6fb9f36438e129438e94181fdcd3ae04ded08cd53b91040f3f9"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/071_after.txt",
+      "sha256": "0c536a7662820163098b2aa328f2c506e10660184e6447e70e40d5ade9467675"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/071_after_companion_README.md",
+      "sha256": "6921ef531792442386b5a728d9488de89e597b702a1c1ee3adb459575516c653"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/071_after_companion_fig3_five_scale_recurrence_reorganization.png",
+      "sha256": "80ec094f6bf96d80957e81f95e1734ce40783f362ab852a578db85ff1342fcc3"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/071_after_companion_figure_data_manifest.json",
+      "sha256": "c478fa4b1dbacb38bebe3be9aa8a14955b8fde30f5a5df3732a526f2866c4d25"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/071_before.pdf",
+      "sha256": "4593ccaf5752047141732dca64af30d6cbafa369ab8ee7d05e6d958b18dc47f8"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/071_before.txt",
+      "sha256": "6b468301b66812f33f4d95cbb2980fb4e8e7b55dafb4ddffdc91203cfba28c3f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/071_before_companion_README.md",
+      "sha256": "eaea072bd031e51afaf4a7f5526145cc0ac1bfc58444fd2f40e572e78a619689"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/071_before_companion_fig3_five_scale_recurrence_reorganization.png",
+      "sha256": "8eda4f370ca20449f6198a38a5c7d51519bf11b797b6dcc60a718f75ac4e5d99"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/071_before_companion_figure_data_manifest.json",
+      "sha256": "f33564f683d4572e8b243f8563fe9c66767fb719e64815a12a87d4fb9dd21a44"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/071_companions.json",
+      "sha256": "4dea2659f65a5cfddcf78b7bef10ad1090e514d813b4c1253ffe9ce5ee9910de"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/072.json",
+      "sha256": "82d4b98bc6deb2193f21f0a24099e91f90a139f2e7776f48f954d648ab00fa51"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/072_after.txt",
+      "sha256": "64ea7e6078532b68e7b211d755a3dda339802c0eb9ac79930b0f3f8f69c95417"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/072_before.txt",
+      "sha256": "58f8fb2f3a5496527d4ca4dc30beec7e6c84184baba121cffd0f9cd560d87b98"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/073.json",
+      "sha256": "66130e8e161acab843528fcf3720d3c880b85f9bcd7ac8be63ed67fba0000832"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/073_after.txt",
+      "sha256": "55ad3b8c99e196c45dc380789422984f9e6a3897b5d9f7efd9dfd6e4660cec7c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/073_before.txt",
+      "sha256": "533df6a2683df03f0f5013894024528c1499f081b0cbfeddb74a7b44c7ad4a42"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/074.json",
+      "sha256": "ee50418101e8e06f390b6948b4f67056ed5ded19050ca4815f7ec3f1c4de2a28"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/074_after.txt",
+      "sha256": "bd489faff82b1eecd86ddfffb0e1d5a56fe63f96f979d17057a296d61d994978"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/074_before.txt",
+      "sha256": "42319b0ca9ac10891eef5be609e11ce6a8b3c962b6dbab686397e752d1b88534"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/075.json",
+      "sha256": "77af5bfb1922d92f28f94d622219c316bfe329c495560b42cb05a8f8352d0255"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/075_after.txt",
+      "sha256": "35ca715f85c8d6bb66f8d0421b1ad71a47648f6c43cf8f4e1088d84a525b30e5"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/075_before.txt",
+      "sha256": "ec8070b157448da2e9a727354b0f957a574fbdebfe0cdf945cd8c49202ea012c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/076.json",
+      "sha256": "06b37c61e6574fc95ba3f0402f8dabd236042c01e628341565ccd6f1ab797c0c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/076_after.txt",
+      "sha256": "ab18c843beedf162c9cb6ca99dfbb3f4a9b080c8027f907fad547bc3d438026d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/076_before.txt",
+      "sha256": "b09c8a22f4a2c38cf8534c19cde4b3639c82a898aa86b7bc8a7d8a5eda8a6d0f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/077.json",
+      "sha256": "30aadb4f97c19da4c60655e8eded44f3f18810852880ce387eef7acb590b9e85"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/077_after.txt",
+      "sha256": "ca65d1a1770ec737f422a9f9058e9990166cd23ec6a3dd156c9e3ae9aee6ba49"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/077_before.txt",
+      "sha256": "cf4e5fb243241f2ab8a77505129bfd31788999b721a9941670f39dfd6decc2a2"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/078.json",
+      "sha256": "e2e00896b4b81a51697eabc33f750877cc746dad20b5b05062d0a9093bef0df1"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/078_after.txt",
+      "sha256": "1b875f1104eee3fde3d193083f9d4d23907078b5f9d40dfe0502816928e8510e"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/078_before.txt",
+      "sha256": "39530763675378cdbebfe56d2f0cfbd901089e2f8094072bd034d8bf5fd01a59"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/079.json",
+      "sha256": "67afec8289e05c514a93031e20c77947dff8df4e67ff7438373beb05223d1bed"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/079_after.txt",
+      "sha256": "b6a24a69ba598efb1427869f17761c2c0c790e8c96db5a92476d6f93e0f4e22e"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/079_before.txt",
+      "sha256": "b1e10afc407ab3bd787931f0011816668ec2888d7e4b60380dbc23ae559ef067"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/080.json",
+      "sha256": "d9bd9fd088307d8e785f2c5f699a9b386386a69727eb48c944e60ade9e596002"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/080_after.txt",
+      "sha256": "abd898d9ae7aaf822c2e73e02b6054c5a03b8f74ee64b4723780b0cd5d49a51c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/080_before.txt",
+      "sha256": "3a6f26958cfd44ce5c1ca9687a0f4b40ea23a392a66d8ed8d641b841c536befc"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/081.json",
+      "sha256": "7b7d494e968ee48904c5e53d19f4c8fece4766b1620a34a1250f16e55c9d37e2"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/081_after.pdf",
+      "sha256": "d14b7041b0f8b44ff3591c0001c006ee77bec46b1257e642bedbce03478a0859"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/081_after.txt",
+      "sha256": "6f859ba552f669872b790a286ca6fe041b05725d51b0fbf02b0a332b91c6fca5"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/081_after_companion_README.md",
+      "sha256": "6921ef531792442386b5a728d9488de89e597b702a1c1ee3adb459575516c653"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/081_after_companion_fig2_130m_causal_foundation.png",
+      "sha256": "c1ea0dff0a402fe4a3e7c9d4e5dac90137409e89be5ffffbea9c5d162ec0f9c6"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/081_after_companion_figure_data_manifest.json",
+      "sha256": "c478fa4b1dbacb38bebe3be9aa8a14955b8fde30f5a5df3732a526f2866c4d25"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/081_before.pdf",
+      "sha256": "f33acfea854331f8d9d8c41b904156d2859a7f74bfa6a23ef9f58e76c2ef41f2"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/081_before.txt",
+      "sha256": "d2e44d9f8951c51681d37de8b75ec1a11474246dfbf630df13e0005a3a983310"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/081_before_companion_README.md",
+      "sha256": "eaea072bd031e51afaf4a7f5526145cc0ac1bfc58444fd2f40e572e78a619689"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/081_before_companion_fig2_130m_causal_foundation.png",
+      "sha256": "8569e41d8063a8ff915d2fbb8b30eb531eacd24f65d013e6c79794e07e2229fc"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/081_before_companion_figure_data_manifest.json",
+      "sha256": "f33564f683d4572e8b243f8563fe9c66767fb719e64815a12a87d4fb9dd21a44"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/081_companions.json",
+      "sha256": "3709099b719a2d787a911bcd58ff2740080ba36a9d0e75d6d8728296455a086f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/082.json",
+      "sha256": "17d2dcd0adbee6869418911fd496b19d2e6d85c886a98bedf2531f778ebfa960"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/082_after.txt",
+      "sha256": "33461313279af2ab398b53920074dba5fb71a919e92c9f048a327a415ebae467"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/082_before.txt",
+      "sha256": "382c25279ca5cfc9c158c2497c3eabcbb31e4ad1499cec3662ed6d6888cb048b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/083.json",
+      "sha256": "c0dee9a828efd12738d04cbb7fd53a517cc9eec58ba442f2146e7f03bc2e2f22"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/083_after.txt",
+      "sha256": "c4f99c940a8e64b80c7f87079989e6b4e5754c86b5a8a9e049db21d322de4925"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/083_before.txt",
+      "sha256": "9fa0b66b1dd2a85b85e8d6c18d070f5d9ec593d59f96aaf2887451c3d7961abf"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/084.json",
+      "sha256": "f52cc3aca4552852b8eb073725c17b84d0b9d085bdc136a9df09611b5e69aaa4"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/084_after.txt",
+      "sha256": "6d013a331363bd95c1316f2f482491f779d315edee8da9d2e7a822b4dc7f65c9"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/084_before.txt",
+      "sha256": "40b775fbe385803803bfaee571f75bafa31fab5f1baf8584055eb066bc1dbb46"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/085.json",
+      "sha256": "c50749d4c1de630e538166ab582bd61d7ea7541c5723c0631ae56eb04b3a67a5"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/085_after.txt",
+      "sha256": "69265e0f8dfe220695bea547d0876ba5f788ecfc2ff97abaf92d63e676b8d901"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/085_before.txt",
+      "sha256": "24361ab83dd2d17e72ca64e9dac3af0b86c5ccb7c2bfa5677805139fd77e2eb3"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/086.json",
+      "sha256": "1b32e8082eaff11c45409fcd2350b5ec86e27ab03fc2153bf8e2df6f383e1f3d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/086_after.txt",
+      "sha256": "cf4e5fb243241f2ab8a77505129bfd31788999b721a9941670f39dfd6decc2a2"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/086_before.txt",
+      "sha256": "1c677351469ebe37ff5ac824ac909536976b8d4748fd236a436c306b763ad8a8"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/087.json",
+      "sha256": "ed65bc9236e35dce2d01f62bb23abb03c658e5ef4a10a6ef6e5c51b6891338dc"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/087_after.txt",
+      "sha256": "a42b3179192225b0c797739b95ce2b728c6d9fa37bda823d4cce5682aec8ba2d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/087_before.txt",
+      "sha256": "765b9d73fcb00f7b2bf8c79c1c3d6b433c5b99a0898cbdc3eb375764e0b98a3f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/088.json",
+      "sha256": "1b7c889afa21ad7d956e789c4015a20ede561a9fb27ae7beef8bd43af870056a"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/088_after.txt",
+      "sha256": "5f18ab872f5f6ce75d6c4866e19069a3335c635702fecb064502b51e602be487"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/088_before.txt",
+      "sha256": "55ad3b8c99e196c45dc380789422984f9e6a3897b5d9f7efd9dfd6e4660cec7c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/089.json",
+      "sha256": "ab9fbad87658a7ee94ca1b14aafb4e6f844c68c5a82e4b68e5bada091c6ac438"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/089_after.txt",
+      "sha256": "75074bb477f7f5503580acb5861585049fed44aca1b3815aa167355334fa3373"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/089_before.txt",
+      "sha256": "f8bc0ac8f18d48fa1347ccf243f33369b5d5ef570048de4a3d605a2e5ab00828"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/090.json",
+      "sha256": "89c31e19fba6299e98d905cc4161d089199c5d62bf3c54f0bfb41240787ccf76"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/090_after.pdf",
+      "sha256": "da6316a009096ec1672753d74b7752dc07c5319a5c1c3d3204febc208dc6d7ba"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/090_after.txt",
+      "sha256": "17e8fee6f9304838d38265e6c291758d2d5922b777b2bb83d67485fbf2dd0cbc"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/090_after_companion_README.md",
+      "sha256": "6921ef531792442386b5a728d9488de89e597b702a1c1ee3adb459575516c653"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/090_after_companion_appendix.tex",
+      "sha256": "4551743c71a729488572f225abcea170c7dd9e4884d70e340218836744cd22be"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/090_after_companion_figure_data_manifest.json",
+      "sha256": "c478fa4b1dbacb38bebe3be9aa8a14955b8fde30f5a5df3732a526f2866c4d25"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/090_after_companion_main.tex",
+      "sha256": "cad134dd09020ecdb3be6adbd77bf616ed2959cbc003155431693294c78f97b1"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/090_before.pdf",
+      "sha256": "f3529847cf975cee83722fe5370a27d94c5b58461e2bebf9255127d2bcc8f0db"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/090_before.txt",
+      "sha256": "4e90c99e5196a12a5971e74183aa0d8fc37f769a29f08095c4889b392f5224d8"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/090_before_companion_README.md",
+      "sha256": "eaea072bd031e51afaf4a7f5526145cc0ac1bfc58444fd2f40e572e78a619689"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/090_before_companion_appendix.tex",
+      "sha256": "77b1f22c3278caaf7dcde79611ee67c2293f5a6a6736150cc7e6dd490a9d335b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/090_before_companion_figure_data_manifest.json",
+      "sha256": "f33564f683d4572e8b243f8563fe9c66767fb719e64815a12a87d4fb9dd21a44"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/090_before_companion_main.tex",
+      "sha256": "637fb432b94d38aa625288ffce1dfb42f973d543a3acaae449682fbcbd05844f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/090_companions.json",
+      "sha256": "aa4bb67395437b7de84bee620934bb9f4ccbdce0b890b9422e8114d3f9dc8ecd"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/091.json",
+      "sha256": "de0a844f1e368c582c98ad4ac9eead0c12a0a4c60d4b813dca6c8523103b8368"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/091_after.txt",
+      "sha256": "f75685ec0e86444213ceabd9725801ac0bed8d7237d1f4be0695e4c2cf87051f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/091_before.txt",
+      "sha256": "971cc74027a4bc12ec9dd5dc2630b2ada5810fd4a48b2abc4769ba210ada1577"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/092.json",
+      "sha256": "34a9177b2ee8f63d9eab54d4e1cab254a2b808767d81f94051de7f1f64fce0f8"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/092_after.txt",
+      "sha256": "04c10bc518f7471521cd2fab8302f0271b0c28b7c8c24160c7af5c0863425585"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/092_before.txt",
+      "sha256": "5a3cd4c592a0599ec408f7bffc05f42017d8236320f63753e33c22e8fd9c3a49"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/093.json",
+      "sha256": "0d250a5eb6b1b2c63ee393d7d34dfa114c78f45a8f3d29f74a9a57a12b037281"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/093_after.png",
+      "sha256": "bb2da530565325eb33dbc602cc990b9447f97854d69c7a52bd6d07fb5bddbf20"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/093_after.txt",
+      "sha256": "08368f4afc6f3223f785d7c87208d7fa44c6ac979cf328f2672155264332a82b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/093_after_companion_README.md",
+      "sha256": "675fcc357b69678374ab061a285e5ef8bd09cd1d978dfb51d4f83e20ab4ea203"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/093_after_companion_fig3_five_scale_recurrence_reorganization.pdf",
+      "sha256": "30bd0087de7a9b8e22a05cb1ad95f14a693d3aac3560c60ae5b590f8cc7f973f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/093_after_companion_figure_data_manifest.json",
+      "sha256": "50c621f3240bd31cd05688da1fb78082840e16928be3281797d63e24ee49a252"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/093_before.png",
+      "sha256": "49727ec818b226ca83af7a371ea6a39c631f50fabc167a015acb94c76ae83b34"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/093_before.txt",
+      "sha256": "08368f4afc6f3223f785d7c87208d7fa44c6ac979cf328f2672155264332a82b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/093_before_companion_README.md",
+      "sha256": "92210260da911a5cb98433f768f6a60e622d50e04e68c75fcef50cf5dc2a5b26"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/093_before_companion_fig3_five_scale_recurrence_reorganization.pdf",
+      "sha256": "61a314c1edc58a4acda6a4407ddc8de561d8ead601d3f0f0a020d0fb8ce5477d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/093_before_companion_figure_data_manifest.json",
+      "sha256": "ba72e7185f71505c162431ba617414f372af363e8df4d2b45975445a54b2308c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/093_companions.json",
+      "sha256": "d9a746cd1034c0b9b0dd441decb1a8ee9301b1ae0b0ad188431421c9ea75187e"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/094.json",
+      "sha256": "f4741232dc8cbbb46b613acd3caa0dc0b298372ecf452b38f6a4af520dd3b469"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/094_after.txt",
+      "sha256": "1c318ce75a82448d1c82f33b669171ce4c91a1b38042e6682ce339fd8a645bbc"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/094_before.txt",
+      "sha256": "a08a3534fe848434bac9064d6bb17e4370af4b8d08501a9730e01f59a05d2c3e"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/095.json",
+      "sha256": "a4efdc5914ae03dececeb9e801525ec8d6604e8ce5dbd24fa5dc2346658486a5"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/095_after.txt",
+      "sha256": "8b523016e7d5883cc4f3a66ba416424bc5af5517b3b24055d7e0939bac2bddae"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/095_before.txt",
+      "sha256": "a8706e0b6d0dd920e93442fcd2720c81cd1e20f01e71511c7cb7ba40cf7a1909"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/096.json",
+      "sha256": "fc2777fc27a36fbc6540f79104fdcc1bd62eea9e926a073ee02365b319406844"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/096_after.txt",
+      "sha256": "183e438cf0f9776afc9bd628e59cb807521327b440911a290a1347b441e0e707"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/096_before.txt",
+      "sha256": "2fe0b70273b7e593c749e9b2181db71561a4a35046587869f544b954e70d7543"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/097.json",
+      "sha256": "7f73059bf8c4338902e5c5171eb87a331d53a15d36a3155553dcb09ef9e279df"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/097_after.txt",
+      "sha256": "941529ffaf113308cd96e44bb3ce9e71f62ee6172a5f1ca5480f46ce2b129f12"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/097_before.txt",
+      "sha256": "622eada52fb11bc4335dea5d353d365d4456f3ebb9cb31def0e08210c5a8e39a"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/098.json",
+      "sha256": "b715f14d64a3c85c6064ef04df1c4b3e8852463c7802f6442b6663726c679040"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/098_after.txt",
+      "sha256": "6cf3099071017b9e1570cf4ea98c929f24404e188cab7ef17d2d6028b6c16440"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/098_before.txt",
+      "sha256": "7d003ea4e737708fec3baeab07a1a572d362eec2ff1d7910f1db4279d8ed0a8f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/099.json",
+      "sha256": "48550fb69be810c3ce2cd6aee111a3737664820610bd1fa686918d3f9494d02f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/099_after.txt",
+      "sha256": "f544ce1a40ceb5e9f20d32e845b9dee0f24e830555618c9d24de104d1b3d5e97"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/099_before.txt",
+      "sha256": "82418594cd0e86c37c53fec8db81ae258c978fe4cecda4e86f62ee8dace65ce0"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/100.json",
+      "sha256": "d050e2bed86bcf5f49dfdbdc5d45f95fec17b952f78c70ed1b25e768de13f07f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/100_after.txt",
+      "sha256": "cd0945eac17d95562874b88d597a2152ade464dbf790faabd59e7fbf410fb2d8"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/100_before.txt",
+      "sha256": "7f108d5958b8d47755f8e19027d8e2f7f28165b21632a4ceb9487e874d732318"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/101.json",
+      "sha256": "02d648b17cce3022cdbccfe9a8ae48332cd55c8ec538c6b0bb9787352d0361ce"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/101_after.txt",
+      "sha256": "6f0c996ac022ff803eb016533e24e23951b047e0717f1a01ebaaa6ceb7621295"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/101_after_companion_train_controlled_v5.py",
+      "sha256": "862743d61c3c12f9aedf5f30e3ca34cb2abc00f6306e541c2a42189a127088c6"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/101_before.txt",
+      "sha256": "7601809f31359533e03d771818bf50540fdae72a78ba8ac6acec0c67549dedd4"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/101_before_companion_train_controlled_v5.py",
+      "sha256": "44e187c8615627c4c78c70045e21a74d333c8f99a39158fdd7da71a2a2dc4661"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/101_companions.json",
+      "sha256": "5e58b357827e6589a7a784c6da9347cea0c336da4f9aaeb4ce1781ad4fc772b6"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/102.json",
+      "sha256": "febe3366ac4ad3bf326f1fd23853e415b6eeeffbe0a182a8189ca9dbf3d8e276"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/102_after.txt",
+      "sha256": "70b57d9be57c25e4e6fecf4c055f1ddb9103622b3234516e84dc332f435aa963"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/102_before.txt",
+      "sha256": "259d21885e3e53ec3a412b27d0ae1f6ceb650ce4b6c94bc893410ffc1675cec6"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/103.json",
+      "sha256": "f403f2018584eb2e218a13302dbdde2c0c9c06afe986abcb90de74b507332d11"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/103_after.txt",
+      "sha256": "32da7620517e593062320098911e147efe281c1445ce3b61c70156c5e646d857"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/103_before.txt",
+      "sha256": "a72279d3d24297d73b828ce7a7d60c1d0577a2c1777ced1f8398f63b21172080"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/104.json",
+      "sha256": "76919e4868fa1e9cba04c0e6d4bfb0134005ba93524d8f8f34435bb7b060d93e"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/104_after.txt",
+      "sha256": "31e0245fac3d09375e462aa46f3a29498421e243695a6f7809564c63bbc73e13"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/104_before.txt",
+      "sha256": "3828434a4756dc2c7d5dcfe05fcc990d613fd61b37926c467b7078cb12ac4088"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/105.json",
+      "sha256": "1e38676746ad542faed266edf646f6e7242974630c6400e451f3a14f0ba156d4"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/105_after.txt",
+      "sha256": "659f3932d9aec3894a2b12d8e3f72e44bec1e997d1caaea070916d56e09fe563"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/105_before.txt",
+      "sha256": "61dd0916d2338319455bd4212be4e6644482db96b93b2c8c4df4998735ddddf7"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106.json",
+      "sha256": "3c0ef4cf891e7cf33c33d911dc8861b627326f3768da6b988f7e6e2533c5e982"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after.png",
+      "sha256": "a8871bf5664b3ac5c9cbb4f9b2760351e3bb6b4a04f98c6a5039a92465e4fcfc"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after.txt",
+      "sha256": "08368f4afc6f3223f785d7c87208d7fa44c6ac979cf328f2672155264332a82b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after_companion_README.md",
+      "sha256": "92210260da911a5cb98433f768f6a60e622d50e04e68c75fcef50cf5dc2a5b26"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after_companion_fig1_study_overview.pdf",
+      "sha256": "d3e88e41a4dd3b5ec0da73eec7532bf7d7e4b202fbb4074e18365fbc3e215c3f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_after_companion_figure_data_manifest.json",
+      "sha256": "ba72e7185f71505c162431ba617414f372af363e8df4d2b45975445a54b2308c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before.png",
+      "sha256": "a6db5d8e4d76539835490604a92da4406a128f940548a3c7f5ce0ab7800e392d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before.txt",
+      "sha256": "08368f4afc6f3223f785d7c87208d7fa44c6ac979cf328f2672155264332a82b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before_companion_README.md",
+      "sha256": "6921ef531792442386b5a728d9488de89e597b702a1c1ee3adb459575516c653"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before_companion_fig1_study_overview.pdf",
+      "sha256": "57822b65223b2b0ba3b2067dcf5e86ed8cda5430445475d43e9b7ad896a5f252"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_before_companion_figure_data_manifest.json",
+      "sha256": "c478fa4b1dbacb38bebe3be9aa8a14955b8fde30f5a5df3732a526f2866c4d25"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106_companions.json",
+      "sha256": "52be351e4bd4975df1a8338e03b5aa6b0acb578d875aec987ae65306ef9a5831"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/107.json",
+      "sha256": "61f61bc87c53146c2cdf6f68a0d0a4e0552cac009c6ea7e11d026ec6e546fa29"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/107_after.txt",
+      "sha256": "a15008374e21b4c275ed1c5c8512447942b204c2bc2738fd85d97b63a6ce2504"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/107_before.txt",
+      "sha256": "ecbd25e0c2b24b70a5a2787661b805c21f03ff265ad526c7ecd6fd0dd3de903f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/finish_accounting.py",
+      "sha256": "23b9e396a3318c6a10c2ffeea5a91135f67966920dbbba321b8f9fa0f0aafb07"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/historical_scientific_changes.jsonl",
+      "sha256": "37013e7f55212945d71e76b45a3520ff11fced4906ceeb54116c63df7a56b3e1"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/partition_validation.json",
+      "sha256": "5154ca8337f434561dfe502ebf5878f7daeaf2c7bb616d993aac43e37173f072"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/reconstruct.py",
+      "sha256": "238aff49e8959791e556bfb243a617809460ad00cddaa9d8531458f0f7225f4c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/remaining_transition_gaps.jsonl",
+      "sha256": "432743d50dabb2765399c3b4026143dfef42a235076e4932da45eb69085798af"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/report.md",
+      "sha256": "b00ea12f45f873a6e1a88d7fd519b741f613c7bde2a48474d43a10d8d4bb6d66"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/target_manifest.jsonl",
+      "sha256": "91894f9729bf13b36c0be2e975e682c8d9770079227190acc58a65a39abd90d1"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/transition_interpretations.jsonl",
+      "sha256": "d7e2ed74fac4143e5349c261849e579232c4a5f38537a801cc521371ebd2e518"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/coverage_validation.json",
+      "sha256": "f1a9249041968119c590b2e59f4b248b82d0b9a3ea1787f73365ef535ad05025"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/historical_scientific_changes.jsonl",
+      "sha256": "247008f269eff73c9ddc48396ebae6aaa8c3a3527991ff3f63c2bd625a89677e"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/inspection_tmp/103_after.png",
+      "sha256": "c1ea0dff0a402fe4a3e7c9d4e5dac90137409e89be5ffffbea9c5d162ec0f9c6"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/inspection_tmp/103_before.png",
+      "sha256": "8569e41d8063a8ff915d2fbb8b30eb531eacd24f65d013e6c79794e07e2229fc"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/inspection_tmp/105_after.png",
+      "sha256": "80ec094f6bf96d80957e81f95e1734ce40783f362ab852a578db85ff1342fcc3"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/inspection_tmp/105_before.png",
+      "sha256": "8eda4f370ca20449f6198a38a5c7d51519bf11b797b6dcc60a718f75ac4e5d99"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/inspection_tmp/33_after.png",
+      "sha256": "a6db5d8e4d76539835490604a92da4406a128f940548a3c7f5ce0ab7800e392d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/inspection_tmp/33_before.png",
+      "sha256": "ccf308f49976c99ade7895a85fe896ecf0955e7b28fe65391b1990a1309445ca"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/inspection_tmp/62_after.png",
+      "sha256": "ba4c0eba0ee683603f2eb70fea4c9467cbea268a48ba4bbdb3f088e84591da54"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/inspection_tmp/62_before.png",
+      "sha256": "a8871bf5664b3ac5c9cbb4f9b2760351e3bb6b4a04f98c6a5039a92465e4fcfc"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/inspection_tmp/78_after.png",
+      "sha256": "f2f907aba426e54a6e0fcc350659db9d46f940307cbbe3fdf98d56b43b4409a1"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/inspection_tmp/78_before.png",
+      "sha256": "a7090f56847962b887782e7fde65ce1bb900e3368c11a48404a860ae456cda94"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/inspection_tmp/85_after.png",
+      "sha256": "76f45351604d09eaf6f120d7a9e317eb73edcd7fe04245955cbfaeceb8a87b4d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/inspection_tmp/85_before.png",
+      "sha256": "f2f907aba426e54a6e0fcc350659db9d46f940307cbbe3fdf98d56b43b4409a1"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/remaining_transition_gaps.jsonl",
+      "sha256": "249a31583d6ff8ad573b263c35331fab597cd461824b15c72a683c5919a17204"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/report.md",
+      "sha256": "08445e07f51da9be43ae65e75e3ee54d72e7851a7eb43ff917ace88322a3b68e"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/target_manifest.jsonl",
+      "sha256": "11754c1b043d0881e47a36da680223046279a678520e48336a494d8decc245ed"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/transition_interpretations.jsonl",
+      "sha256": "1f98c892983138604f81f870c6fa16425f78e156e08f9c09fe4887fffaddf0ed"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/external_evidence/coverage_validation.json",
+      "sha256": "f2452a08be23dfeb76a4c7f442c419223abdfc26985f7cac291fe97af79a9c14"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/external_evidence/evidence_requirement_groups.jsonl",
+      "sha256": "56e23262119ad9259e68c4c025bf0e2db8347c26a00cca0c81793e62eb0e5ce9"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/external_evidence/external_evidence_requests.jsonl",
+      "sha256": "de662d3d6e42fa9f761b1eb1a6b836142db24e41edcf51392b588c7bee778f17"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/external_evidence/local_evidence_availability.jsonl",
+      "sha256": "89ce6b7d0e44f84104831183fe92e036f499bf63737ee6adb4507cbb0e7b1859"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/external_evidence/pytest_producer_requirements.json",
+      "sha256": "de07d158f7bea44101901f9c25124d0ba07fad8e286dc55be8ce93e0109030e3"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/external_evidence/report.md",
+      "sha256": "d8775d434274bddd78f76d47f24eda4409bc423b87f7216ae1288cccf71615b8"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/external_evidence/snapshot_capture_requirements.json",
+      "sha256": "c01319e2c038d2206d9fe2493a9f52b41207ab7bfb88825e4fd2796a99c2a9c8"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/external_evidence/target_manifest.jsonl",
+      "sha256": "8f20ca293de5b5cea7b2947f12b55f1e5af7ad73235394ac798fcfdfaad9d4da"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/coverage_validation.json",
+      "sha256": "cf80158f61b39ef09469e0193e06c15825098f33f1ae4b9588a33a62ba988770"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/missing_literal_recovery.jsonl",
+      "sha256": "96ace038201a8e45b32b9c36ba7c2141b287d5d35d404a53b8e1bccc76e6807d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/recover_local_semantics.py",
+      "sha256": "51cf249d689932086b2ec22b2be007cd1e007d2ef3a7f0f61c12c29f9cc015e5"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/remaining_semantic_gaps.jsonl",
+      "sha256": "1c30c0bc330d512269eab86b81db4a2929a29e06baa06a6c8d54600da1e471fc"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/report.md",
+      "sha256": "bf797929401ef87a64769c4b0d96199368e29069d4a87b0479bd961ef466fcf3"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/semantic_recovery_results.jsonl",
+      "sha256": "c698dd02169b4b97c6ece01cc49f1f65a3f089ec06ea3af97adf938716c0d0a2"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/local_semantics/target_manifest.jsonl",
+      "sha256": "ab37073ad7b37187220ccf285d27e0f43dcf1bc3e8e8fe5b0722d2ac66b01f3d"
+    },
+    {
+      "file": "audits/full_history_20261013/reference_coverage.jsonl",
+      "sha256": "6f411d6f34140f1f7708970947c986a16abb49ac5722bd7ec34901205ec64dc0"
+    },
+    {
+      "file": "audits/full_history_20261013/scientific_audit_summary.md",
+      "sha256": "c2d6e8db22374e049a4daa3e87e25fe3976f0ed2b1c5e6a7c2b02b7ccf4c9a34"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/external_evidence/evidence_requirement_groups.jsonl",
+      "sha256": "56e23262119ad9259e68c4c025bf0e2db8347c26a00cca0c81793e62eb0e5ce9"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/external_evidence/external_evidence_requests.jsonl",
+      "sha256": "de662d3d6e42fa9f761b1eb1a6b836142db24e41edcf51392b588c7bee778f17"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/external_evidence/local_evidence_availability.jsonl",
+      "sha256": "89ce6b7d0e44f84104831183fe92e036f499bf63737ee6adb4507cbb0e7b1859"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/external_evidence/pytest_producer_requirements.json",
+      "sha256": "de07d158f7bea44101901f9c25124d0ba07fad8e286dc55be8ce93e0109030e3"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/external_evidence/report.md",
+      "sha256": "d8775d434274bddd78f76d47f24eda4409bc423b87f7216ae1288cccf71615b8"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/external_evidence/snapshot_capture_requirements.json",
+      "sha256": "c01319e2c038d2206d9fe2493a9f52b41207ab7bfb88825e4fd2796a99c2a9c8"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_04/external_evidence/target_manifest.jsonl",
+      "sha256": "8f20ca293de5b5cea7b2947f12b55f1e5af7ad73235394ac798fcfdfaad9d4da"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_04a_recovery/recovery_report.md",
+      "sha256": "5a1450129135b8fba017de835b0cb20fce1e483236f5d92caffd500748ead74c"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_04a_recovery/unavailable_evidence_registry.jsonl",
+      "sha256": "9a8ddd037946061a7ae170ff8f2ac318957e5b252936be1ffd26c2266f2fba4c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/remaining_census_work_queue.jsonl",
+      "sha256": "d1246cf4c90cf93e5f28735e97155dd9fafdfdf8138bc99eb2f98dfc3622ec17"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/empty_source_dispositions.jsonl",
+      "sha256": "ea7ed8309556ad6fc7d842cf4cc1813ec37874f524997abbde9524cf02610d0b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/study_identity_adjudications.jsonl",
+      "sha256": "22c6fc8f0dbb82ad0559c4f5f049c13af7a96b72b9f72f806f07e5785836c71f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/batch_02_local_probe_checkpoint.json",
+      "sha256": "1c7629b2819bca5f8dfcd64c5f95ea95635cbd22fd14ef47b965713de16015f2"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/closure_validation.json",
+      "sha256": "ee22f494c41dd6db4a2070ec99389cb7ce9cbc3b206234b87752074a3de834c7"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/frozen_211_target_manifest.jsonl",
+      "sha256": "d501aa7fa375a21721e3d9fc1fa731e004776f462605522535b330b95125df8b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/input_preservation_checkpoint.json",
+      "sha256": "3fdde813fbfb070af62593fd11775ad144abd23cde4aaa3e514aede8e5ef0ffb"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/remaining_external_evidence.jsonl",
+      "sha256": "a9bc0a89707d1766b43f8f96ecfba8d2451abe9cc10ff7a0409f75cf80ec0e08"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+      "sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/source_recovery_results.jsonl",
+      "sha256": "911f00bc3a4a9c34aa7e47683abd0fa2c2e20104fd6284c74b861705ab5f40cf"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/study_identity_dependency_groups.jsonl",
+      "sha256": "0724a4e3cb5a57ee92067db6d33317a6e8ad9b583e29b6069a70a2de17d95f81"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/relationship_adjudications.jsonl",
+      "sha256": "f1360bb90913925fd30d1b377a724eee3062b47f97171ad2fd0a3ea64e9b2a98"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/remaining_provenance_gaps.jsonl",
+      "sha256": "fbf531fcaff797d007d58e95063c325350ec2fc91f6a9164d294f4d740f3027c"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/provenance_relationships/snapshot_chronology_assessment.json",
+      "sha256": "bc36e4843bebc1af974682e1926423bc1d7245f20ea6efd2703a4c7961285d34"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/study_consolidation/study_identity_76.jsonl",
+      "sha256": "c6d93552982859e98abab90901ef8db297f5a1b3c63e498ec218ab424cc6c76d"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/transition_interpretations.jsonl",
+      "sha256": "d7e2ed74fac4143e5349c261849e579232c4a5f38537a801cc521371ebd2e518"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/historical_scientific_changes.jsonl",
+      "sha256": "247008f269eff73c9ddc48396ebae6aaa8c3a3527991ff3f63c2bd625a89677e"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/remaining_transition_gaps.jsonl",
+      "sha256": "249a31583d6ff8ad573b263c35331fab597cd461824b15c72a683c5919a17204"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_1/transition_interpretations.jsonl",
+      "sha256": "1f98c892983138604f81f870c6fa16425f78e156e08f9c09fe4887fffaddf0ed"
+    },
+    {
+      "file": "audits/full_history_20261013/expansion_02/study_identity_ledger.jsonl",
+      "sha256": "843fc6d2f7aab77ce476dce5885aa04c650b048982d9edeeb52348621f0f0743"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/study_identity_116/study_identity_evidence.jsonl",
+      "sha256": "a87384b5229fd79e7aefb0470f3c6c74831587166a7f07faee606f1075fbbf73"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/integration_02/remaining_census_work_queue.jsonl",
+      "sha256": "d1246cf4c90cf93e5f28735e97155dd9fafdfdf8138bc99eb2f98dfc3622ec17"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_02/study_adjudication/study_identity_adjudications.jsonl",
+      "sha256": "22c6fc8f0dbb82ad0559c4f5f049c13af7a96b72b9f72f806f07e5785836c71f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/closure_report.md",
+      "sha256": "9402dd401b3ff6b2a384022d116d2594c7e3df73eea8f2929021da6cf4c4d888"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/closure_validation.json",
+      "sha256": "ee22f494c41dd6db4a2070ec99389cb7ce9cbc3b206234b87752074a3de834c7"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/frozen_211_target_manifest.jsonl",
+      "sha256": "d501aa7fa375a21721e3d9fc1fa731e004776f462605522535b330b95125df8b"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/root_evidence_requirements.jsonl",
+      "sha256": "63ae9c5f4a38c8de1c8b2fbe2d60a51abee326a5516740b11ca09379f81a88ab"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/census_closure/source_recovery_results.jsonl",
+      "sha256": "911f00bc3a4a9c34aa7e47683abd0fa2c2e20104fd6284c74b861705ab5f40cf"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/recovered_scientific_source_records.jsonl",
+      "sha256": "ca9728c6b34a6977c4b6073cadf329dc985aa8e914889370296353d183737827"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/remaining_content_gaps.jsonl",
+      "sha256": "3b6b06299ffa74c940bbc357b9b134a612461d1b0e12a328e460fb37e40a89fb"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/source_content_recovery.jsonl",
+      "sha256": "c9e2f548eba81a4b796f5ea40f1d4061c78e7a5bd212ae497adba00931968771"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/content_recovery/source_damage_registry.jsonl",
+      "sha256": "2f9850fdbb6de22d871822e04126af81d1998b1564f951f48fccc44a32dde733"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/014.json",
+      "sha256": "cd36c146ea0ab41012065dc211502c3478c149ba2ec6ade4870847227c7b02c0"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/031.json",
+      "sha256": "5e713fde2f2de182ad2b35b93fe558fe854b8d58b52852a5a1b0bc7bfee4c335"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/038.json",
+      "sha256": "d78b2b08db82b51ed7817e955296a67091a6f66d60d5aad3bbe5e8b38f4fc5be"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/038_after_companion_README.md",
+      "sha256": "675fcc357b69678374ab061a285e5ef8bd09cd1d978dfb51d4f83e20ab4ea203"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/038_after_companion_appendix.tex",
+      "sha256": "3ddb2da9b2d2903b7e8325ef1eb2ed349fb862aa4287f308289d39786ab6e7f6"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/038_after_companion_figure_data_manifest.json",
+      "sha256": "50c621f3240bd31cd05688da1fb78082840e16928be3281797d63e24ee49a252"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/038_after_companion_main.tex",
+      "sha256": "91dd0adfeee7368793813c140e78d82d5a54073eedefcb03f83da9a3b0931518"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/038_before_companion_README.md",
+      "sha256": "675fcc357b69678374ab061a285e5ef8bd09cd1d978dfb51d4f83e20ab4ea203"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/038_before_companion_appendix.tex",
+      "sha256": "3ddb2da9b2d2903b7e8325ef1eb2ed349fb862aa4287f308289d39786ab6e7f6"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/038_before_companion_figure_data_manifest.json",
+      "sha256": "50c621f3240bd31cd05688da1fb78082840e16928be3281797d63e24ee49a252"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/038_before_companion_main.tex",
+      "sha256": "5f307eb5a6e1c6e32dfc9cc4a2dd52ed87b1a116aaa111e9feee6ed1cfa76832"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/042.json",
+      "sha256": "94745360b6d342f52837fd609bde1a48df3f521c777c7d078fdbc9ab4684fb6f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/047.json",
+      "sha256": "7d60273b16778d24af96690a05e18cc6e63f1c8a1c665fcc118f706585208aa6"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/048.json",
+      "sha256": "480fda8ca57a9a5a68a934754648b5c3f4aeb25fae7947488b1486ff749a3f22"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/060.json",
+      "sha256": "1ed924bb64fd79b8bbf93f8b350f00b3d2752f5ed7c8914c2ae0967855564b66"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/064.json",
+      "sha256": "b16bda7f26347504b69759b2ee09fcaa310a409b62517c181be8dea4c85a4b82"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/071.json",
+      "sha256": "91a6854155563beb4b24d979f2a8ba77be3fa9cff472a0e925b95c1c4724c602"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/077.json",
+      "sha256": "30aadb4f97c19da4c60655e8eded44f3f18810852880ce387eef7acb590b9e85"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/078.json",
+      "sha256": "e2e00896b4b81a51697eabc33f750877cc746dad20b5b05062d0a9093bef0df1"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/079.json",
+      "sha256": "67afec8289e05c514a93031e20c77947dff8df4e67ff7438373beb05223d1bed"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/081.json",
+      "sha256": "7b7d494e968ee48904c5e53d19f4c8fece4766b1620a34a1250f16e55c9d37e2"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/085.json",
+      "sha256": "c50749d4c1de630e538166ab582bd61d7ea7541c5723c0631ae56eb04b3a67a5"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/090.json",
+      "sha256": "89c31e19fba6299e98d905cc4161d089199c5d62bf3c54f0bfb41240787ccf76"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/093.json",
+      "sha256": "0d250a5eb6b1b2c63ee393d7d34dfa114c78f45a8f3d29f74a9a57a12b037281"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/099.json",
+      "sha256": "48550fb69be810c3ce2cd6aee111a3737664820610bd1fa686918d3f9494d02f"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/evidence/106.json",
+      "sha256": "3c0ef4cf891e7cf33c33d911dc8861b627326f3768da6b988f7e6e2533c5e982"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/historical_scientific_changes.jsonl",
+      "sha256": "37013e7f55212945d71e76b45a3520ff11fced4906ceeb54116c63df7a56b3e1"
+    },
+    {
+      "file": "audits/full_history_20261013/parallel_20261013/wave_03/transitions_0/transition_interpretations.jsonl",
+      "sha256": "d7e2ed74fac4143e5349c261849e579232c4a5f38537a801cc521371ebd2e518"
+    }
+  ],
+  "external_assigned_remaining": 73,
+  "final_git_status": "?? audits/\n",
+  "full_census_complete": false,
+  "git_diff_check": "PASSED",
+  "head": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571",
+  "head_and_refs_unchanged": true,
+  "original_debt_count": 222,
+  "output_hashes_excluding_validation": {
+    "authenticated_upstream_sources.jsonl": "970528c95ffb0dc9f32c80022220042af7789552277032e5d9a88f2241dfb058",
+    "consolidate.py": "38f13ea02ff3d8cd6843b86b351b5466009c4aeee928d95e474c621debafd773",
+    "consolidated_debt_accounting.jsonl": "1ea5dc02f97707130213381db5443904f015589441ea60701c31742756211c1a",
+    "documentary_debt_closures.jsonl": "b2e173904ade35d7d9ffca84da9960260e048037b9a5a82aa9f632d15ee8c40a",
+    "input_preservation_checkpoint.json": "6a1cac7401ed29acf82358f6bb05496d8e54d189e370de6b67a5a3a2fb89220c",
+    "next_local_reconstruction.json": "c75876278a5d67a38adc3486ef1b842dc991a95fecffc78db2f0529579b70175",
+    "report.md": "c9b1c8d662eb10b085fcda8bfd920c29568be359e2549b955c92a696124f29d8",
+    "unlocated_originals.jsonl": "1bc4350de39f858a04479ee2e3fdc079a8f19b8543ad13cba2d25bc3ac2925d7",
+    "user_testimony.json": "e9081ce6c576eb0b8cf72ed830ee88a298eaa0766afae45e9e5d20732118733c"
+  },
+  "previous_audit_files_changed_removed_added_outside_output": [],
+  "previous_audit_files_checked": 705,
+  "remaining_debt_count": 208,
+  "remaining_strict_completeness_blockers": 198,
+  "resolved_documentary_requirements": 10,
+  "study_identity_dependencies_retained": 76,
+  "tracked_and_staged_diff_stat": "EMPTY",
+  "training_evaluation_kaggle_tests": "NOT_RUN",
+  "unlocated_original_count": 6,
+  "validation_command": "python -B audits/full_history_20261013/parallel_20261013/wave_04/evidence_consolidation/consolidate.py"
+}

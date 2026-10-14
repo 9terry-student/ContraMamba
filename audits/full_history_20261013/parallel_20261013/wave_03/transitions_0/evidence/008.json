@@ -1,0 +1,1821 @@
+{
+  "shard_ordinal": 8,
+  "original_queue_id": "WORK-13bc324b4f7e8995e98d",
+  "original_source_ids": [
+    "HV000022"
+  ],
+  "original_source_identity": {
+    "commit": "2be18844f4ab03733724f6d9fbac37404f02cb83",
+    "path": "README.md",
+    "blob": "cdda6d6289d8758f625426d093340f607926abb1",
+    "object_type": "commit",
+    "bytes": 12912,
+    "sha256": "abfe8c268a8528e389d0a37d3aa3fd08188cfc352c5e6650cd9e361caf5ac56f"
+  },
+  "before": {
+    "commit": "45e620aa7efa9546fd7f8f4e0211766842d84691",
+    "path": "README.md",
+    "blob": "18ffbeb33484c202473a472e7e389c90176734ca",
+    "object_type": "commit",
+    "bytes": 11206,
+    "sha256": "bfc2f8e84c67f30f0e810d42a7a4f07656c8791ea0b45d0531f29601322d6370"
+  },
+  "after": {
+    "commit": "2be18844f4ab03733724f6d9fbac37404f02cb83",
+    "path": "README.md",
+    "blob": "cdda6d6289d8758f625426d093340f607926abb1",
+    "object_type": "commit",
+    "bytes": 12912,
+    "sha256": "abfe8c268a8528e389d0a37d3aa3fd08188cfc352c5e6650cd9e361caf5ac56f"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0015"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 133 removed/replaced lines and 188 added/replaced lines in 54 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "45e620aa7efa9546fd7f8f4e0211766842d84691",
+      "blob": "18ffbeb33484c202473a472e7e389c90176734ca"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "replace",
+      "before_start": 3,
+      "before_end_exclusive": 4,
+      "after_start": 3,
+      "after_end_exclusive": 5,
+      "before": [
+        "> 환각 감소를 위한 명시적 불확실성 출력 기반 Mamba 분류 모델"
+      ],
+      "after": [
+        "> 환각 감소를 위한 명시적 불확실성 출력 기반 Mamba 분류 모델  ",
+        "> **현재 버전: v7** — Single Semantic Manifold + Residual Contradiction"
+      ],
+      "before_context": [
+        "# ContraMamba",
+        "",
+        "",
+        "## 동기",
+        ""
+      ],
+      "after_context": [
+        "# ContraMamba",
+        "",
+        "",
+        "## 동기",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 7,
+      "before_end_exclusive": 8,
+      "after_start": 8,
+      "after_end_exclusive": 9,
+      "before": [
+        "기존 LLM은 틀린 답도 확신을 갖고 생성하는 환각 문제가 있음."
+      ],
+      "after": [
+        "기존 LLM은 틀린 답도 확신을 갖고 생성하는 환각 문제가 있음.  "
+      ],
+      "before_context": [
+        "",
+        "## 동기",
+        "",
+        "ContraMamba는 모델이 불확실성을 명시적으로 표현하도록 강제하는",
+        "**3값 출력 헤드**를 도입해 이 문제를 완화하고자 함.",
+        ""
+      ],
+      "after_context": [
+        "",
+        "## 동기",
+        "",
+        "ContraMamba는 모델이 불확실성을 명시적으로 표현하도록 강제하는",
+        "**3값 출력 헤드**를 도입해 이 문제를 완화하고자 함.",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 21,
+      "before_end_exclusive": 24,
+      "after_start": 22,
+      "after_end_exclusive": 25,
+      "before": [
+        "| `True` | 맞음 |",
+        "| `False` | 틀림 |",
+        "| `Unknown` | 모름 (역질문 트리거 가능) |"
+      ],
+      "after": [
+        "| `True` (2) | 맞음 — entailment |",
+        "| `Unknown` (1) | 모름 — neutral |",
+        "| `False` (0) | 틀림 — contradiction |"
+      ],
+      "before_context": [
+        "",
+        "| 출력 | 의미 |",
+        "|---|---|",
+        "",
+        "### 2. Frequency Decomposition 기반 표현",
+        ""
+      ],
+      "after_context": [
+        "",
+        "| 출력 | 의미 |",
+        "|---|---|",
+        "",
+        "---",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 25,
+      "before_end_exclusive": 26,
+      "after_start": 26,
+      "after_end_exclusive": 27,
+      "before": [
+        "### 2. Frequency Decomposition 기반 표현"
+      ],
+      "after": [
+        "---"
+      ],
+      "before_context": [
+        "| `False` | 틀림 |",
+        "| `Unknown` | 모름 (역질문 트리거 가능) |",
+        "",
+        "",
+        "Mamba hidden state `h`를 smooth component와 residual로 분해:",
+        ""
+      ],
+      "after_context": [
+        "| `Unknown` (1) | 모름 — neutral |",
+        "| `False` (0) | 틀림 — contradiction |",
+        "",
+        "",
+        "### 2. Single Shared Semantic Manifold + Residual Contradiction",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 27,
+      "before_end_exclusive": 28,
+      "after_start": 28,
+      "after_end_exclusive": 32,
+      "before": [
+        "Mamba hidden state `h`를 smooth component와 residual로 분해:"
+      ],
+      "after": [
+        "### 2. Single Shared Semantic Manifold + Residual Contradiction",
+        "",
+        "v7의 핵심 구조 변경. 기존 SSM frequency decomposition(A_log 기반 채널 분리) 대신,",
+        "**prototype routing 결과를 기준으로 두 branch를 의미론적으로 분리**:"
+      ],
+      "before_context": [
+        "",
+        "### 2. Frequency Decomposition 기반 표현",
+        "",
+        "",
+        "```",
+        "h = h_low + h_high"
+      ],
+      "after_context": [
+        "",
+        "---",
+        "",
+        "",
+        "```",
+        "h  (Mamba pooled hidden)"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 30,
+      "before_end_exclusive": 33,
+      "after_start": 34,
+      "after_end_exclusive": 41,
+      "before": [
+        "h = h_low + h_high",
+        "h_low  = IDCT(DCT(h)[:k]) + W_low @ h   (smooth semantic structure)",
+        "h_high = h - h_low                        (residual: exception / anomaly)"
+      ],
+      "after": [
+        "h  (Mamba pooled hidden)",
+        "│",
+        "├─ prototype routing → z_semantic",
+        "│",
+        "├─ low branch:  h_low  = z_semantic + 0.1 · h    ← semantic refinement",
+        "│",
+        "└─ high branch: h_high = h - stopgrad(z_semantic) ← residual contradiction"
+      ],
+      "before_context": [
+        "Mamba hidden state `h`를 smooth component와 residual로 분해:",
+        "",
+        "```",
+        "```",
+        "",
+        "- `h_low` : 안정적이고 일반적인 패턴 — semantic consensus"
+      ],
+      "after_context": [
+        "**prototype routing 결과를 기준으로 두 branch를 의미론적으로 분리**:",
+        "",
+        "```",
+        "```",
+        "",
+        "- `h_low` : prototype manifold 위의 성분 → entailment / contradiction 방향"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 35,
+      "before_end_exclusive": 37,
+      "after_start": 43,
+      "after_end_exclusive": 50,
+      "before": [
+        "- `h_low` : 안정적이고 일반적인 패턴 — semantic consensus",
+        "- `h_high` : DCT로 설명되지 않는 날카로운 성분 — contradiction / ambiguity"
+      ],
+      "after": [
+        "- `h_low` : prototype manifold 위의 성분 → entailment / contradiction 방향",
+        "- `h_high` : prototype으로 설명되지 않는 잔차 → 모순 / 노이즈 / 미지 신호",
+        "- `h_low + h_high ≈ h` → 정보 손실 없음 (stopgrad로 gradient 분리)",
+        "",
+        "**SSMFrequencyDecomposition 제거** — W_refine, W_gate, A_log mask 불필요.",
+        "",
+        "---"
+      ],
+      "before_context": [
+        "h_high = h - h_low                        (residual: exception / anomaly)",
+        "```",
+        "",
+        "",
+        "### 3. Shared Prototype Manifold",
+        ""
+      ],
+      "after_context": [
+        "└─ high branch: h_high = h - stopgrad(z_semantic) ← residual contradiction",
+        "```",
+        "",
+        "",
+        "### 3. Shared Prototype Manifold",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 40,
+      "before_end_exclusive": 41,
+      "after_start": 53,
+      "after_end_exclusive": 54,
+      "before": [
+        "공유 프로토타입 행렬 `P_shared ∈ ℝ^(m×d)`로부터 두 개의 뷰를 투영:"
+      ],
+      "after": [
+        "공유 프로토타입 행렬 `P_shared ∈ ℝ^(n_proto × hidden)`에서 단일 뷰를 투영:"
+      ],
+      "before_context": [
+        "",
+        "### 3. Shared Prototype Manifold",
+        "",
+        "",
+        "```",
+        "P_low  = Norm(P_shared @ W_low^T)"
+      ],
+      "after_context": [
+        "",
+        "### 3. Shared Prototype Manifold",
+        "",
+        "",
+        "```",
+        "P_low  = F.normalize(LayerNorm(P_shared @ W_low^T),  dim=1)"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 43,
+      "before_end_exclusive": 45,
+      "after_start": 56,
+      "after_end_exclusive": 58,
+      "before": [
+        "P_low  = Norm(P_shared @ W_low^T)",
+        "P_high = Norm(P_shared @ W_high^T)"
+      ],
+      "after": [
+        "P_low  = F.normalize(LayerNorm(P_shared @ W_low^T),  dim=1)",
+        "P_high = F.normalize(LayerNorm(P_shared @ W_high^T), dim=1)"
+      ],
+      "before_context": [
+        "공유 프로토타입 행렬 `P_shared ∈ ℝ^(m×d)`로부터 두 개의 뷰를 투영:",
+        "",
+        "```",
+        "",
+        "q_low  = softmax(ĥ_low  @ P_low^T  / τ)",
+        "q_high = softmax(ĥ_high @ P_high^T / τ)"
+      ],
+      "after_context": [
+        "공유 프로토타입 행렬 `P_shared ∈ ℝ^(n_proto × hidden)`에서 단일 뷰를 투영:",
+        "",
+        "```",
+        "",
+        "q_low  = softmax(normalize(h_low)  @ P_low^T  / τ)",
+        "q_fused = q_low   (v7: high bank 통합 전 단일 routing)"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 46,
+      "before_end_exclusive": 48,
+      "after_start": 59,
+      "after_end_exclusive": 61,
+      "before": [
+        "q_low  = softmax(ĥ_low  @ P_low^T  / τ)",
+        "q_high = softmax(ĥ_high @ P_high^T / τ)"
+      ],
+      "after": [
+        "q_low  = softmax(normalize(h_low)  @ P_low^T  / τ)",
+        "q_fused = q_low   (v7: high bank 통합 전 단일 routing)"
+      ],
+      "before_context": [
+        "P_low  = Norm(P_shared @ W_low^T)",
+        "P_high = Norm(P_shared @ W_high^T)",
+        "",
+        "",
+        "q_fused = α·q_low + (1-α)·q_high       (α는 학습된 gate)",
+        "```"
+      ],
+      "after_context": [
+        "P_low  = F.normalize(LayerNorm(P_shared @ W_low^T),  dim=1)",
+        "P_high = F.normalize(LayerNorm(P_shared @ W_high^T), dim=1)",
+        "",
+        "",
+        "z_semantic = q_fused @ P_norm",
+        "```"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 49,
+      "before_end_exclusive": 50,
+      "after_start": 62,
+      "after_end_exclusive": 63,
+      "before": [
+        "q_fused = α·q_low + (1-α)·q_high       (α는 학습된 gate)"
+      ],
+      "after": [
+        "z_semantic = q_fused @ P_norm"
+      ],
+      "before_context": [
+        "q_low  = softmax(ĥ_low  @ P_low^T  / τ)",
+        "q_high = softmax(ĥ_high @ P_high^T / τ)",
+        "",
+        "```",
+        "",
+        "- 두 주파수 뷰가 같은 프로토타입 공간을 공유 → concept 일관성 유지"
+      ],
+      "after_context": [
+        "q_low  = softmax(normalize(h_low)  @ P_low^T  / τ)",
+        "q_fused = q_low   (v7: high bank 통합 전 단일 routing)",
+        "",
+        "```",
+        "",
+        "- context-adaptive: `ctx_encoder`로 배치별 P_shared 미세 조정"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 52,
+      "before_end_exclusive": 54,
+      "after_start": 65,
+      "after_end_exclusive": 68,
+      "before": [
+        "- 두 주파수 뷰가 같은 프로토타입 공간을 공유 → concept 일관성 유지",
+        "- EMA 기반 usage tracking으로 prototype collapse 방지"
+      ],
+      "after": [
+        "- context-adaptive: `ctx_encoder`로 배치별 P_shared 미세 조정",
+        "- EMA usage tracking으로 prototype collapse 방지",
+        "- dead prototype rescue: 10 step 이상 미사용 prototype 자동 재초기화"
+      ],
+      "before_context": [
+        "q_fused = α·q_low + (1-α)·q_high       (α는 학습된 gate)",
+        "```",
+        "",
+        "",
+        "### 4. Prototype Co-Activation GAT",
+        ""
+      ],
+      "after_context": [
+        "z_semantic = q_fused @ P_norm",
+        "```",
+        "",
+        "",
+        "---",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 55,
+      "before_end_exclusive": 56,
+      "after_start": 69,
+      "after_end_exclusive": 70,
+      "before": [
+        "### 4. Prototype Co-Activation GAT"
+      ],
+      "after": [
+        "---"
+      ],
+      "before_context": [
+        "- 두 주파수 뷰가 같은 프로토타입 공간을 공유 → concept 일관성 유지",
+        "- EMA 기반 usage tracking으로 prototype collapse 방지",
+        "",
+        "",
+        "배치 내 샘플들의 공동 활성화로 prototype을 업데이트:",
+        ""
+      ],
+      "after_context": [
+        "- EMA usage tracking으로 prototype collapse 방지",
+        "- dead prototype rescue: 10 step 이상 미사용 prototype 자동 재초기화",
+        "",
+        "",
+        "### 4. PrototypeController (FiLM + Sample-wise EMA)",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 57,
+      "before_end_exclusive": 58,
+      "after_start": 71,
+      "after_end_exclusive": 74,
+      "before": [
+        "배치 내 샘플들의 공동 활성화로 prototype을 업데이트:"
+      ],
+      "after": [
+        "### 4. PrototypeController (FiLM + Sample-wise EMA)",
+        "",
+        "routing 결과를 기반으로 **low branch만** FiLM 교정:"
+      ],
+      "before_context": [
+        "",
+        "### 4. Prototype Co-Activation GAT",
+        "",
+        "",
+        "```",
+        "A_ij   = q_fused^(i)^T · q_fused^(j)"
+      ],
+      "after_context": [
+        "",
+        "---",
+        "",
+        "",
+        "```",
+        "z_cond  = q_ema_i @ P_norm             ← sample-wise EMA q로 conditioning"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 60,
+      "before_end_exclusive": 62,
+      "after_start": 76,
+      "after_end_exclusive": 80,
+      "before": [
+        "A_ij   = q_fused^(i)^T · q_fused^(j)",
+        "P_new  = softmax(A) @ P_shared"
+      ],
+      "after": [
+        "z_cond  = q_ema_i @ P_norm             ← sample-wise EMA q로 conditioning",
+        "γ, β    = FiLM_net(z_cond)             ← scale + shift 분리",
+        "gate    = conf(q) · focus(q)           ← entropy/confidence 곱 게이트",
+        "h_low_hat = h_low + gate · (γ·LN(h_low) + β - h_low)"
+      ],
+      "before_context": [
+        "배치 내 샘플들의 공동 활성화로 prototype을 업데이트:",
+        "",
+        "```",
+        "```",
+        "",
+        "attention-weighted prototype propagation으로 배치 내 semantic 구조 반영."
+      ],
+      "after_context": [
+        "routing 결과를 기반으로 **low branch만** FiLM 교정:",
+        "",
+        "```",
+        "```",
+        "",
+        "- **Sample-wise EMA** (slot_size=512): 배치 평균 대신 샘플별 독립 EMA"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 64,
+      "before_end_exclusive": 65,
+      "after_start": 82,
+      "after_end_exclusive": 86,
+      "before": [
+        "attention-weighted prototype propagation으로 배치 내 semantic 구조 반영."
+      ],
+      "after": [
+        "- **Sample-wise EMA** (slot_size=512): 배치 평균 대신 샘플별 독립 EMA",
+        "- **Entropy/Confidence gate**: routing이 불확실할 때 교정 억제",
+        "- **FiLM modulation**: residual 덧셈 대신 scale + shift 분리로 방향·크기 독립 조정",
+        "- Mamba layer 중간 삽입 없음 — routing 이후에만 동작"
+      ],
+      "before_context": [
+        "P_new  = softmax(A) @ P_shared",
+        "```",
+        "",
+        "",
+        "### 5. Geometric Energy Space",
+        ""
+      ],
+      "after_context": [
+        "h_low_hat = h_low + gate · (γ·LN(h_low) + β - h_low)",
+        "```",
+        "",
+        "",
+        "---",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 66,
+      "before_end_exclusive": 67,
+      "after_start": 87,
+      "after_end_exclusive": 92,
+      "before": [
+        "### 5. Geometric Energy Space"
+      ],
+      "after": [
+        "---",
+        "",
+        "### 5. Prototype Co-Activation GAT",
+        "",
+        "배치 내 샘플들의 공동 활성화로 prototype 전파:"
+      ],
+      "before_context": [
+        "",
+        "attention-weighted prototype propagation으로 배치 내 semantic 구조 반영.",
+        "",
+        "",
+        "```",
+        "ratio = e_pos / (e_pos + e_neg)   ← truth polarity"
+      ],
+      "after_context": [
+        "- **FiLM modulation**: residual 덧셈 대신 scale + shift 분리로 방향·크기 독립 조정",
+        "- Mamba layer 중간 삽입 없음 — routing 이후에만 동작",
+        "",
+        "",
+        "```",
+        "A_ij   = softmax(q_fused^(i)^T · q_fused^(j) / √B)"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 69,
+      "before_end_exclusive": 71,
+      "after_start": 94,
+      "after_end_exclusive": 110,
+      "before": [
+        "ratio = e_pos / (e_pos + e_neg)   ← truth polarity",
+        "r     = 1 - H(q_fused) / log(m)  ← entropy-based confidence"
+      ],
+      "after": [
+        "A_ij   = softmax(q_fused^(i)^T · q_fused^(j) / √B)",
+        "P_new  = W(A @ P_shared)",
+        "q_fused_refined = softmax(normalize(h_enriched) @ normalize(P_new)^T / τ)",
+        "```",
+        "",
+        "---",
+        "",
+        "### 6. Geometric Energy Space",
+        "",
+        "```",
+        "e_pos, e_neg = EnergyHead(q_fused, h_enriched)",
+        "ratio = e_pos / (e_pos + e_neg)     ← truth polarity",
+        "r     = sqrt(e_pos² + e_neg²)       ← confidence radius",
+        "",
+        "h_high_norm  = ‖h_high‖             ← contradiction intensity",
+        "ratio_high   = sigmoid(h_high_norm - 1.0)"
+      ],
+      "before_context": [
+        "### 5. Geometric Energy Space",
+        "",
+        "```",
+        "```",
+        "",
+        "| 영역 | 조건 |"
+      ],
+      "after_context": [
+        "배치 내 샘플들의 공동 활성화로 prototype 전파:",
+        "",
+        "```",
+        "```",
+        "",
+        "| 영역 | 조건 |"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 78,
+      "before_end_exclusive": 80,
+      "after_start": 117,
+      "after_end_exclusive": 119,
+      "before": [
+        "| ambiguity | `r_min < r < r_max` & `ratio ≈ 0.5` |",
+        "| contradiction | `r ≥ r_max` & `ratio ≈ 0.5` |"
+      ],
+      "after": [
+        "| ambiguity | `r_min < r` & `ratio ≈ 0.5` & `r_high < r_max` |",
+        "| contradiction | `r_min < r` & `ratio ≈ 0.5` & `r_high ≥ r_max` |"
+      ],
+      "before_context": [
+        "| True | `r > r_min` & `ratio > 0.5 + δ` |",
+        "| False | `r > r_min` & `ratio < 0.5 - δ` |",
+        "| ignorance | `r ≤ r_min` |",
+        "",
+        "### 6. Graph Memory + Local GAT Refinement",
+        ""
+      ],
+      "after_context": [
+        "| True | `r > r_min` & `ratio > 0.5 + δ` |",
+        "| False | `r > r_min` & `ratio < 0.5 - δ` |",
+        "| ignorance | `r ≤ r_min` |",
+        "",
+        "**h_high의 역할 변화**: v7부터 `h_high_norm`이 prototype 밖 에너지를 직접 측정.  ",
+        "레이블별 타깃:"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 81,
+      "before_end_exclusive": 82,
+      "after_start": 120,
+      "after_end_exclusive": 125,
+      "before": [
+        "### 6. Graph Memory + Local GAT Refinement"
+      ],
+      "after": [
+        "**h_high의 역할 변화**: v7부터 `h_high_norm`이 prototype 밖 에너지를 직접 측정.  ",
+        "레이블별 타깃:",
+        "- entailment → `h_high_norm` 억제 (prototype에 잘 투영됨)",
+        "- contradiction → `h_high_norm` 증가 (manifold 밖에 위치)",
+        "- neutral → `h_high_norm ≈ 1.0` (중간)"
+      ],
+      "before_context": [
+        "| ambiguity | `r_min < r < r_max` & `ratio ≈ 0.5` |",
+        "| contradiction | `r ≥ r_max` & `ratio ≈ 0.5` |",
+        "",
+        "",
+        "FAISS index로 훈련 셋에서 top-K cosine neighbor를 검색하고, Local GAT로 기하 표현을 정제:",
+        ""
+      ],
+      "after_context": [
+        "| ambiguity | `r_min < r` & `ratio ≈ 0.5` & `r_high < r_max` |",
+        "| contradiction | `r_min < r` & `ratio ≈ 0.5` & `r_high ≥ r_max` |",
+        "",
+        "",
+        "---",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 83,
+      "before_end_exclusive": 84,
+      "after_start": 126,
+      "after_end_exclusive": 131,
+      "before": [
+        "FAISS index로 훈련 셋에서 top-K cosine neighbor를 검색하고, Local GAT로 기하 표현을 정제:"
+      ],
+      "after": [
+        "---",
+        "",
+        "### 7. Prototype Memory Bank",
+        "",
+        "episodic + semantic cache 이중 메모리:"
+      ],
+      "before_context": [
+        "",
+        "### 6. Graph Memory + Local GAT Refinement",
+        "",
+        "",
+        "```",
+        "h̃_i = h_i + λ · GAT(G, h_i)"
+      ],
+      "after_context": [
+        "- contradiction → `h_high_norm` 증가 (manifold 밖에 위치)",
+        "- neutral → `h_high_norm ≈ 1.0` (중간)",
+        "",
+        "",
+        "```",
+        "write: q_fused > threshold 인 prototype 슬롯에 z_input 기록 (circular buffer)"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 86,
+      "before_end_exclusive": 87,
+      "after_start": 133,
+      "after_end_exclusive": 136,
+      "before": [
+        "h̃_i = h_i + λ · GAT(G, h_i)"
+      ],
+      "after": [
+        "write: q_fused > threshold 인 prototype 슬롯에 z_input 기록 (circular buffer)",
+        "read:  top-3 prototype 기준으로 episodic + semantic 혼합 검색",
+        "       h_enriched = h + fusion_gate(anchor ‖ ep_summary ‖ cache)"
+      ],
+      "before_context": [
+        "FAISS index로 훈련 셋에서 top-K cosine neighbor를 검색하고, Local GAT로 기하 표현을 정제:",
+        "",
+        "```",
+        "```",
+        "",
+        "엣지 가중치는 `q_fused` cosine similarity 기반 (proto-aware routing). label gating으로 동일 레이블 이웃에 더 높은 가중치 부여."
+      ],
+      "after_context": [
+        "episodic + semantic cache 이중 메모리:",
+        "",
+        "```",
+        "```",
+        "",
+        "---"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 89,
+      "before_end_exclusive": 90,
+      "after_start": 138,
+      "after_end_exclusive": 139,
+      "before": [
+        "엣지 가중치는 `q_fused` cosine similarity 기반 (proto-aware routing). label gating으로 동일 레이블 이웃에 더 높은 가중치 부여."
+      ],
+      "after": [
+        "---"
+      ],
+      "before_context": [
+        "h̃_i = h_i + λ · GAT(G, h_i)",
+        "```",
+        "",
+        "",
+        "### 7. 왜 Mamba인가?",
+        ""
+      ],
+      "after_context": [
+        "       h_enriched = h + fusion_gate(anchor ‖ ep_summary ‖ cache)",
+        "```",
+        "",
+        "",
+        "### 8. Graph Memory + Local GAT Refinement",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 91,
+      "before_end_exclusive": 92,
+      "after_start": 140,
+      "after_end_exclusive": 155,
+      "before": [
+        "### 7. 왜 Mamba인가?"
+      ],
+      "after": [
+        "### 8. Graph Memory + Local GAT Refinement",
+        "",
+        "FAISS index로 훈련 셋에서 top-K cosine neighbor 검색 후 Local GAT로 정제:",
+        "",
+        "```",
+        "h̃_i = clamp(h_i + λ · GAT(G, h_i), min=0)",
+        "```",
+        "",
+        "- Low GAT: q_fused cosine similarity 기반 proto-aware edge",
+        "- High GAT: h_high_norm 기반 contradiction-aware edge",
+        "- label gating으로 동일 레이블 이웃에 더 높은 가중치",
+        "",
+        "---",
+        "",
+        "### 9. 왜 Mamba인가?"
+      ],
+      "before_context": [
+        "",
+        "엣지 가중치는 `q_fused` cosine similarity 기반 (proto-aware routing). label gating으로 동일 레이블 이웃에 더 높은 가중치 부여.",
+        "",
+        "",
+        "- 추론 시간 O(n) — Transformer의 O(n²) 대비 효율적",
+        "- SSM 구조가 선형 시불변 필터와 동일한 수학적 구조"
+      ],
+      "after_context": [
+        "",
+        "---",
+        "",
+        "",
+        "- 추론 시간 O(n) — Transformer의 O(n²) 대비 효율적",
+        "- SSM 구조가 선형 시불변 필터와 동일한 수학적 구조"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 99,
+      "before_end_exclusive": 100,
+      "after_start": 162,
+      "after_end_exclusive": 163,
+      "before": [
+        "## 아키텍처 (v5)"
+      ],
+      "after": [
+        "## 아키텍처 (v7)"
+      ],
+      "before_context": [
+        "",
+        "---",
+        "",
+        "",
+        "```",
+        "                 ┌─────────────────────┐"
+      ],
+      "after_context": [
+        "",
+        "---",
+        "",
+        "",
+        "```",
+        "                 ┌─────────────────────┐"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 104,
+      "before_end_exclusive": 105,
+      "after_start": 167,
+      "after_end_exclusive": 168,
+      "before": [
+        "                 │ (Mamba hidden state)│"
+      ],
+      "after": [
+        "                 │ (Mamba + AttnPool)  │"
+      ],
+      "before_context": [
+        "```",
+        "                 ┌─────────────────────┐",
+        "                 │   Raw Semantic h    │",
+        "                 └─────────┬───────────┘",
+        "                           │",
+        "                Frequency Decomposition"
+      ],
+      "after_context": [
+        "```",
+        "                 ┌─────────────────────┐",
+        "                 │   Raw Semantic h    │",
+        "                 └─────────┬───────────┘",
+        "                           │",
+        "               Shared Prototype Manifold"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 107,
+      "before_end_exclusive": 108,
+      "after_start": 170,
+      "after_end_exclusive": 174,
+      "before": [
+        "                Frequency Decomposition"
+      ],
+      "after": [
+        "               Shared Prototype Manifold",
+        "               (P_shared, ctx_encoder)",
+        "                           │",
+        "                    z_semantic = q @ P"
+      ],
+      "before_context": [
+        "                 │ (Mamba hidden state)│",
+        "                 └─────────┬───────────┘",
+        "                           │",
+        "                           │",
+        "          ┌────────────────┴────────────────┐",
+        "          │                                 │"
+      ],
+      "after_context": [
+        "                 │ (Mamba + AttnPool)  │",
+        "                 └─────────┬───────────┘",
+        "                           │",
+        "                           │",
+        "          ┌────────────────┴────────────────┐",
+        "          │                                 │"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 112,
+      "before_end_exclusive": 116,
+      "after_start": 178,
+      "after_end_exclusive": 183,
+      "before": [
+        " ┌─────────────────┐              ┌─────────────────┐",
+        " │      h_low      │              │     h_high      │",
+        " │ stable semantics│              │ residual/detail │",
+        " └────────┬────────┘              └────────┬────────┘"
+      ],
+      "after": [
+        " ┌─────────────────┐              ┌──────────────────────┐",
+        " │     h_low       │              │       h_high         │",
+        " │ z_sem + 0.1·h   │              │  h - stopgrad(z_sem) │",
+        " │ semantic anchor │              │  residual / contrast │",
+        " └────────┬────────┘              └────────┬─────────────┘"
+      ],
+      "before_context": [
+        "          ┌────────────────┴────────────────┐",
+        "          │                                 │",
+        "          ▼                                 ▼",
+        "          │                                │",
+        "          │ Prototype Routing              │ Prototype Routing",
+        "          ▼                                ▼"
+      ],
+      "after_context": [
+        "          ┌────────────────┴────────────────┐",
+        "          │                                 │",
+        "          ▼                                 ▼",
+        "          │                                │",
+        "          ▼                                │",
+        " ┌─────────────────┐                       │"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 117,
+      "before_end_exclusive": 136,
+      "after_start": 184,
+      "after_end_exclusive": 190,
+      "before": [
+        "          │ Prototype Routing              │ Prototype Routing",
+        "          ▼                                ▼",
+        " ┌─────────────────┐              ┌─────────────────┐",
+        " │      q_low      │              │     q_high      │",
+        " │ prototype probs │              │ prototype probs │",
+        " └────────┬────────┘              └────────┬────────┘",
+        "          │                                │",
+        "          ▼                                ▼",
+        " ┌─────────────────┐              ┌─────────────────┐",
+        " │      z_low      │              │     z_high      │",
+        " │ q_low @ P_low   │              │ q_high @ P_high │",
+        " └────────┬────────┘              └────────┬────────┘",
+        "          │                                │",
+        "          │ Reconstruction Residual        │",
+        "          ▼                                ▼",
+        " ┌─────────────────┐              ┌─────────────────┐",
+        " │ r_low=h_low-z_l │              │r_high=h_high-z_h│",
+        " │ unexplained low │              │ unexplained high│",
+        " └────────┬────────┘              └────────┬────────┘"
+      ],
+      "after": [
+        "          ▼                                │",
+        " ┌─────────────────┐                       │",
+        " │PrototypeCtrl    │                       │",
+        " │ FiLM + EMA gate │                       │",
+        " │ (low only)      │                       │",
+        " └────────┬────────┘                       │"
+      ],
+      "before_context": [
+        " │ stable semantics│              │ residual/detail │",
+        " └────────┬────────┘              └────────┬────────┘",
+        "          │                                │",
+        "          │                                │",
+        "          └──────────────┬─────────────────┘",
+        "                         │"
+      ],
+      "after_context": [
+        " │ semantic anchor │              │  residual / contrast │",
+        " └────────┬────────┘              └────────┬─────────────┘",
+        "          │                                │",
+        "          │                                │",
+        "          └──────────────┬─────────────────┘",
+        "                         │"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 139,
+      "before_end_exclusive": 140,
+      "after_start": 193,
+      "after_end_exclusive": 194,
+      "before": [
+        "               Memory / Graph Refinement"
+      ],
+      "after": [
+        "              Memory Bank + CoAttn GAT"
+      ],
+      "before_context": [
+        "          │                                │",
+        "          └──────────────┬─────────────────┘",
+        "                         │",
+        "                         │",
+        "          ┌──────────────┴──────────────┐",
+        "          ▼                             ▼"
+      ],
+      "after_context": [
+        "          │                                │",
+        "          └──────────────┬─────────────────┘",
+        "                         │",
+        "                         │",
+        "          ┌──────────────┴──────────────┐",
+        "          ▼                             ▼"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 144,
+      "before_end_exclusive": 146,
+      "after_start": 198,
+      "after_end_exclusive": 201,
+      "before": [
+        " │ refined_low     │          │ refined_high    │",
+        " │ semantic anchor │          │ uncertainty cue │"
+      ],
+      "after": [
+        " │ h_enriched      │          │  h_high_norm    │",
+        " │ semantic anchor │          │ contradiction   │",
+        " │ (memory 보강)   │          │    intensity    │"
+      ],
+      "before_context": [
+        "          ┌──────────────┴──────────────┐",
+        "          ▼                             ▼",
+        " ┌─────────────────┐          ┌─────────────────┐",
+        " └────────┬────────┘          └────────┬────────┘",
+        "          │                             │",
+        "          └──────────────┬──────────────┘"
+      ],
+      "after_context": [
+        "          ┌──────────────┴──────────────┐",
+        "          ▼                             ▼",
+        " ┌─────────────────┐          ┌─────────────────┐",
+        " └────────┬────────┘          └────────┬────────┘",
+        "          │                             │",
+        "          └──────────────┬──────────────┘"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 151,
+      "before_end_exclusive": 154,
+      "after_start": 206,
+      "after_end_exclusive": 209,
+      "before": [
+        "               │ Energy Geometry  │",
+        "               │ ratio / radius   │",
+        "               │ uncertainty type │"
+      ],
+      "after": [
+        "               │  Energy Geometry │",
+        "               │  ratio / radius  │",
+        "               │  uncertainty type│"
+      ],
+      "before_context": [
+        "          └──────────────┬──────────────┘",
+        "                         ▼",
+        "               ┌──────────────────┐",
+        "               └────────┬─────────┘",
+        "                        ▼",
+        "                 Final Prediction"
+      ],
+      "after_context": [
+        "          └──────────────┬──────────────┘",
+        "                         ▼",
+        "               ┌──────────────────┐",
+        "               └────────┬─────────┘",
+        "                        ▼",
+        "                 Final Prediction"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 157,
+      "before_end_exclusive": 157,
+      "after_start": 212,
+      "after_end_exclusive": 213,
+      "before": [],
+      "after": [
+        "            {True / Unknown / False}"
+      ],
+      "before_context": [
+        "               └────────┬─────────┘",
+        "                        ▼",
+        "                 Final Prediction",
+        "```",
+        "",
+        "---"
+      ],
+      "after_context": [
+        "               └────────┬─────────┘",
+        "                        ▼",
+        "                 Final Prediction",
+        "```",
+        "",
+        "---"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 161,
+      "before_end_exclusive": 182,
+      "after_start": 217,
+      "after_end_exclusive": 218,
+      "before": [
+        "## 이론적 배경",
+        "",
+        "### Parseval 정리와 메타인지 출력",
+        "",
+        "DCT 기반 직교 분해에서 Parseval 정리가 성립:",
+        "",
+        "> 입력의 총 에너지 = low-freq 에너지 + high-freq 에너지",
+        "",
+        "이를 통해 3값 출력을 에너지 관점에서 정의:",
+        "",
+        "- `True` : h_low의 S⁺ subspace에 에너지 집중",
+        "- `False` : h_low의 S⁻ subspace에 에너지 집중",
+        "- `Unknown` : confidence가 낮거나 ratio ≈ 0.5 → evidence 부족 또는 충돌",
+        "",
+        "### DCT + Learned Projection (Hybrid)",
+        "",
+        "- DCT: 안정적인 직교 기저 보장 (고정)",
+        "- `W_low`: semantic flexibility 추가 (학습)",
+        "- Frobenius norm regularization으로 W_low가 DCT를 압도하는 것을 방지",
+        "",
+        "### Prototype Loss 구성"
+      ],
+      "after": [
+        "## Loss 구성"
+      ],
+      "before_context": [
+        "",
+        "---",
+        "",
+        "",
+        "```",
+        "L_proto = 0.5 · (VQ commitment + VQ codebook)"
+      ],
+      "after_context": [
+        "",
+        "---",
+        "",
+        "",
+        "```",
+        "L_total = L_direction       (pos/neg margin loss)"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 184,
+      "before_end_exclusive": 189,
+      "after_start": 220,
+      "after_end_exclusive": 233,
+      "before": [
+        "L_proto = 0.5 · (VQ commitment + VQ codebook)",
+        "        + 0.05 · uniformity loss      (prototype spread)",
+        "        + 0.10 · diversity loss       (inter-prototype orthogonality)",
+        "        + 0.01 · entropy loss         (usage balance)",
+        "        + 0.10 · W_low ⊥ W_high       (view independence)"
+      ],
+      "after": [
+        "L_total = L_direction       (pos/neg margin loss)",
+        "        + L_radius          (confidence floor)",
+        "        + L_spread          (pos-neg center 분리)",
+        "        + L_unknown         (neutral → ratio ≈ 0.5 유도)",
+        "        + L_high_supervision(h_high_norm label-aware 타깃)",
+        "        + L_proto           (VQ commit + uniformity + diversity + entropy)",
+        "        + L_velocity        (prototype 이동 속도 제한)",
+        "        + L_routing_consist (두 view KL consistency)",
+        "        + L_load_balance    (prototype 사용 균등화)",
+        "        + L_anticollapse    (low-high cosine 억제)",
+        "        + L_orth            (W_low ⊥ W_high)",
+        "        + L_align           (energy head - prototype 정렬)",
+        "        + L_gat             (graph neighbor contrastive)"
+      ],
+      "before_context": [
+        "### Prototype Loss 구성",
+        "",
+        "```",
+        "```",
+        "",
+        "---"
+      ],
+      "after_context": [
+        "## Loss 구성",
+        "",
+        "```",
+        "```",
+        "",
+        "---"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 197,
+      "before_end_exclusive": 198,
+      "after_start": 241,
+      "after_end_exclusive": 242,
+      "before": [
+        "| 0–1 | Backbone + Decomp only |"
+      ],
+      "after": [
+        "| 0–1 | Backbone (Mamba) + AttentionPooling |"
+      ],
+      "before_context": [
+        "",
+        "| Epoch | 활성화 모듈 |",
+        "|---|---|",
+        "| ≥ 2 | + Local GAT (graph-assisted training) |",
+        "| ≥ 3 | + Prototype Manifold (proto-aware routing) |",
+        "| ≥ 5 | GAT loss → representation alignment (cosine) |"
+      ],
+      "after_context": [
+        "",
+        "| Epoch | 활성화 모듈 |",
+        "|---|---|",
+        "| ≥ 2 | + Local GAT (graph-assisted training) |",
+        "| ≥ 3 | + Prototype Manifold + PrototypeController (FiLM EMA) |",
+        "| ≥ 5 | + High GAT / GAT loss → representation alignment |"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 199,
+      "before_end_exclusive": 203,
+      "after_start": 243,
+      "after_end_exclusive": 245,
+      "before": [
+        "| ≥ 3 | + Prototype Manifold (proto-aware routing) |",
+        "| ≥ 5 | GAT loss → representation alignment (cosine) |",
+        "",
+        "`warmup_epochs` 파라미터로 전환 시점을 조정할 수 있음."
+      ],
+      "after": [
+        "| ≥ 3 | + Prototype Manifold + PrototypeController (FiLM EMA) |",
+        "| ≥ 5 | + High GAT / GAT loss → representation alignment |"
+      ],
+      "before_context": [
+        "|---|---|",
+        "| 0–1 | Backbone + Decomp only |",
+        "| ≥ 2 | + Local GAT (graph-assisted training) |",
+        "",
+        "---",
+        ""
+      ],
+      "after_context": [
+        "|---|---|",
+        "| 0–1 | Backbone (Mamba) + AttentionPooling |",
+        "| ≥ 2 | + Local GAT (graph-assisted training) |",
+        "",
+        "---",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 206,
+      "before_end_exclusive": 207,
+      "after_start": 248,
+      "after_end_exclusive": 249,
+      "before": [
+        "## 실험"
+      ],
+      "after": [
+        "## 실험 설정"
+      ],
+      "before_context": [
+        "",
+        "---",
+        "",
+        "",
+        "- **모델**: `state-spaces/mamba-130m-hf`",
+        "- **데이터셋**: SNLI (train 5000 / val 1000)"
+      ],
+      "after_context": [
+        "",
+        "---",
+        "",
+        "",
+        "- **모델**: `state-spaces/mamba-130m-hf`",
+        "- **데이터셋**: SNLI (train 5,000 / val 1,000)"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 209,
+      "before_end_exclusive": 210,
+      "after_start": 251,
+      "after_end_exclusive": 252,
+      "before": [
+        "- **데이터셋**: SNLI (train 5000 / val 1000)"
+      ],
+      "after": [
+        "- **데이터셋**: SNLI (train 5,000 / val 1,000)"
+      ],
+      "before_context": [
+        "## 실험",
+        "",
+        "- **모델**: `state-spaces/mamba-130m-hf`",
+        "- **태스크**: 3값 분류 (entailment / neutral / contradiction)",
+        "- **레이블 매핑**: entailment → 2 (True), neutral → 1 (Unknown), contradiction → 0 (False)",
+        ""
+      ],
+      "after_context": [
+        "## 실험 설정",
+        "",
+        "- **모델**: `state-spaces/mamba-130m-hf`",
+        "- **태스크**: 3값 분류 (entailment / neutral / contradiction)",
+        "- **레이블 매핑**: entailment → 2, neutral → 1, contradiction → 0",
+        "- **배치 크기**: 16"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 211,
+      "before_end_exclusive": 212,
+      "after_start": 253,
+      "after_end_exclusive": 256,
+      "before": [
+        "- **레이블 매핑**: entailment → 2 (True), neutral → 1 (Unknown), contradiction → 0 (False)"
+      ],
+      "after": [
+        "- **레이블 매핑**: entailment → 2, neutral → 1, contradiction → 0",
+        "- **배치 크기**: 16",
+        "- **시퀀스 길이**: 64 (max_length)"
+      ],
+      "before_context": [
+        "- **모델**: `state-spaces/mamba-130m-hf`",
+        "- **데이터셋**: SNLI (train 5000 / val 1000)",
+        "- **태스크**: 3값 분류 (entailment / neutral / contradiction)",
+        "",
+        "---",
+        ""
+      ],
+      "after_context": [
+        "- **모델**: `state-spaces/mamba-130m-hf`",
+        "- **데이터셋**: SNLI (train 5,000 / val 1,000)",
+        "- **태스크**: 3값 분류 (entailment / neutral / contradiction)",
+        "",
+        "---",
+        ""
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 224,
+      "before_end_exclusive": 237,
+      "after_start": 268,
+      "after_end_exclusive": 268,
+      "before": [
+        "### 삼진논리 출력 분포 (v4, r_min=1.0)",
+        "",
+        "- Known 정확도: 0.7209",
+        "- Unknown 비율: 30.2%",
+        "- Unknown 중 실제 True: 58.9% / False: 41.1%",
+        "",
+        "### 에너지 분리 결과 (v2)",
+        "",
+        "| 샘플 | S⁺ 에너지 | S⁻ 에너지 | 갭 |",
+        "|---|---|---|---|",
+        "| True 샘플 | 7.41 | 3.83 | +3.58 |",
+        "| False 샘플 | 5.19 | 6.03 | +0.84 |",
+        ""
+      ],
+      "after": [],
+      "before_context": [
+        "| ContraMamba v3 (threshold=8.5) | 0.7005 | Unknown 제외 정확도 |",
+        "| ContraMamba v4 (geometric) | 0.7209 | Known만 선별, geometric classifier |",
+        "",
+        "---",
+        "",
+        "## 주요 하이퍼파라미터"
+      ],
+      "after_context": [
+        "| ContraMamba v3 (threshold=8.5) | 0.7005 | Unknown 제외 정확도 |",
+        "| ContraMamba v4 (geometric) | 0.7209 | Known만 선별, geometric classifier |",
+        "",
+        "---",
+        "",
+        "## 주요 하이퍼파라미터"
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 244,
+      "before_end_exclusive": 245,
+      "after_start": 275,
+      "after_end_exclusive": 275,
+      "before": [
+        "| `low_ratio` | 0.75 | DCT 저주파 보존 비율 |"
+      ],
+      "after": [],
+      "before_context": [
+        "| 파라미터 | 기본값 | 설명 |",
+        "|---|---|---|",
+        "| `n_proto` | 16 | prototype 개수 |",
+        "| `proto_tau` | 0.1 | routing softmax 온도 |",
+        "| `warmup_epochs` | 3 | prototype 활성화 시작 epoch |",
+        "| `k` (FAISS) | 15 | graph memory neighbor 수 |"
+      ],
+      "after_context": [
+        "| 파라미터 | 기본값 | 설명 |",
+        "|---|---|---|",
+        "| `n_proto` | 16 | prototype 개수 |",
+        "| `proto_tau` | 0.1 | routing softmax 온도 |",
+        "| `warmup_epochs` | 3 | prototype / controller 활성화 시점 |",
+        "| `split_epoch` | 5 | GAT representation alignment 전환 시점 |"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 246,
+      "before_end_exclusive": 247,
+      "after_start": 276,
+      "after_end_exclusive": 280,
+      "before": [
+        "| `warmup_epochs` | 3 | prototype 활성화 시작 epoch |"
+      ],
+      "after": [
+        "| `warmup_epochs` | 3 | prototype / controller 활성화 시점 |",
+        "| `split_epoch` | 5 | GAT representation alignment 전환 시점 |",
+        "| `ctrl_ema_decay` | 0.95 | sample-wise EMA decay |",
+        "| `ctrl_slot_size` | 512 | EMA 순환 슬롯 수 |"
+      ],
+      "before_context": [
+        "| `n_proto` | 16 | prototype 개수 |",
+        "| `low_ratio` | 0.75 | DCT 저주파 보존 비율 |",
+        "| `proto_tau` | 0.1 | routing softmax 온도 |",
+        "| `k` (FAISS) | 15 | graph memory neighbor 수 |",
+        "| `delta` | 0.1 | geometric classification margin |",
+        "| `r_min` | 0.5 | confidence 최소 threshold |"
+      ],
+      "after_context": [
+        "|---|---|---|",
+        "| `n_proto` | 16 | prototype 개수 |",
+        "| `proto_tau` | 0.1 | routing softmax 온도 |",
+        "| `k` (FAISS) | 15 | graph memory neighbor 수 |",
+        "| `delta` | 0.1 | geometric classification margin |",
+        "| `r_min` | 0.5 | confidence 최소 threshold |"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 250,
+      "before_end_exclusive": 250,
+      "after_start": 283,
+      "after_end_exclusive": 285,
+      "before": [],
+      "after": [
+        "| `mem_size` | 50 | episodic memory 슬롯 수 (proto별) |",
+        "| `gat_alpha` | 0.3→0.1 | GAT residual 강도 (epoch 따라 감소) |"
+      ],
+      "before_context": [
+        "| `k` (FAISS) | 15 | graph memory neighbor 수 |",
+        "| `delta` | 0.1 | geometric classification margin |",
+        "| `r_min` | 0.5 | confidence 최소 threshold |",
+        "",
+        "---",
+        ""
+      ],
+      "after_context": [
+        "| `k` (FAISS) | 15 | graph memory neighbor 수 |",
+        "| `delta` | 0.1 | geometric classification margin |",
+        "| `r_min` | 0.5 | confidence 최소 threshold |",
+        "",
+        "---",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 257,
+      "before_end_exclusive": 259,
+      "after_start": 292,
+      "after_end_exclusive": 294,
+      "before": [
+        "transformers        # MambaModel",
+        "torch-geometric     # GATConv"
+      ],
+      "after": [
+        "transformers        # MambaModel, MambaConfig",
+        "torch-geometric     # GATConv, add_self_loops"
+      ],
+      "before_context": [
+        "",
+        "```",
+        "torch",
+        "faiss-cpu / faiss-gpu",
+        "datasets            # HuggingFace",
+        "numpy"
+      ],
+      "after_context": [
+        "",
+        "```",
+        "torch",
+        "faiss-cpu / faiss-gpu",
+        "datasets            # HuggingFace SNLI",
+        "numpy"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 260,
+      "before_end_exclusive": 261,
+      "after_start": 295,
+      "after_end_exclusive": 296,
+      "before": [
+        "datasets            # HuggingFace"
+      ],
+      "after": [
+        "datasets            # HuggingFace SNLI"
+      ],
+      "before_context": [
+        "transformers        # MambaModel",
+        "torch-geometric     # GATConv",
+        "faiss-cpu / faiss-gpu",
+        "numpy",
+        "matplotlib",
+        "tqdm"
+      ],
+      "after_context": [
+        "transformers        # MambaModel, MambaConfig",
+        "torch-geometric     # GATConv, add_self_loops",
+        "faiss-cpu / faiss-gpu",
+        "numpy",
+        "matplotlib",
+        "tqdm"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 268,
+      "before_end_exclusive": 268,
+      "after_start": 303,
+      "after_end_exclusive": 316,
+      "before": [],
+      "after": [
+        "## 버전 히스토리",
+        "",
+        "| 버전 | 주요 변경 |",
+        "|---|---|",
+        "| v2 | 3값 출력 헤드 + classifier |",
+        "| v3 | Unknown threshold 기반 선별 |",
+        "| v4 | Geometric Energy Space 도입 |",
+        "| v5 | Shared Prototype Manifold + Co-Activation GAT + Graph Memory |",
+        "| v6 | PrototypeController (FiLM + EMA gating) + prototype normalize 안정화 |",
+        "| v7 | **SSM decomp 제거** / h_high = h − stopgrad(z_semantic) 으로 재정의 / Sample-wise EMA Controller / High branch residual contradiction 구조화 |",
+        "",
+        "---",
+        ""
+      ],
+      "before_context": [
+        "",
+        "---",
+        "",
+        "## 로드맵",
+        "",
+        "- [x] S⁺/S⁻ 직교 subspace 설계"
+      ],
+      "after_context": [
+        "",
+        "---",
+        "",
+        "## 로드맵",
+        "",
+        "- [x] S⁺/S⁻ 직교 subspace 설계"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 271,
+      "before_end_exclusive": 272,
+      "after_start": 319,
+      "after_end_exclusive": 320,
+      "before": [
+        "- [x] DCT 초기화 + Attention Pooling"
+      ],
+      "after": [
+        "- [x] Attention Pooling"
+      ],
+      "before_context": [
+        "## 로드맵",
+        "",
+        "- [x] S⁺/S⁻ 직교 subspace 설계",
+        "- [x] 3값 출력 헤드 + Geometric Energy Space",
+        "- [x] Hybrid DCT + Learned projection",
+        "- [x] Frequency decomposition (h = h_low + h_high)"
+      ],
+      "after_context": [
+        "## 로드맵",
+        "",
+        "- [x] S⁺/S⁻ 직교 subspace 설계",
+        "- [x] 3값 출력 헤드 + Geometric Energy Space",
+        "- [x] Shared Prototype Manifold + soft routing",
+        "- [x] Co-Activation GAT (prototype propagation)"
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 273,
+      "before_end_exclusive": 275,
+      "after_start": 321,
+      "after_end_exclusive": 321,
+      "before": [
+        "- [x] Hybrid DCT + Learned projection",
+        "- [x] Frequency decomposition (h = h_low + h_high)"
+      ],
+      "after": [],
+      "before_context": [
+        "- [x] S⁺/S⁻ 직교 subspace 설계",
+        "- [x] DCT 초기화 + Attention Pooling",
+        "- [x] 3값 출력 헤드 + Geometric Energy Space",
+        "- [x] Shared Prototype Manifold + soft routing",
+        "- [x] Co-Activation GAT (prototype propagation)",
+        "- [x] Graph Memory (FAISS) + Local GAT refinement"
+      ],
+      "after_context": [
+        "- [x] S⁺/S⁻ 직교 subspace 설계",
+        "- [x] Attention Pooling",
+        "- [x] 3값 출력 헤드 + Geometric Energy Space",
+        "- [x] Shared Prototype Manifold + soft routing",
+        "- [x] Co-Activation GAT (prototype propagation)",
+        "- [x] Graph Memory (FAISS) + Local GAT refinement"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 280,
+      "before_end_exclusive": 283,
+      "after_start": 326,
+      "after_end_exclusive": 333,
+      "before": [
+        "- [x] Warmup-scheduled proto / GAT 활성화",
+        "- [ ] Dual graph inference 완전 연동 (v5 진행 중)",
+        "- [ ] 동적 해빙 (low-rate slow / high-rate fast adaptation)"
+      ],
+      "after": [
+        "- [x] PrototypeController — FiLM + sample-wise EMA gate",
+        "- [x] Single semantic manifold + residual contradiction (v7)",
+        "- [ ] High branch prototype bank (독립 P_high_bank)",
+        "- [ ] Low-High disagreement loss",
+        "- [ ] Contrastive separation loss (h_low ⊥ h_high)",
+        "- [ ] Dual graph inference 완전 연동",
+        "- [ ] 동적 해빙 (low slow / high fast adaptation)"
+      ],
+      "before_context": [
+        "- [x] Graph Memory (FAISS) + Local GAT refinement",
+        "- [x] EMA usage tracking + prototype diversity loss",
+        "- [x] Label-aware edge gating",
+        "- [ ] 복소수 SSM 확장 (S4 계열)",
+        "- [ ] 생성 태스크 확장 및 역질문 모듈",
+        ""
+      ],
+      "after_context": [
+        "- [x] Graph Memory (FAISS) + Local GAT refinement",
+        "- [x] EMA usage tracking + prototype diversity loss",
+        "- [x] Label-aware edge gating",
+        "- [ ] 복소수 SSM 확장 (S4 계열)",
+        "- [ ] 생성 태스크 확장 및 역질문 모듈",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 290,
+      "before_end_exclusive": 292,
+      "after_start": 340,
+      "after_end_exclusive": 344,
+      "before": [
+        "**Frequency decomposition의 근사성**",
+        "DCT는 signal domain에서 정의된 연산이므로, semantic space에서의 \"주파수\"는 근사적 개념임. `W_low` norm이 커지면 DCT 기여를 압도할 수 있어 모니터링 필요."
+      ],
+      "after": [
+        "**Residual contradiction의 노이즈 혼재**  ",
+        "`h_high = h - stopgrad(z_semantic)`는 prototype으로 설명되지 않는 모든 성분을 담으므로",
+        "순수 contradiction 신호와 학습 초기 노이즈가 섞일 수 있음.",
+        "`high_supervision_loss`의 lambda 스케줄로 점진적 분리 유도."
+      ],
+      "before_context": [
+        "",
+        "## 한계 및 향후 연구",
+        "",
+        "",
+        "**Prototype collapse**",
+        "soft routing + EMA usage tracking으로 완화하고 있으나, 초기 학습 단계에서 특정 prototype으로 쏠리는 현상이 발생할 수 있음. `visualize_usage()`로 per-epoch 확인 권장."
+      ],
+      "after_context": [
+        "",
+        "## 한계 및 향후 연구",
+        "",
+        "",
+        "**Prototype collapse**  ",
+        "soft routing + EMA usage tracking으로 완화하고 있으나, 초기 학습 단계에서"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 293,
+      "before_end_exclusive": 295,
+      "after_start": 345,
+      "after_end_exclusive": 348,
+      "before": [
+        "**Prototype collapse**",
+        "soft routing + EMA usage tracking으로 완화하고 있으나, 초기 학습 단계에서 특정 prototype으로 쏠리는 현상이 발생할 수 있음. `visualize_usage()`로 per-epoch 확인 권장."
+      ],
+      "after": [
+        "**Prototype collapse**  ",
+        "soft routing + EMA usage tracking으로 완화하고 있으나, 초기 학습 단계에서",
+        "특정 prototype으로 쏠리는 현상이 발생할 수 있음. `visualize_usage()`로 per-epoch 확인 권장."
+      ],
+      "before_context": [
+        "**Frequency decomposition의 근사성**",
+        "DCT는 signal domain에서 정의된 연산이므로, semantic space에서의 \"주파수\"는 근사적 개념임. `W_low` norm이 커지면 DCT 기여를 압도할 수 있어 모니터링 필요.",
+        "",
+        "",
+        "**Energy head 방향성 검증**",
+        "`ratio_low True mean > ratio_low False mean` gap이 epoch 진행에 따라 벌어지지 않으면 `polarity` 파라미터 초기화 방향을 재검토해야 함."
+      ],
+      "after_context": [
+        "순수 contradiction 신호와 학습 초기 노이즈가 섞일 수 있음.",
+        "`high_supervision_loss`의 lambda 스케줄로 점진적 분리 유도.",
+        "",
+        "",
+        "**Energy head 방향성 검증**  ",
+        "`ratio_low True mean > ratio_low False mean` gap이 epoch 진행에 따라"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 296,
+      "before_end_exclusive": 298,
+      "after_start": 349,
+      "after_end_exclusive": 352,
+      "before": [
+        "**Energy head 방향성 검증**",
+        "`ratio_low True mean > ratio_low False mean` gap이 epoch 진행에 따라 벌어지지 않으면 `polarity` 파라미터 초기화 방향을 재검토해야 함."
+      ],
+      "after": [
+        "**Energy head 방향성 검증**  ",
+        "`ratio_low True mean > ratio_low False mean` gap이 epoch 진행에 따라",
+        "벌어지지 않으면 EnergyHead polarity 초기화 방향 재검토 필요."
+      ],
+      "before_context": [
+        "**Prototype collapse**",
+        "soft routing + EMA usage tracking으로 완화하고 있으나, 초기 학습 단계에서 특정 prototype으로 쏠리는 현상이 발생할 수 있음. `visualize_usage()`로 per-epoch 확인 권장.",
+        "",
+        "",
+        "**동적 해빙**",
+        "현재 `A_log` 파라미터만 freeze. low component는 slow adaptation, high component는 fast adaptation하는 동적 메커니즘은 향후 연구 과제."
+      ],
+      "after_context": [
+        "soft routing + EMA usage tracking으로 완화하고 있으나, 초기 학습 단계에서",
+        "특정 prototype으로 쏠리는 현상이 발생할 수 있음. `visualize_usage()`로 per-epoch 확인 권장.",
+        "",
+        "",
+        "**Controller gate 포화**  ",
+        "`ctrl_scale`이 너무 커지면 FiLM이 h_low를 과도하게 교정."
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 299,
+      "before_end_exclusive": 301,
+      "after_start": 353,
+      "after_end_exclusive": 356,
+      "before": [
+        "**동적 해빙**",
+        "현재 `A_log` 파라미터만 freeze. low component는 slow adaptation, high component는 fast adaptation하는 동적 메커니즘은 향후 연구 과제."
+      ],
+      "after": [
+        "**Controller gate 포화**  ",
+        "`ctrl_scale`이 너무 커지면 FiLM이 h_low를 과도하게 교정.",
+        "학습 중 `ctrl_gate` / `ctrl_scale` 모니터링 권장."
+      ],
+      "before_context": [
+        "**Energy head 방향성 검증**",
+        "`ratio_low True mean > ratio_low False mean` gap이 epoch 진행에 따라 벌어지지 않으면 `polarity` 파라미터 초기화 방향을 재검토해야 함.",
+        ""
+      ],
+      "after_context": [
+        "`ratio_low True mean > ratio_low False mean` gap이 epoch 진행에 따라",
+        "벌어지지 않으면 EnergyHead polarity 초기화 방향 재검토 필요.",
+        ""
+      ]
+    }
+  ]
+}

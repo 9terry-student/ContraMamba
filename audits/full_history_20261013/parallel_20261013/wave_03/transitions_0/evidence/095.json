@@ -1,0 +1,772 @@
+{
+  "shard_ordinal": 95,
+  "original_queue_id": "WORK-e46ef4503e74f8affd83",
+  "original_source_ids": [
+    "HV001158"
+  ],
+  "original_source_identity": {
+    "commit": "1ce6f16e83dead28a7cee78757f4a76808fef1a2",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "8df06bad5360f228179d828e735d947eedf933f0",
+    "object_type": "commit",
+    "bytes": 56689,
+    "sha256": "5ae98efd0d64a58da952db44c1496d39bcfb62fe77ae6c19c540cf13be77ad10"
+  },
+  "before": {
+    "commit": "f70c81af3d47d49fb6e75aed3297a8fd0c4206bc",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "075e998048808ab2210518c46a8a3e1edd819207",
+    "object_type": "commit",
+    "bytes": 47544,
+    "sha256": "0abf6d73df2ce245f7df3ebd9067fc0e4e9868d1a4b60b45df91124fbe47b32a"
+  },
+  "after": {
+    "commit": "1ce6f16e83dead28a7cee78757f4a76808fef1a2",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "8df06bad5360f228179d828e735d947eedf933f0",
+    "object_type": "commit",
+    "bytes": 56689,
+    "sha256": "5ae98efd0d64a58da952db44c1496d39bcfb62fe77ae6c19c540cf13be77ad10"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0191"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "build_mamba_model",
+      "build_model",
+      "build_parser",
+      "compute_boundary_metrics",
+      "encode_boundary_labels",
+      "evaluate_ood_v6b",
+      "main",
+      "prediction_records_v6b",
+      "run_training_v6b"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate trainer objectives, gradient ownership, data/evaluation selection, ablation defaults and historical authority from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 4 removed/replaced lines and 204 added/replaced lines in 19 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "e6ee7986857991de2cc37415e5a8742cf32206ea",
+      "blob": "075e998048808ab2210518c46a8a3e1edd819207"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "replace",
+      "before_start": 40,
+      "before_end_exclusive": 41,
+      "after_start": 40,
+      "after_end_exclusive": 42,
+      "before": [
+        "    vocab_size: int, max_length: int, hidden_size: int = 48"
+      ],
+      "after": [
+        "    vocab_size: int, max_length: int, hidden_size: int = 48,",
+        "    use_boundary_head: bool = False,"
+      ],
+      "before_context": [
+        "",
+        "",
+        "def build_model(",
+        ") -> ContraMambaV6BMinimal:",
+        "    backbone = v5.ControlledDummyBackbone(vocab_size, hidden_size, max_length)",
+        "    return ContraMambaV6BMinimal("
+      ],
+      "after_context": [
+        "",
+        "",
+        "def build_model(",
+        ") -> ContraMambaV6BMinimal:",
+        "    backbone = v5.ControlledDummyBackbone(vocab_size, hidden_size, max_length)",
+        "    return ContraMambaV6BMinimal("
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 55,
+      "before_end_exclusive": 55,
+      "after_start": 56,
+      "after_end_exclusive": 57,
+      "before": [],
+      "after": [
+        "        use_boundary_head=use_boundary_head,"
+      ],
+      "before_context": [
+        "        use_predicate_comparator=True,",
+        "        alpha_temporal_init=1.25,",
+        "        alpha_predicate_init=1.25,",
+        "    )",
+        "",
+        ""
+      ],
+      "after_context": [
+        "        use_predicate_comparator=True,",
+        "        alpha_temporal_init=1.25,",
+        "        alpha_predicate_init=1.25,",
+        "    )",
+        "",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 62,
+      "before_end_exclusive": 62,
+      "after_start": 64,
+      "after_end_exclusive": 65,
+      "before": [],
+      "after": [
+        "    use_boundary_head: bool = False,"
+      ],
+      "before_context": [
+        "    model_name: str,",
+        "    freeze_encoder: bool,",
+        "    freeze_a_log: bool,",
+        ") -> ContraMambaV6BMinimal:",
+        "    model = ContraMambaV6BMinimal(",
+        "        model_name=model_name,"
+      ],
+      "after_context": [
+        "    model_name: str,",
+        "    freeze_encoder: bool,",
+        "    freeze_a_log: bool,",
+        ") -> ContraMambaV6BMinimal:",
+        "    model = ContraMambaV6BMinimal(",
+        "        model_name=model_name,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 76,
+      "before_end_exclusive": 76,
+      "after_start": 79,
+      "after_end_exclusive": 80,
+      "before": [],
+      "after": [
+        "        use_boundary_head=use_boundary_head,"
+      ],
+      "before_context": [
+        "        use_predicate_comparator=True,",
+        "        alpha_temporal_init=1.25,",
+        "        alpha_predicate_init=1.25,",
+        "    )",
+        "    for parameter in model.mamba.parameters():",
+        "        parameter.requires_grad = not freeze_encoder"
+      ],
+      "after_context": [
+        "        use_predicate_comparator=True,",
+        "        alpha_temporal_init=1.25,",
+        "        alpha_predicate_init=1.25,",
+        "    )",
+        "    for parameter in model.mamba.parameters():",
+        "        parameter.requires_grad = not freeze_encoder"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 254,
+      "before_end_exclusive": 254,
+      "after_start": 258,
+      "after_end_exclusive": 333,
+      "before": [],
+      "after": [
+        "# Stage22-A: boundary label mapping",
+        "# preservation-positive: surface-form-preserving interventions (gold = SUPPORT or REFUTE)",
+        "# frame-mismatch-negative: structural frame/slot swaps (gold = NOT_ENTITLED)",
+        "# excluded: sufficiency, polarity, predicate, unknown",
+        "_BOUNDARY_POSITIVE: frozenset = frozenset({\"none\", \"paraphrase\"})",
+        "_BOUNDARY_NEGATIVE: frozenset = frozenset({",
+        "    \"location_swap\", \"role_swap\", \"entity_swap\", \"event_swap\", \"title_name_swap\",",
+        "})",
+        "",
+        "",
+        "def encode_boundary_labels(",
+        "    records: list[dict],",
+        "    device: torch.device,",
+        ") -> tuple[torch.Tensor, torch.Tensor]:",
+        "    \"\"\"Derive preservation boundary binary labels from intervention_type.",
+        "",
+        "    Returns (labels, mask) both of shape [B].",
+        "      label=1, mask=1: none, paraphrase  (preservation-positive)",
+        "      label=0, mask=1: location_swap, role_swap, entity_swap, event_swap,",
+        "                        title_name_swap  (frame-mismatch-negative)",
+        "      label=0, mask=0: evidence_deletion, evidence_truncation, irrelevant_evidence,",
+        "                        polarity_flip, predicate_swap, unknown  (excluded)",
+        "    BCE loss is computed only on mask==1 examples.",
+        "    Does NOT use OOD group names or gold labels at inference.",
+        "    \"\"\"",
+        "    labels: list[int] = []",
+        "    mask: list[int] = []",
+        "    for r in records:",
+        "        it = r.get(\"intervention_type\", \"\")",
+        "        if it in _BOUNDARY_POSITIVE:",
+        "            labels.append(1)",
+        "            mask.append(1)",
+        "        elif it in _BOUNDARY_NEGATIVE:",
+        "            labels.append(0)",
+        "            mask.append(1)",
+        "        else:",
+        "            labels.append(0)",
+        "            mask.append(0)",
+        "    return (",
+        "        torch.tensor(labels, dtype=torch.float32, device=device),",
+        "        torch.tensor(mask, dtype=torch.bool, device=device),",
+        "    )",
+        "",
+        "",
+        "def compute_boundary_metrics(",
+        "    output: dict[str, Any],",
+        "    boundary_labels: \"torch.Tensor | None\",",
+        "    boundary_mask: \"torch.Tensor | None\",",
+        ") -> dict[str, Any]:",
+        "    \"\"\"Compute boundary head diagnostic metrics (accuracy, pos rate, valid count, mean prob).",
+        "",
+        "    Returns empty dict when boundary head is disabled or no valid examples exist.",
+        "    \"\"\"",
+        "    if output.get(\"boundary_prob\") is None or boundary_labels is None or boundary_mask is None:",
+        "        return {}",
+        "    probs = output[\"boundary_prob\"].detach().cpu()",
+        "    labels = boundary_labels.detach().cpu()",
+        "    mask = boundary_mask.detach().cpu().bool()",
+        "    valid_count = int(mask.sum().item())",
+        "    if valid_count == 0:",
+        "        return {\"boundary_valid_count\": 0}",
+        "    probs_v = probs[mask]",
+        "    labels_v = labels[mask]",
+        "    preds_v = (probs_v >= 0.5).float()",
+        "    accuracy = (preds_v == labels_v).float().mean().item()",
+        "    pos_rate = labels_v.mean().item()",
+        "    mean_prob = probs_v.mean().item()",
+        "    return {",
+        "        \"boundary_accuracy\": round(accuracy, 4),",
+        "        \"boundary_pos_rate\": round(pos_rate, 4),",
+        "        \"boundary_valid_count\": valid_count,",
+        "        \"boundary_mean_prob\": round(mean_prob, 4),",
+        "    }",
+        "",
+        ""
+      ],
+      "before_context": [
+        "    return mask",
+        "",
+        "",
+        "def compute_class_weights_v6b(",
+        "    records: list[dict],",
+        "    mode: str,"
+      ],
+      "after_context": [
+        "    return mask",
+        "",
+        "",
+        "def compute_class_weights_v6b(",
+        "    records: list[dict],",
+        "    mode: str,"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 342,
+      "before_end_exclusive": 343,
+      "after_start": 421,
+      "after_end_exclusive": 422,
+      "before": [
+        "        group_metrics[group_name] = {"
+      ],
+      "after": [
+        "        group_entry: dict[str, Any] = {"
+      ],
+      "before_context": [
+        "        false_not_entitled_rate = (",
+        "            false_not_entitled_count / gold_entitled_count if gold_entitled_count > 0 else None",
+        "        )",
+        "            \"n\": n,",
+        "            \"final_accuracy\": accuracy,",
+        "            \"final_macro_f1\": macro_f1,"
+      ],
+      "after_context": [
+        "        false_not_entitled_rate = (",
+        "            false_not_entitled_count / gold_entitled_count if gold_entitled_count > 0 else None",
+        "        )",
+        "            \"n\": n,",
+        "            \"final_accuracy\": accuracy,",
+        "            \"final_macro_f1\": macro_f1,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 352,
+      "before_end_exclusive": 352,
+      "after_start": 431,
+      "after_end_exclusive": 438,
+      "before": [],
+      "after": [
+        "        # Stage22-A: per-group boundary_prob diagnostics (absent when head disabled)",
+        "        if output.get(\"boundary_prob\") is not None:",
+        "            bp_cpu = output[\"boundary_prob\"].detach().cpu()",
+        "            bp_group = bp_cpu[indices]",
+        "            group_entry[\"boundary_prob_mean\"] = round(float(bp_group.mean().item()), 4)",
+        "            group_entry[\"boundary_prob_std\"] = round(float(bp_group.std().item()), 4)",
+        "        group_metrics[group_name] = group_entry"
+      ],
+      "before_context": [
+        "            \"false_not_entitled_count\": false_not_entitled_count,",
+        "            \"false_not_entitled_rate\": false_not_entitled_rate,",
+        "        }",
+        "",
+        "    return {",
+        "        \"n_records\": len(records),"
+      ],
+      "after_context": [
+        "            \"false_not_entitled_count\": false_not_entitled_count,",
+        "            \"false_not_entitled_rate\": false_not_entitled_rate,",
+        "        }",
+        "",
+        "    return {",
+        "        \"n_records\": len(records),"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 370,
+      "before_end_exclusive": 370,
+      "after_start": 456,
+      "after_end_exclusive": 457,
+      "before": [],
+      "after": [
+        "        \"boundary_prob\",  # Stage22-A: None when boundary head is disabled"
+      ],
+      "before_context": [
+        "        \"sufficiency_prob\",",
+        "        \"entitlement_prob\",",
+        "        \"polarity_margin\",",
+        "    )",
+        "    scalars = {key: output[key].detach().cpu() for key in scalar_keys if key in output}",
+        "    exported: list[dict] = []"
+      ],
+      "after_context": [
+        "        \"sufficiency_prob\",",
+        "        \"entitlement_prob\",",
+        "        \"polarity_margin\",",
+        "    )",
+        "    scalars = {",
+        "        key: output[key].detach().cpu()"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 371,
+      "before_end_exclusive": 372,
+      "after_start": 458,
+      "after_end_exclusive": 463,
+      "before": [
+        "    scalars = {key: output[key].detach().cpu() for key in scalar_keys if key in output}"
+      ],
+      "after": [
+        "    scalars = {",
+        "        key: output[key].detach().cpu()",
+        "        for key in scalar_keys",
+        "        if key in output and output[key] is not None",
+        "    }"
+      ],
+      "before_context": [
+        "        \"entitlement_prob\",",
+        "        \"polarity_margin\",",
+        "    )",
+        "    exported: list[dict] = []",
+        "    for index, record in enumerate(records):",
+        "        item = {"
+      ],
+      "after_context": [
+        "        \"polarity_margin\",",
+        "        \"boundary_prob\",  # Stage22-A: None when boundary head is disabled",
+        "    )",
+        "    exported: list[dict] = []",
+        "    for index, record in enumerate(records):",
+        "        item = {"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 488,
+      "before_end_exclusive": 488,
+      "after_start": 579,
+      "after_end_exclusive": 614,
+      "before": [],
+      "after": [
+        "    # Stage22-A: preservation boundary head",
+        "    parser.add_argument(",
+        "        \"--use-boundary-loss\",",
+        "        action=\"store_true\",",
+        "        default=False,",
+        "        help=(",
+        "            \"Enable Stage22-A preservation boundary head. \"",
+        "            \"Adds a linear head on [frame_pair_repr, predicate_pair_repr, sufficiency_repr] \"",
+        "            \"trained to distinguish preservation-like records (none, paraphrase) from \"",
+        "            \"frame-mismatch records (location_swap, role_swap, entity_swap, event_swap, \"",
+        "            \"title_name_swap) using BCE loss. \"",
+        "            \"Does NOT modify output['logits'] or affect predictions.\"",
+        "        ),",
+        "    )",
+        "    parser.add_argument(",
+        "        \"--boundary-loss-weight\",",
+        "        type=float,",
+        "        default=0.0,",
+        "        help=(",
+        "            \"Weight for the boundary BCE loss added to the total training loss. \"",
+        "            \"Default 0.0 means the head is built but its loss is not included. \"",
+        "            \"Requires --use-boundary-loss. Suggested starting value: 0.5.\"",
+        "        ),",
+        "    )",
+        "    parser.add_argument(",
+        "        \"--boundary-loss-pos-weight\",",
+        "        type=float,",
+        "        default=2.5,",
+        "        help=(",
+        "            \"Positive class weight for the boundary BCE loss (pos_weight in \"",
+        "            \"F.binary_cross_entropy_with_logits). Compensates for class imbalance: \"",
+        "            \"preservation-positive (none+paraphrase=600) vs frame-mismatch (5 types x 300=1500). \"",
+        "            \"Default 2.5 = 1500/600.\"",
+        "        ),",
+        "    )"
+      ],
+      "before_context": [
+        "            \"Each threshold is swept over all gates and shifts.\"",
+        "        ),",
+        "    )",
+        "",
+        "    return parser",
+        ""
+      ],
+      "after_context": [
+        "            \"Each threshold is swept over all gates and shifts.\"",
+        "        ),",
+        "    )",
+        "",
+        "    return parser",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 559,
+      "before_end_exclusive": 559,
+      "after_start": 685,
+      "after_end_exclusive": 686,
+      "before": [],
+      "after": [
+        "            use_boundary_head=args.use_boundary_loss,"
+      ],
+      "before_context": [
+        "            args.model_name,",
+        "            freeze_encoder=args.freeze_encoder,",
+        "            freeze_a_log=args.freeze_a_log,",
+        "        )",
+        "",
+        "    train_inputs = v5.move_inputs(train_bundle[\"model_inputs\"], device)"
+      ],
+      "after_context": [
+        "            args.model_name,",
+        "            freeze_encoder=args.freeze_encoder,",
+        "            freeze_a_log=args.freeze_a_log,",
+        "        )",
+        "",
+        "    train_inputs = v5.move_inputs(train_bundle[\"model_inputs\"], device)"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 573,
+      "before_end_exclusive": 574,
+      "after_start": 700,
+      "after_end_exclusive": 701,
+      "before": [
+        "        model = build_model(len(vocab), max_length)"
+      ],
+      "after": [
+        "        model = build_model(len(vocab), max_length, use_boundary_head=args.use_boundary_loss)"
+      ],
+      "before_context": [
+        "                inputs[key] = F.pad(inputs[key], (0, difference), value=0)",
+        "",
+        "    if model is None:",
+        "    model = model.to(device)",
+        "",
+        "    if args.backbone == \"mamba\" and args.freeze_encoder:"
+      ],
+      "after_context": [
+        "                inputs[key] = F.pad(inputs[key], (0, difference), value=0)",
+        "",
+        "    if model is None:",
+        "    model = model.to(device)",
+        "",
+        "    if args.backbone == \"mamba\" and args.freeze_encoder:"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 594,
+      "before_end_exclusive": 594,
+      "after_start": 721,
+      "after_end_exclusive": 736,
+      "before": [],
+      "after": [
+        "",
+        "    # Stage22-A: boundary labels derived from intervention_type (only used when head is active)",
+        "    train_boundary_labels, train_boundary_mask = encode_boundary_labels(train_records, device)",
+        "    dev_boundary_labels, dev_boundary_mask = encode_boundary_labels(dev_records, device)",
+        "    _train_b_pos = int(train_boundary_mask.sum().item())",
+        "    _train_b_valid = int(train_boundary_mask.sum().item())",
+        "    if args.use_boundary_loss:",
+        "        _train_b_valid = int(train_boundary_mask.sum().item())",
+        "        _train_b_pos_only = int((train_boundary_labels * train_boundary_mask.float()).sum().item())",
+        "        print(",
+        "            f\"[boundary22a] enabled weight={args.boundary_loss_weight}\"",
+        "            f\" pos_weight={args.boundary_loss_pos_weight}\"",
+        "            f\" train_valid={_train_b_valid}\"",
+        "            f\" train_pos={_train_b_pos_only}\"",
+        "        )"
+      ],
+      "before_context": [
+        "    dev_temporal_flags, dev_predicate_flags = extract_flags(",
+        "        dev_records, args.flag_source, device",
+        "    )",
+        "",
+        "    # Wrap v5 training to accept flags",
+        "    original_run_training = v5.run_training"
+      ],
+      "after_context": [
+        "    dev_temporal_flags, dev_predicate_flags = extract_flags(",
+        "        dev_records, args.flag_source, device",
+        "    )",
+        "",
+        "    # Wrap v5 training to accept flags",
+        "    original_run_training = v5.run_training"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 621,
+      "before_end_exclusive": 621,
+      "after_start": 763,
+      "after_end_exclusive": 769,
+      "before": [],
+      "after": [
+        "        train_boundary_labels=None,",
+        "        train_boundary_mask=None,",
+        "        dev_boundary_labels=None,",
+        "        dev_boundary_mask=None,",
+        "        boundary_loss_weight=0.0,",
+        "        boundary_loss_pos_weight=2.5,"
+      ],
+      "before_context": [
+        "        capture_best_trainable_state=False,",
+        "        smoke_mode=False,",
+        "        ce_class_weights=None,",
+        "    ):",
+        "        \"\"\"Modified run_training that passes flags to v6b model.\"\"\"",
+        "        if epochs < 1:"
+      ],
+      "after_context": [
+        "        capture_best_trainable_state=False,",
+        "        smoke_mode=False,",
+        "        ce_class_weights=None,",
+        "    ):",
+        "        \"\"\"Modified run_training that passes flags to v6b model.\"\"\"",
+        "        if epochs < 1:"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 683,
+      "before_end_exclusive": 683,
+      "after_start": 831,
+      "after_end_exclusive": 854,
+      "before": [],
+      "after": [
+        "",
+        "            # Stage22-A: boundary head BCE loss (training signal only; output[\"logits\"] unchanged)",
+        "            _bdry_loss = torch.tensor(0.0)",
+        "            if (",
+        "                boundary_loss_weight > 0.0",
+        "                and train_boundary_labels is not None",
+        "                and train_boundary_mask is not None",
+        "                and output.get(\"boundary_logit\") is not None",
+        "            ):",
+        "                _active_b = train_boundary_mask.bool()",
+        "                if torch.any(_active_b):",
+        "                    _pos_w = torch.tensor(",
+        "                        boundary_loss_pos_weight,",
+        "                        dtype=torch.float32,",
+        "                        device=output[\"boundary_logit\"].device,",
+        "                    )",
+        "                    _bdry_loss = F.binary_cross_entropy_with_logits(",
+        "                        output[\"boundary_logit\"][_active_b],",
+        "                        train_boundary_labels[_active_b],",
+        "                        pos_weight=_pos_w,",
+        "                    )",
+        "                    total_loss = total_loss + boundary_loss_weight * _bdry_loss",
+        ""
+      ],
+      "before_context": [
+        "                    ranking_weight * v5.intervention_objective(output, train_records)",
+        "                )",
+        "            total_loss = losses[\"total\"] + active_intervention_loss",
+        "            total_loss.backward()",
+        "            torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)",
+        "            optimizer.step()"
+      ],
+      "after_context": [
+        "                    ranking_weight * v5.intervention_objective(output, train_records)",
+        "                )",
+        "            total_loss = losses[\"total\"] + active_intervention_loss",
+        "            total_loss.backward()",
+        "            torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)",
+        "            optimizer.step()"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 702,
+      "before_end_exclusive": 702,
+      "after_start": 873,
+      "after_end_exclusive": 877,
+      "before": [],
+      "after": [
+        "",
+        "            # Stage22-A: boundary head metrics",
+        "            _tbm = compute_boundary_metrics(train_output, train_boundary_labels, train_boundary_mask)",
+        "            _dbm = compute_boundary_metrics(dev_output, dev_boundary_labels, dev_boundary_mask)"
+      ],
+      "before_context": [
+        "                )",
+        "            train_metrics = v5.compute_metrics(train_output, train_inputs)",
+        "            dev_metrics = v5.compute_metrics(dev_output, dev_inputs)",
+        "",
+        "            if select_metric not in dev_metrics or not isinstance(",
+        "                dev_metrics[select_metric], (int, float)"
+      ],
+      "after_context": [
+        "                )",
+        "            train_metrics = v5.compute_metrics(train_output, train_inputs)",
+        "            dev_metrics = v5.compute_metrics(dev_output, dev_inputs)",
+        "",
+        "            if select_metric not in dev_metrics or not isinstance(",
+        "                dev_metrics[select_metric], (int, float)"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 734,
+      "before_end_exclusive": 734,
+      "after_start": 909,
+      "after_end_exclusive": 919,
+      "before": [],
+      "after": [
+        "            if _tbm:",
+        "                _bl_val = float(_bdry_loss.item()) if hasattr(_bdry_loss, \"item\") else 0.0",
+        "                print(",
+        "                    f\"  [boundary22a] loss={_bl_val:.4f}\"",
+        "                    f\" train_acc={_tbm.get('boundary_accuracy', 0.0):.3f}\"",
+        "                    f\" dev_acc={_dbm.get('boundary_accuracy', 0.0):.3f}\"",
+        "                    f\" train_mean_prob={_tbm.get('boundary_mean_prob', 0.0):.3f}\"",
+        "                    f\" dev_mean_prob={_dbm.get('boundary_mean_prob', 0.0):.3f}\"",
+        "                    f\" valid={_tbm.get('boundary_valid_count', 0)}\"",
+        "                )"
+      ],
+      "before_context": [
+        "                    active_intervention_loss,",
+        "                )",
+        "            )",
+        "",
+        "        report = {",
+        "            \"run_name\": run_name,"
+      ],
+      "after_context": [
+        "                    active_intervention_loss,",
+        "                )",
+        "            )",
+        "",
+        "        report = {",
+        "            \"run_name\": run_name,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 797,
+      "before_end_exclusive": 797,
+      "after_start": 982,
+      "after_end_exclusive": 988,
+      "before": [],
+      "after": [
+        "            train_boundary_labels=train_boundary_labels if args.use_boundary_loss else None,",
+        "            train_boundary_mask=train_boundary_mask if args.use_boundary_loss else None,",
+        "            dev_boundary_labels=dev_boundary_labels if args.use_boundary_loss else None,",
+        "            dev_boundary_mask=dev_boundary_mask if args.use_boundary_loss else None,",
+        "            boundary_loss_weight=args.boundary_loss_weight if args.use_boundary_loss else 0.0,",
+        "            boundary_loss_pos_weight=args.boundary_loss_pos_weight,"
+      ],
+      "before_context": [
+        "            select_metric=args.select_metric,",
+        "            smoke_mode=args.smoke,",
+        "            ce_class_weights=ce_class_weights,",
+        "        )",
+        "",
+        "    # Capture learned alphas"
+      ],
+      "after_context": [
+        "            select_metric=args.select_metric,",
+        "            smoke_mode=args.smoke,",
+        "            ce_class_weights=ce_class_weights,",
+        "        )",
+        "",
+        "    # Capture learned alphas"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 834,
+      "before_end_exclusive": 834,
+      "after_start": 1025,
+      "after_end_exclusive": 1034,
+      "before": [],
+      "after": [
+        "            \"use_boundary_head\": args.use_boundary_loss,",
+        "            \"boundary_loss_weight\": args.boundary_loss_weight if args.use_boundary_loss else 0.0,",
+        "            \"boundary_loss_pos_weight\": args.boundary_loss_pos_weight,",
+        "            \"boundary_label_mapping\": {",
+        "                \"positive\": sorted(_BOUNDARY_POSITIVE),",
+        "                \"negative\": sorted(_BOUNDARY_NEGATIVE),",
+        "                \"excluded\": \"evidence_deletion,evidence_truncation,irrelevant_evidence,\"",
+        "                            \"polarity_flip,predicate_swap,unknown\",",
+        "            },"
+      ],
+      "before_context": [
+        "            \"pairwise_checks_skipped\": args.smoke,",
+        "            \"pairwise_checks_skip_reason\": \"incomplete smoke subset\" if args.smoke else None,",
+        "            \"class_weighting\": args.class_weighting,",
+        "            \"class_weights\": ce_class_weights.tolist() if ce_class_weights is not None else None,",
+        "            \"class_counts\": label_counts,",
+        "        },"
+      ],
+      "after_context": [
+        "            \"pairwise_checks_skipped\": args.smoke,",
+        "            \"pairwise_checks_skip_reason\": \"incomplete smoke subset\" if args.smoke else None,",
+        "            \"class_weighting\": args.class_weighting,",
+        "            \"class_weights\": ce_class_weights.tolist() if ce_class_weights is not None else None,",
+        "            \"class_counts\": label_counts,",
+        "        },"
+      ]
+    }
+  ]
+}

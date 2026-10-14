@@ -1,0 +1,459 @@
+{
+  "schema": "p02_three_id_closure_integration_validation/v1",
+  "phase": "CENSUS_RECOVERY_ONLY",
+  "status": "PASS_SCOPED_EXACT_DOCUMENTARY_CLOSURE_INTEGRATION_WITH_HISTORICAL_FAILS_RETAINED",
+  "checks": [
+    {
+      "check": "precredit:all_preexisting_files_byte_preserved",
+      "status": "PASS",
+      "detail": {
+        "rechecked": 4443,
+        "failures": []
+      }
+    },
+    {
+      "check": "precredit:head_unchanged",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "precredit:symbolic_head_unchanged",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "precredit:tracked_files_unchanged",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "precredit:tracked_diff_unchanged",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "precredit:staged_diff_unchanged",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "precredit:index_sha256_unchanged",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "precredit:preexisting_status_unchanged",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "all_authentication_checks_PASS",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "exact_three_independent_authorized_decisions",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "exact_allowed_decisions",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "no_duplicate_credit",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "actual_approved_set_accounting",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "overlay_exact_approved_rows",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "actual_credit_deltas",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "postcredit:all_preexisting_files_byte_preserved",
+      "status": "PASS",
+      "detail": {
+        "rechecked": 4443,
+        "failures": []
+      }
+    },
+    {
+      "check": "postcredit:head_unchanged",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "postcredit:symbolic_head_unchanged",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "postcredit:tracked_files_unchanged",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "postcredit:tracked_diff_unchanged",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "postcredit:staged_diff_unchanged",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "postcredit:index_sha256_unchanged",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "postcredit:preexisting_status_unchanged",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "git_diff_check",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "final_serialized_outputs:all_preexisting_files_byte_preserved",
+      "status": "PASS",
+      "detail": {
+        "rechecked": 4443,
+        "failures": []
+      }
+    },
+    {
+      "check": "final_serialized_outputs:head_unchanged",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "final_serialized_outputs:symbolic_head_unchanged",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "final_serialized_outputs:tracked_files_unchanged",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "final_serialized_outputs:tracked_diff_unchanged",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "final_serialized_outputs:staged_diff_unchanged",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "final_serialized_outputs:index_sha256_unchanged",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "final_serialized_outputs:preexisting_status_unchanged",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "serialized_JSON_parse:checkpoint.json",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "serialized_JSONL_parse:closure_credit_overlay.jsonl",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "serialized_JSON_parse:evidence_manifest.json",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "serialized_JSONL_parse:owner_closure_decisions.jsonl",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "serialized_UTF8_Markdown_readback",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "final_actual_decisions_match",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "final_overlay_matches_manifest",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "final_actual_approved_accounting",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "final_bound_evidence:HV000114",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "final_bound_decision_line:HV000114",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "final_bound_evidence:HV000117",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "final_bound_decision_line:HV000117",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "final_bound_evidence:HV000121",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "final_bound_decision_line:HV000121",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "exact_files_pending_validation",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "check": "no_new_file_outside_scope",
+      "status": "PASS",
+      "detail": null
+    }
+  ],
+  "authentication_check_count": 5835,
+  "authentication_checks_all_PASS": true,
+  "blocking_failed_checks": [],
+  "approved_owner_ids": [
+    "HV000114",
+    "HV000117",
+    "HV000121"
+  ],
+  "approved_credit_count": 3,
+  "authorized_source_debt_pairs": [
+    {
+      "source_id": "HV000114",
+      "debt_id": "DEBT-e90f0a74043687c39794"
+    },
+    {
+      "source_id": "HV000117",
+      "debt_id": "DEBT-58c0e634b5f5ecea13e5"
+    },
+    {
+      "source_id": "HV000121",
+      "debt_id": "DEBT-44e964f5e0e98e4986cb"
+    }
+  ],
+  "historical_frozen_accounting": [
+    222,
+    17,
+    195
+  ],
+  "starting_derived_accounting": [
+    222,
+    20,
+    192
+  ],
+  "derived_accounting": [
+    222,
+    23,
+    189
+  ],
+  "actual_row_delta": {
+    "original_delta": 0,
+    "satisfied_delta": 3,
+    "strict_blocker_delta": -3
+  },
+  "verifier_validation_authenticated": {
+    "PASS_checks": 4661,
+    "blocking_failures": 0,
+    "PASS_disk_readback_checks": 19,
+    "existing_files_preserved": 4423,
+    "pinned_local_inputs_authenticated": 129,
+    "unique_Git_bindings_authenticated": 86
+  },
+  "existing_files_byte_preserved": 4443,
+  "HEAD_index_tracked_staged_unchanged": true,
+  "historical_frozen_ledger_unchanged": true,
+  "prior_raw_FAILs_preserved": true,
+  "original_P02_status": "FAIL_STOP_REQUIRED",
+  "verifier_to_initial_raw_ref_status": "FAIL_REFS_MOVED",
+  "verifier_to_initial_raw_worktree_status": "FAIL_WORKTREE_LIST_CHANGED",
+  "scoped_pinned_input_independence": "PASS_SCOPED_INDEPENDENCE_ONLY",
+  "integration_ref_status": "PASS_REFS_UNCHANGED",
+  "integration_worktree_status": "PASS_WORKTREE_LIST_UNCHANGED",
+  "activity": {
+    "training_evaluation": false,
+    "GPU_Kaggle": false,
+    "commit_push": false,
+    "scientific_certification": false,
+    "new_publication_semantic_analysis": false,
+    "visual_inspection_rerun": false,
+    "CKA_bootstrap_recomputed": false,
+    "figure_builders_or_original_audit_producers_executed": false,
+    "existing_artifacts_modified": false
+  },
+  "exact_output_files": [
+    "checkpoint.json",
+    "closure_credit_overlay.jsonl",
+    "evidence_manifest.json",
+    "owner_closure_decisions.jsonl",
+    "report.md",
+    "validation.json"
+  ],
+  "output_sha256_excluding_self": {
+    "checkpoint.json": {
+      "sha256": "0277095f77aabc5a00e3da09d5bbf683c71e74445a6354fa683f0ed1e8c8262d",
+      "bytes": 3858962
+    },
+    "closure_credit_overlay.jsonl": {
+      "sha256": "5c61dd053d837258794fa63ad9c291f9d74acdcb3f90ca5481ed02705e2c4dd8",
+      "bytes": 14308
+    },
+    "evidence_manifest.json": {
+      "sha256": "aac538f2c66e893ef0073b728af9ca0529fc4ef7b553001da09733f97169e318",
+      "bytes": 2004387
+    },
+    "owner_closure_decisions.jsonl": {
+      "sha256": "2fb21fd9819192dd6f7ca8ca99438d7a991b232cc689fec9c15f4e8844c22984",
+      "bytes": 196961
+    },
+    "report.md": {
+      "sha256": "d063956bc3aef41d364116cd22ea7c2fb8a9ff92504c74570a316c93bfff34c7",
+      "bytes": 10468
+    }
+  },
+  "disk_readback_status": "PASS",
+  "disk_readback_checks": [
+    {
+      "file": "checkpoint.json",
+      "sha256": "0277095f77aabc5a00e3da09d5bbf683c71e74445a6354fa683f0ed1e8c8262d",
+      "status": "PASS_DISK_READBACK"
+    },
+    {
+      "file": "closure_credit_overlay.jsonl",
+      "sha256": "5c61dd053d837258794fa63ad9c291f9d74acdcb3f90ca5481ed02705e2c4dd8",
+      "status": "PASS_DISK_READBACK"
+    },
+    {
+      "file": "evidence_manifest.json",
+      "sha256": "aac538f2c66e893ef0073b728af9ca0529fc4ef7b553001da09733f97169e318",
+      "status": "PASS_DISK_READBACK"
+    },
+    {
+      "file": "owner_closure_decisions.jsonl",
+      "sha256": "2fb21fd9819192dd6f7ca8ca99438d7a991b232cc689fec9c15f4e8844c22984",
+      "status": "PASS_DISK_READBACK"
+    },
+    {
+      "file": "report.md",
+      "sha256": "d063956bc3aef41d364116cd22ea7c2fb8a9ff92504c74570a316c93bfff34c7",
+      "status": "PASS_DISK_READBACK"
+    },
+    {
+      "file": "validation.json",
+      "status": "PASS_SERIALIZED_BYTE_READBACK",
+      "hash_policy": "No circular self-hash. Final exact-byte and canonical payload readback; no subsequent writes."
+    }
+  ],
+  "verifier_probe_failures_retained": [
+    {
+      "command": "verify.py packet",
+      "exit_code": 1,
+      "reason": "Verifier compared a metadata object with original baseline SHA256 string; .gitattributes actual SHA256 equals frozen expected SHA256. Corrected own reader; no input identity mismatch.",
+      "actual_sha256": "73a8be897bc2923e57b4ab95f3117511a5efb58d1ba562c4176fef26b5c53c91"
+    },
+    {
+      "command": "verify.py packet",
+      "exit_code": 1,
+      "reason": "Inherited failure records use two locator schemas; KeyError in own reader corrected to support both. No failed evidence comparison."
+    },
+    {
+      "command": "verify.py owner HV000114",
+      "exit_code": 1,
+      "reason": "Independently generated 84 operations matched values but used whole-list pointers; original convention uses element pointers for equal-length lists. Corrected own generator. Both versions retained in operation_probe.json; no source change."
+    },
+    {
+      "command": "numeric.py HV000114",
+      "exit_code": 1,
+      "reason": "Own verifier used scientific_authority instead of existing scientific_head fallback for schema 1 sources. Corrected; authenticated Git identity unchanged."
+    },
+    {
+      "command": "vector121.py",
+      "exit_code": 1,
+      "reason": "Own vector reader initially included numeric association table text as axis ticks. Filter corrected to actual plot region above y=200 PDF points. No source/numeric mismatch."
+    }
+  ],
+  "integration_reader_probe_failures_retained": [
+    {
+      "command": "inline integration frozen reconciliation locator reader",
+      "exit_code": 0,
+      "recorded_preliminary_owner_results": "three BLOCKED rows in authorized draft manifest only; no closure overlay",
+      "reason": "Reader initially retained CR from CRLF census rows while verifier uses bytes.splitlines(), excluding full line terminator. All three declared line hashes independently match original bytes with CRLF excluded. Original source/debt identities and full-file SHA256 unchanged; exact schema reader corrected before final assessment."
+    },
+    {
+      "command": "inline integration capture-ref object reader",
+      "exit_code": 1,
+      "reason": "Reader assumed every capture ref points to a commit; the removed capture is a readable tree object. Corrected to authenticate actual object type. No pinned authority or input identity failure; no credit applied."
+    },
+    {
+      "command": "inline integration prior-overlay locator reader",
+      "exit_code": 1,
+      "reason": "Reader applied LF-excluding convention to P01 raw_line_sha256. Exact raw hash with LF and record hash without LF independently match; reader corrected to explicit schema conventions. No source identity mismatch or credit applied."
+    },
+    {
+      "command": "Windows default cp949 inspection read/output",
+      "exit_code": 1,
+      "reason": "UTF-8 report reader/output corrected after UnicodeDecodeError and UnicodeEncodeError; no source mutation or failed identity comparison."
+    },
+    {
+      "command": "inline integration authentication reader, first attempt",
+      "exit_code": 1,
+      "reason": "KeyError evidence while reading inherited FAIL records with two documented locator schemas; reader now handles both. No input hash mismatch; no credit applied."
+    },
+    {
+      "command": "functions.exec finalizer preparation",
+      "executed": false,
+      "reason": "JavaScript template literal rejected embedded Markdown backticks before any shell invocation or file write; corrected tool-call quoting."
+    }
+  ],
+  "warnings": [
+    "Python launcher emitted Failed to find real location; completed validation scripts returned zero. Environment warning, not an evidence-validation failure.",
+    "Frozen census rows use CRLF; verifier uses bytes.splitlines() excluding the entire terminator; original line endings remain unchanged."
+  ],
+  "validated_utc": "2026-10-14T11:54:55.463955+00:00",
+  "self_hash_policy": "Canonical payload excludes self_payload_sha256; final full serialized bytes read back after write.",
+  "self_payload_sha256": "9bb856cccdeb7becc7841f013056fdc03adf82329f593b967aad201a403ff730"
+}

@@ -1,0 +1,98 @@
+PAGE 1
+A
+The causal role recurs across all five Mamba-1 scales
+130M
+370M
+790M
+1.4B
+2.8B
+Selected / control
+P3 / P5
+P3 / P5
+P2 / P5
+P5 / P4
+P3 / P5
+Causal role
+Supported
+Supported
+Supported
+Supported
+Supported
+Common scale-local contrast: selected restoration minus coefficient-matched control.
+Historical endpoint labels and inferential-family details are retained in Appendix A.4.
+B
+XG2 centered linear CKA
+C
+XG4 centered linear CKA
+130M
+370M
+790M
+1.4B
+2.8B
+130M
+1.00
+0.74
+0.44
+0.34
+0.56
+370M
+0.74
+1.00
+0.56
+0.50
+0.65
+790M
+0.44
+0.56
+1.00
+0.66
+0.64
+1.4B
+0.34
+0.50
+0.66
+1.00
+0.53
+2.8B
+0.56
+0.65
+0.64
+0.53
+1.00
+130M
+370M
+790M
+1.4B
+2.8B
+130M
+1.00
+0.54
+0.45
+0.48
+0.54
+370M
+0.54
+1.00
+0.56
+0.44
+0.59
+790M
+0.45
+0.56
+1.00
+0.44
+0.39
+1.4B
+0.48
+0.44
+0.44
+1.00
+0.46
+2.8B
+0.54
+0.59
+0.39
+0.46
+1.00
+Same 300 response-blind pairs per family. CKA = 1 denotes identical centered sample geometry;
+off-diagonal values show partial, not invariant, cross-scale geometry. Cosine-RSM: Appendix A.2.

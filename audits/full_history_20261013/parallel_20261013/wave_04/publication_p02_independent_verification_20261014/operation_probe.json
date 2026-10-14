@@ -1,0 +1,1733 @@
+{
+  "independent": [
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/1.4B.geometry.backward_executed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/1.4B.geometry.causal_response_observed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/1.4B.geometry.plane_selection_performed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/1.4B.geometry.training_executed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/1.4B.lambda1/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/1.4B.mu_k2/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/130M.geometry.backward_executed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/130M.geometry.scientific_model_forward_count/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/130M.geometry.task_heads_executed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/130M.lambda1/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/130M.mu_k2/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/2.8B.geometry.backward_executed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/2.8B.geometry.causal_response_observed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/2.8B.geometry.plane_selection_performed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/2.8B.geometry.training_executed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/2.8B.lambda1/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/2.8B.mu_k2/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/370M.geometry.backward_executed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/370M.geometry.causal_response_observed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/370M.geometry.plane_selection_performed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/370M.geometry.training_executed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/370M.lambda1/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/370M.mu_k2/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/790M.geometry.backward_executed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/790M.geometry.causal_response_observed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/790M.geometry.plane_selection_performed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/790M.geometry.training_executed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/790M.lambda1/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/790M.mu_k2/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "add",
+      "pointer": "/extracted_values/chain.3.supported",
+      "after": {
+        "value": true,
+        "source": "reports/reason_router_gen4_pp3_transport_specificity_necessity_restoration_sufficiency_mechanism_synthesis.md",
+        "locator": "section 3; Frozen conclusion",
+        "figure": "fig2",
+        "transformation": "none; display rounding only"
+      }
+    },
+    {
+      "operation": "add",
+      "pointer": "/extracted_values/chain.4.supported",
+      "after": {
+        "value": true,
+        "source": "reports/reason_router_gen4_pp3_transport_specificity_necessity_restoration_sufficiency_mechanism_synthesis.md",
+        "locator": "section 4; Frozen conclusion",
+        "figure": "fig2",
+        "transformation": "none; display rounding only"
+      }
+    },
+    {
+      "operation": "add",
+      "pointer": "/extracted_values/chain.5.supported",
+      "after": {
+        "value": true,
+        "source": "reports/reason_router_gen4_pp3_transport_specificity_necessity_restoration_sufficiency_mechanism_synthesis.md",
+        "locator": "section 5; Frozen conclusion",
+        "figure": "fig2",
+        "transformation": "none; display rounding only"
+      }
+    },
+    {
+      "operation": "add",
+      "pointer": "/extracted_values/chain.6.supported",
+      "after": {
+        "value": true,
+        "source": "reports/reason_router_gen4_pp3_transport_specificity_necessity_restoration_sufficiency_mechanism_synthesis.md",
+        "locator": "section 6; Frozen conclusion",
+        "figure": "fig2",
+        "transformation": "none; display rounding only"
+      }
+    },
+    {
+      "operation": "add",
+      "pointer": "/extracted_values/xg2.cka_matrix",
+      "after": {
+        "value": [
+          [
+            1.000000000000001,
+            0.7425463019538905,
+            0.43574706253096784,
+            0.34251030803115157,
+            0.5554137480414237
+          ],
+          [
+            0.7425463019538905,
+            1.0,
+            0.5640593526403643,
+            0.5044833435816207,
+            0.6493439028634386
+          ],
+          [
+            0.43574706253096784,
+            0.5640593526403643,
+            0.9999999999999986,
+            0.6636777615923835,
+            0.6399627405682541
+          ],
+          [
+            0.34251030803115157,
+            0.5044833435816207,
+            0.6636777615923835,
+            0.9999999999999989,
+            0.5321850816907481
+          ],
+          [
+            0.5554137480414237,
+            0.6493439028634386,
+            0.6399627405682541,
+            0.5321850816907481,
+            0.9999999999999986
+          ]
+        ],
+        "source": "paper/iclr2027/frozen_sources/coordinate_free_geometry_v1/coordinate_free_geometry_result.json",
+        "locator": "/families/xg2/cka_matrix",
+        "figure": "fig3",
+        "transformation": "none; display rounding only"
+      }
+    },
+    {
+      "operation": "add",
+      "pointer": "/extracted_values/xg2.rsm_matrix",
+      "after": {
+        "value": [
+          [
+            1.000000000000004,
+            0.7163120803936378,
+            0.3989411880186479,
+            0.2957302277107003,
+            0.5222535451176982
+          ],
+          [
+            0.7163120803936378,
+            1.0000000000000038,
+            0.5412582440163308,
+            0.47448941157779684,
+            0.6342463696809015
+          ],
+          [
+            0.3989411880186479,
+            0.5412582440163308,
+            0.9999999999999989,
+            0.6408513202518832,
+            0.6201524221841686
+          ],
+          [
+            0.2957302277107003,
+            0.47448941157779684,
+            0.6408513202518832,
+            0.9999999999999997,
+            0.5040365146688671
+          ],
+          [
+            0.5222535451176982,
+            0.6342463696809015,
+            0.6201524221841686,
+            0.5040365146688671,
+            0.9999999999999991
+          ]
+        ],
+        "source": "paper/iclr2027/frozen_sources/coordinate_free_geometry_v1/coordinate_free_geometry_result.json",
+        "locator": "/families/xg2/cosine_rsm_pearson_matrix",
+        "figure": "fig3",
+        "transformation": "none; display rounding only"
+      }
+    },
+    {
+      "operation": "add",
+      "pointer": "/extracted_values/xg4.cka_matrix",
+      "after": {
+        "value": [
+          [
+            0.9999999999999996,
+            0.542295089937388,
+            0.4518615266759832,
+            0.48130360209504075,
+            0.5442772105064825
+          ],
+          [
+            0.542295089937388,
+            0.9999999999999984,
+            0.5585686113167371,
+            0.43683400621806734,
+            0.5909832224488579
+          ],
+          [
+            0.4518615266759832,
+            0.5585686113167371,
+            0.9999999999999993,
+            0.4443316663542622,
+            0.39271700005130383
+          ],
+          [
+            0.48130360209504075,
+            0.43683400621806734,
+            0.4443316663542622,
+            0.9999999999999997,
+            0.4556978076631216
+          ],
+          [
+            0.5442772105064825,
+            0.5909832224488579,
+            0.39271700005130383,
+            0.4556978076631216,
+            0.9999999999999992
+          ]
+        ],
+        "source": "paper/iclr2027/frozen_sources/coordinate_free_geometry_v1/coordinate_free_geometry_result.json",
+        "locator": "/families/xg4/cka_matrix",
+        "figure": "fig3",
+        "transformation": "none; display rounding only"
+      }
+    },
+    {
+      "operation": "add",
+      "pointer": "/extracted_values/xg4.rsm_matrix",
+      "after": {
+        "value": [
+          [
+            0.9999999999999987,
+            0.5098566163186026,
+            0.43157399757363696,
+            0.4526401451091742,
+            0.5116185854005079
+          ],
+          [
+            0.5098566163186026,
+            0.9999999999999972,
+            0.5339894231680443,
+            0.40338070854183694,
+            0.5457619361308703
+          ],
+          [
+            0.43157399757363696,
+            0.5339894231680443,
+            0.9999999999999996,
+            0.4126230807686745,
+            0.33761976482584505
+          ],
+          [
+            0.4526401451091742,
+            0.40338070854183694,
+            0.4126230807686745,
+            1.0000000000000029,
+            0.3828076623693903
+          ],
+          [
+            0.5116185854005079,
+            0.5457619361308703,
+            0.33761976482584505,
+            0.3828076623693903,
+            1.0000000000000049
+          ]
+        ],
+        "source": "paper/iclr2027/frozen_sources/coordinate_free_geometry_v1/coordinate_free_geometry_result.json",
+        "locator": "/families/xg4/cosine_rsm_pearson_matrix",
+        "figure": "fig3",
+        "transformation": "none; display rounding only"
+      }
+    },
+    {
+      "operation": "replace",
+      "pointer": "/notes",
+      "before": [
+        "Historical 130M kernel mean and leading-plane eigenvalue use the same mathematical quantities but precede the homogeneous four-scale bridge.",
+        "D_SUF, D_DOM, and D_CORE share a causal contrast but retain distinct protocol labels and inferential families.",
+        "130M is post-primary completeness; 370M-2.8B remain the original prospective four-scale control."
+      ],
+      "after": [
+        "Figure 3 uses the frozen coordinate-free geometry result; no CKA or RSM value is recomputed by the paper builder.",
+        "Historical mu_k2/lambda1 measurements remain supporting appendix evidence rather than the main non-invariance visualization.",
+        "D_SUF, D_DOM, and D_CORE retain their historical inferential families in the appendix.",
+        "130M is post-primary completeness; 370M-2.8B remain the original prospective four-scale control."
+      ]
+    },
+    {
+      "operation": "replace",
+      "pointer": "/outputs/fig1_study_overview.png",
+      "before": "ccf308f49976c99ade7895a85fe896ecf0955e7b28fe65391b1990a1309445ca",
+      "after": "a6db5d8e4d76539835490604a92da4406a128f940548a3c7f5ce0ab7800e392d"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/outputs/fig2_130m_causal_foundation.pdf",
+      "before": "f33acfea854331f8d9d8c41b904156d2859a7f74bfa6a23ef9f58e76c2ef41f2",
+      "after": "d14b7041b0f8b44ff3591c0001c006ee77bec46b1257e642bedbce03478a0859"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/outputs/fig2_130m_causal_foundation.png",
+      "before": "8569e41d8063a8ff915d2fbb8b30eb531eacd24f65d013e6c79794e07e2229fc",
+      "after": "c1ea0dff0a402fe4a3e7c9d4e5dac90137409e89be5ffffbea9c5d162ec0f9c6"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/outputs/fig3_five_scale_recurrence_reorganization.pdf",
+      "before": "4593ccaf5752047141732dca64af30d6cbafa369ab8ee7d05e6d958b18dc47f8",
+      "after": "f62ce8455f61f6fb9f36438e129438e94181fdcd3ae04ded08cd53b91040f3f9"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/outputs/fig3_five_scale_recurrence_reorganization.png",
+      "before": "8eda4f370ca20449f6198a38a5c7d51519bf11b797b6dcc60a718f75ac4e5d99",
+      "after": "80ec094f6bf96d80957e81f95e1734ce40783f362ab852a578db85ff1342fcc3"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/outputs/fig4_objective_conditioned_functionalization.pdf",
+      "before": "c7eefb192b23569526be75a50d5e97d4df0e636cf85fb8098b0f3bee7e70a2cb",
+      "after": "8ca4156cd0f97feb8f9ebfd437e694d25dd8b4e1656bce6df72a0ce49f1fc43a"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/outputs/fig4_objective_conditioned_functionalization.png",
+      "before": "a7090f56847962b887782e7fde65ce1bb900e3368c11a48404a860ae456cda94",
+      "after": "f2f907aba426e54a6e0fcc350659db9d46f940307cbbe3fdf98d56b43b4409a1"
+    },
+    {
+      "operation": "add",
+      "pointer": "/plot_data/chain_supported",
+      "after": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "operation": "add",
+      "pointer": "/plot_data/coordinate_free_geometry",
+      "after": {
+        "xg2": {
+          "cka_matrix": [
+            [
+              1.000000000000001,
+              0.7425463019538905,
+              0.43574706253096784,
+              0.34251030803115157,
+              0.5554137480414237
+            ],
+            [
+              0.7425463019538905,
+              1.0,
+              0.5640593526403643,
+              0.5044833435816207,
+              0.6493439028634386
+            ],
+            [
+              0.43574706253096784,
+              0.5640593526403643,
+              0.9999999999999986,
+              0.6636777615923835,
+              0.6399627405682541
+            ],
+            [
+              0.34251030803115157,
+              0.5044833435816207,
+              0.6636777615923835,
+              0.9999999999999989,
+              0.5321850816907481
+            ],
+            [
+              0.5554137480414237,
+              0.6493439028634386,
+              0.6399627405682541,
+              0.5321850816907481,
+              0.9999999999999986
+            ]
+          ],
+          "rsm_matrix": [
+            [
+              1.000000000000004,
+              0.7163120803936378,
+              0.3989411880186479,
+              0.2957302277107003,
+              0.5222535451176982
+            ],
+            [
+              0.7163120803936378,
+              1.0000000000000038,
+              0.5412582440163308,
+              0.47448941157779684,
+              0.6342463696809015
+            ],
+            [
+              0.3989411880186479,
+              0.5412582440163308,
+              0.9999999999999989,
+              0.6408513202518832,
+              0.6201524221841686
+            ],
+            [
+              0.2957302277107003,
+              0.47448941157779684,
+              0.6408513202518832,
+              0.9999999999999997,
+              0.5040365146688671
+            ],
+            [
+              0.5222535451176982,
+              0.6342463696809015,
+              0.6201524221841686,
+              0.5040365146688671,
+              0.9999999999999991
+            ]
+          ]
+        },
+        "xg4": {
+          "cka_matrix": [
+            [
+              0.9999999999999996,
+              0.542295089937388,
+              0.4518615266759832,
+              0.48130360209504075,
+              0.5442772105064825
+            ],
+            [
+              0.542295089937388,
+              0.9999999999999984,
+              0.5585686113167371,
+              0.43683400621806734,
+              0.5909832224488579
+            ],
+            [
+              0.4518615266759832,
+              0.5585686113167371,
+              0.9999999999999993,
+              0.4443316663542622,
+              0.39271700005130383
+            ],
+            [
+              0.48130360209504075,
+              0.43683400621806734,
+              0.4443316663542622,
+              0.9999999999999997,
+              0.4556978076631216
+            ],
+            [
+              0.5442772105064825,
+              0.5909832224488579,
+              0.39271700005130383,
+              0.4556978076631216,
+              0.9999999999999992
+            ]
+          ],
+          "rsm_matrix": [
+            [
+              0.9999999999999987,
+              0.5098566163186026,
+              0.43157399757363696,
+              0.4526401451091742,
+              0.5116185854005079
+            ],
+            [
+              0.5098566163186026,
+              0.9999999999999972,
+              0.5339894231680443,
+              0.40338070854183694,
+              0.5457619361308703
+            ],
+            [
+              0.43157399757363696,
+              0.5339894231680443,
+              0.9999999999999996,
+              0.4126230807686745,
+              0.33761976482584505
+            ],
+            [
+              0.4526401451091742,
+              0.40338070854183694,
+              0.4126230807686745,
+              1.0000000000000029,
+              0.3828076623693903
+            ],
+            [
+              0.5116185854005079,
+              0.5457619361308703,
+              0.33761976482584505,
+              0.3828076623693903,
+              1.0000000000000049
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "operation": "replace",
+      "pointer": "/schema_version",
+      "before": 1,
+      "after": 2
+    },
+    {
+      "operation": "add",
+      "pointer": "/scientific_authorities",
+      "after": {
+        "base_evidence": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
+        "coordinate_free_geometry_snapshot": "2e65dd887ba4159d4024d85b8996306cfadec023"
+      }
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/paper~1iclr2027~1frozen_sources~1coordinate_free_geometry_v1~1coordinate_free_geometry_result.json",
+      "after": {
+        "authority_commit": "2e65dd887ba4159d4024d85b8996306cfadec023",
+        "git_blob": "95eae68296f96189d164cbafd570835d369c3acb",
+        "frozen_bytes_sha256": "a3fa6af9bb300ffb8a26e3448e14d3c0347f65c51ddbe91d398b3b7d719411fa",
+        "figures": [
+          "fig3"
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/paper~1iclr2027~1frozen_sources~1coordinate_free_geometry_v1~1provenance_manifest.json",
+      "after": {
+        "authority_commit": "2e65dd887ba4159d4024d85b8996306cfadec023",
+        "git_blob": "869ff69522e572758f699184659901a2e44ced78",
+        "frozen_bytes_sha256": "201420b7e8c8905740cb00dc43d6cd3cc05626cc2ff777cd0f317cac51566dd7",
+        "figures": [
+          "supporting"
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/paper~1iclr2027~1frozen_sources~1coordinate_free_geometry_v1~1snapshot_manifest.json",
+      "after": {
+        "authority_commit": "2e65dd887ba4159d4024d85b8996306cfadec023",
+        "git_blob": "636336f5b616599b4a55166ace037e785763e517",
+        "frozen_bytes_sha256": "b3f9c0a1aec10da77b03be1e4d2d1178592c0b133444a2fef5c006871b789b44",
+        "figures": [
+          "supporting"
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_core_stable_residual_plastic_cross_scale_synthesis.md/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba130m_readout_behavior_pair_merge_v1~1descriptive_analysis.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba130m_readout_behavior_pair_merge_v1~1pair_level_merge.jsonl/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba130m_vanilla_lm_completeness_analysis_v1~1mamba130m_completeness_analysis.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba14b_confirmation_runs~1g4k-mamba14b-confirmation-xg1-4201-4500-2gpu-15304c1~1confirmation_inference.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba14b_geometry_preparation_runs~1g4k-mamba14b-geometry-xg2xg4-2gpu-c758d5e-retry1~1geometry_summary.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba14b_geometry_preparation_runs~1g4k-mamba14b-geometry-xg2xg4-2gpu-c758d5e-retry1~1geometry_summary.json/figures",
+      "before": [
+        "fig3"
+      ],
+      "after": [
+        "supporting"
+      ]
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba1_five_scale_delta_l_descriptive_synthesis.md/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba1_native_geometry_functional_coupling_static_bridge.md/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba1_native_geometry_functional_coupling_static_bridge.md/figures",
+      "before": [
+        "fig3"
+      ],
+      "after": [
+        "supporting"
+      ]
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba1_vanilla_lm_functional_control_analysis_v1~1functional_control_analysis.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba1_vanilla_lm_functional_control_analysis_v1~1functional_control_analysis.md/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba28b_confirmation_runs~1g4k-mamba28b-confirmation-xg1-6301-6600-p3-p5-2gpu-50a63a3~1confirmation_inference.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba28b_geometry_preparation_runs~1g4k-mamba28b-geometry-xg2xg4-2gpu-7744d94~1geometry_summary.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba28b_geometry_preparation_runs~1g4k-mamba28b-geometry-xg2xg4-2gpu-7744d94~1geometry_summary.json/figures",
+      "before": [
+        "fig3"
+      ],
+      "after": [
+        "supporting"
+      ]
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba370m_confirmation_runs~1g4k-mamba370-confirmation-xg1-3301-3600-2gpu-ac69e80~1confirmation_inference.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba370m_geometry_preparation_runs~1g4k-mamba370-geometry-xg2xg4-2gpu-d8e71ad-retry2~1geometry_summary.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba370m_geometry_preparation_runs~1g4k-mamba370-geometry-xg2xg4-2gpu-d8e71ad-retry2~1geometry_summary.json/figures",
+      "before": [
+        "fig3"
+      ],
+      "after": [
+        "supporting"
+      ]
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba790m_confirmation_runs~1g4k-mamba790m-confirmation-xg1-7201-7500-p2-p5-2gpu-d3117c1-fresh~1confirmation_inference.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba790m_geometry_preparation_runs~1g4k-mamba790m-geometry-xg2xg4-2gpu-774983b-retry2~1geometry_summary.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba790m_geometry_preparation_runs~1g4k-mamba790m-geometry-xg2xg4-2gpu-774983b-retry2~1geometry_summary.json/figures",
+      "before": [
+        "fig3"
+      ],
+      "after": [
+        "supporting"
+      ]
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_pp3_excluded_residual_static_analysis_7a6c30f.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/sources/reports~1reason_router_gen4_pp3_excluded_residual_static_analysis_7a6c30f.json/figures",
+      "before": [
+        "fig3"
+      ],
+      "after": [
+        "supporting"
+      ]
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_pp3_pp5_fresh_xg1_specificity_primary_inference_report_candidate.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_pp3_transport_specificity_necessity_restoration_sufficiency_mechanism_synthesis.md/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_seed181_behavioral_restoration_bridge_analysis_retry2.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/scripts~1reason_router_gen4_k_directional_alignment_transport_core.py/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/sources/scripts~1reason_router_gen4_k_directional_alignment_transport_core.py/figures",
+      "before": [
+        "fig3"
+      ],
+      "after": [
+        "supporting"
+      ]
+    },
+    {
+      "operation": "remove",
+      "pointer": "/tools/pdftoppm",
+      "before": "pdftoppm version 26.07.0"
+    },
+    {
+      "operation": "add",
+      "pointer": "/tools/png_dpi",
+      "after": 400
+    },
+    {
+      "operation": "add",
+      "pointer": "/tools/pymupdf",
+      "after": "1.28.2"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/tools/reportlab",
+      "before": "4.4.9",
+      "after": "5.0.1"
+    }
+  ],
+  "candidate": [
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/1.4B.geometry.backward_executed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/1.4B.geometry.causal_response_observed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/1.4B.geometry.plane_selection_performed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/1.4B.geometry.training_executed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/1.4B.lambda1/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/1.4B.mu_k2/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/130M.geometry.backward_executed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/130M.geometry.scientific_model_forward_count/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/130M.geometry.task_heads_executed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/130M.lambda1/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/130M.mu_k2/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/2.8B.geometry.backward_executed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/2.8B.geometry.causal_response_observed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/2.8B.geometry.plane_selection_performed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/2.8B.geometry.training_executed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/2.8B.lambda1/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/2.8B.mu_k2/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/370M.geometry.backward_executed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/370M.geometry.causal_response_observed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/370M.geometry.plane_selection_performed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/370M.geometry.training_executed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/370M.lambda1/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/370M.mu_k2/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/790M.geometry.backward_executed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/790M.geometry.causal_response_observed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/790M.geometry.plane_selection_performed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/790M.geometry.training_executed/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/790M.lambda1/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/extracted_values/790M.mu_k2/figure",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "add",
+      "pointer": "/extracted_values/chain.3.supported",
+      "after": {
+        "value": true,
+        "source": "reports/reason_router_gen4_pp3_transport_specificity_necessity_restoration_sufficiency_mechanism_synthesis.md",
+        "locator": "section 3; Frozen conclusion",
+        "figure": "fig2",
+        "transformation": "none; display rounding only"
+      }
+    },
+    {
+      "operation": "add",
+      "pointer": "/extracted_values/chain.4.supported",
+      "after": {
+        "value": true,
+        "source": "reports/reason_router_gen4_pp3_transport_specificity_necessity_restoration_sufficiency_mechanism_synthesis.md",
+        "locator": "section 4; Frozen conclusion",
+        "figure": "fig2",
+        "transformation": "none; display rounding only"
+      }
+    },
+    {
+      "operation": "add",
+      "pointer": "/extracted_values/chain.5.supported",
+      "after": {
+        "value": true,
+        "source": "reports/reason_router_gen4_pp3_transport_specificity_necessity_restoration_sufficiency_mechanism_synthesis.md",
+        "locator": "section 5; Frozen conclusion",
+        "figure": "fig2",
+        "transformation": "none; display rounding only"
+      }
+    },
+    {
+      "operation": "add",
+      "pointer": "/extracted_values/chain.6.supported",
+      "after": {
+        "value": true,
+        "source": "reports/reason_router_gen4_pp3_transport_specificity_necessity_restoration_sufficiency_mechanism_synthesis.md",
+        "locator": "section 6; Frozen conclusion",
+        "figure": "fig2",
+        "transformation": "none; display rounding only"
+      }
+    },
+    {
+      "operation": "add",
+      "pointer": "/extracted_values/xg2.cka_matrix",
+      "after": {
+        "value": [
+          [
+            1.000000000000001,
+            0.7425463019538905,
+            0.43574706253096784,
+            0.34251030803115157,
+            0.5554137480414237
+          ],
+          [
+            0.7425463019538905,
+            1.0,
+            0.5640593526403643,
+            0.5044833435816207,
+            0.6493439028634386
+          ],
+          [
+            0.43574706253096784,
+            0.5640593526403643,
+            0.9999999999999986,
+            0.6636777615923835,
+            0.6399627405682541
+          ],
+          [
+            0.34251030803115157,
+            0.5044833435816207,
+            0.6636777615923835,
+            0.9999999999999989,
+            0.5321850816907481
+          ],
+          [
+            0.5554137480414237,
+            0.6493439028634386,
+            0.6399627405682541,
+            0.5321850816907481,
+            0.9999999999999986
+          ]
+        ],
+        "source": "paper/iclr2027/frozen_sources/coordinate_free_geometry_v1/coordinate_free_geometry_result.json",
+        "locator": "/families/xg2/cka_matrix",
+        "figure": "fig3",
+        "transformation": "none; display rounding only"
+      }
+    },
+    {
+      "operation": "add",
+      "pointer": "/extracted_values/xg2.rsm_matrix",
+      "after": {
+        "value": [
+          [
+            1.000000000000004,
+            0.7163120803936378,
+            0.3989411880186479,
+            0.2957302277107003,
+            0.5222535451176982
+          ],
+          [
+            0.7163120803936378,
+            1.0000000000000038,
+            0.5412582440163308,
+            0.47448941157779684,
+            0.6342463696809015
+          ],
+          [
+            0.3989411880186479,
+            0.5412582440163308,
+            0.9999999999999989,
+            0.6408513202518832,
+            0.6201524221841686
+          ],
+          [
+            0.2957302277107003,
+            0.47448941157779684,
+            0.6408513202518832,
+            0.9999999999999997,
+            0.5040365146688671
+          ],
+          [
+            0.5222535451176982,
+            0.6342463696809015,
+            0.6201524221841686,
+            0.5040365146688671,
+            0.9999999999999991
+          ]
+        ],
+        "source": "paper/iclr2027/frozen_sources/coordinate_free_geometry_v1/coordinate_free_geometry_result.json",
+        "locator": "/families/xg2/cosine_rsm_pearson_matrix",
+        "figure": "fig3",
+        "transformation": "none; display rounding only"
+      }
+    },
+    {
+      "operation": "add",
+      "pointer": "/extracted_values/xg4.cka_matrix",
+      "after": {
+        "value": [
+          [
+            0.9999999999999996,
+            0.542295089937388,
+            0.4518615266759832,
+            0.48130360209504075,
+            0.5442772105064825
+          ],
+          [
+            0.542295089937388,
+            0.9999999999999984,
+            0.5585686113167371,
+            0.43683400621806734,
+            0.5909832224488579
+          ],
+          [
+            0.4518615266759832,
+            0.5585686113167371,
+            0.9999999999999993,
+            0.4443316663542622,
+            0.39271700005130383
+          ],
+          [
+            0.48130360209504075,
+            0.43683400621806734,
+            0.4443316663542622,
+            0.9999999999999997,
+            0.4556978076631216
+          ],
+          [
+            0.5442772105064825,
+            0.5909832224488579,
+            0.39271700005130383,
+            0.4556978076631216,
+            0.9999999999999992
+          ]
+        ],
+        "source": "paper/iclr2027/frozen_sources/coordinate_free_geometry_v1/coordinate_free_geometry_result.json",
+        "locator": "/families/xg4/cka_matrix",
+        "figure": "fig3",
+        "transformation": "none; display rounding only"
+      }
+    },
+    {
+      "operation": "add",
+      "pointer": "/extracted_values/xg4.rsm_matrix",
+      "after": {
+        "value": [
+          [
+            0.9999999999999987,
+            0.5098566163186026,
+            0.43157399757363696,
+            0.4526401451091742,
+            0.5116185854005079
+          ],
+          [
+            0.5098566163186026,
+            0.9999999999999972,
+            0.5339894231680443,
+            0.40338070854183694,
+            0.5457619361308703
+          ],
+          [
+            0.43157399757363696,
+            0.5339894231680443,
+            0.9999999999999996,
+            0.4126230807686745,
+            0.33761976482584505
+          ],
+          [
+            0.4526401451091742,
+            0.40338070854183694,
+            0.4126230807686745,
+            1.0000000000000029,
+            0.3828076623693903
+          ],
+          [
+            0.5116185854005079,
+            0.5457619361308703,
+            0.33761976482584505,
+            0.3828076623693903,
+            1.0000000000000049
+          ]
+        ],
+        "source": "paper/iclr2027/frozen_sources/coordinate_free_geometry_v1/coordinate_free_geometry_result.json",
+        "locator": "/families/xg4/cosine_rsm_pearson_matrix",
+        "figure": "fig3",
+        "transformation": "none; display rounding only"
+      }
+    },
+    {
+      "operation": "replace",
+      "pointer": "/notes",
+      "before": [
+        "Historical 130M kernel mean and leading-plane eigenvalue use the same mathematical quantities but precede the homogeneous four-scale bridge.",
+        "D_SUF, D_DOM, and D_CORE share a causal contrast but retain distinct protocol labels and inferential families.",
+        "130M is post-primary completeness; 370M-2.8B remain the original prospective four-scale control."
+      ],
+      "after": [
+        "Figure 3 uses the frozen coordinate-free geometry result; no CKA or RSM value is recomputed by the paper builder.",
+        "Historical mu_k2/lambda1 measurements remain supporting appendix evidence rather than the main non-invariance visualization.",
+        "D_SUF, D_DOM, and D_CORE retain their historical inferential families in the appendix.",
+        "130M is post-primary completeness; 370M-2.8B remain the original prospective four-scale control."
+      ]
+    },
+    {
+      "operation": "replace",
+      "pointer": "/outputs/fig1_study_overview.png",
+      "before": "ccf308f49976c99ade7895a85fe896ecf0955e7b28fe65391b1990a1309445ca",
+      "after": "a6db5d8e4d76539835490604a92da4406a128f940548a3c7f5ce0ab7800e392d"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/outputs/fig2_130m_causal_foundation.pdf",
+      "before": "f33acfea854331f8d9d8c41b904156d2859a7f74bfa6a23ef9f58e76c2ef41f2",
+      "after": "d14b7041b0f8b44ff3591c0001c006ee77bec46b1257e642bedbce03478a0859"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/outputs/fig2_130m_causal_foundation.png",
+      "before": "8569e41d8063a8ff915d2fbb8b30eb531eacd24f65d013e6c79794e07e2229fc",
+      "after": "c1ea0dff0a402fe4a3e7c9d4e5dac90137409e89be5ffffbea9c5d162ec0f9c6"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/outputs/fig3_five_scale_recurrence_reorganization.pdf",
+      "before": "4593ccaf5752047141732dca64af30d6cbafa369ab8ee7d05e6d958b18dc47f8",
+      "after": "f62ce8455f61f6fb9f36438e129438e94181fdcd3ae04ded08cd53b91040f3f9"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/outputs/fig3_five_scale_recurrence_reorganization.png",
+      "before": "8eda4f370ca20449f6198a38a5c7d51519bf11b797b6dcc60a718f75ac4e5d99",
+      "after": "80ec094f6bf96d80957e81f95e1734ce40783f362ab852a578db85ff1342fcc3"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/outputs/fig4_objective_conditioned_functionalization.pdf",
+      "before": "c7eefb192b23569526be75a50d5e97d4df0e636cf85fb8098b0f3bee7e70a2cb",
+      "after": "8ca4156cd0f97feb8f9ebfd437e694d25dd8b4e1656bce6df72a0ce49f1fc43a"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/outputs/fig4_objective_conditioned_functionalization.png",
+      "before": "a7090f56847962b887782e7fde65ce1bb900e3368c11a48404a860ae456cda94",
+      "after": "f2f907aba426e54a6e0fcc350659db9d46f940307cbbe3fdf98d56b43b4409a1"
+    },
+    {
+      "operation": "add",
+      "pointer": "/plot_data/chain_supported",
+      "after": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "operation": "add",
+      "pointer": "/plot_data/coordinate_free_geometry",
+      "after": {
+        "xg2": {
+          "cka_matrix": [
+            [
+              1.000000000000001,
+              0.7425463019538905,
+              0.43574706253096784,
+              0.34251030803115157,
+              0.5554137480414237
+            ],
+            [
+              0.7425463019538905,
+              1.0,
+              0.5640593526403643,
+              0.5044833435816207,
+              0.6493439028634386
+            ],
+            [
+              0.43574706253096784,
+              0.5640593526403643,
+              0.9999999999999986,
+              0.6636777615923835,
+              0.6399627405682541
+            ],
+            [
+              0.34251030803115157,
+              0.5044833435816207,
+              0.6636777615923835,
+              0.9999999999999989,
+              0.5321850816907481
+            ],
+            [
+              0.5554137480414237,
+              0.6493439028634386,
+              0.6399627405682541,
+              0.5321850816907481,
+              0.9999999999999986
+            ]
+          ],
+          "rsm_matrix": [
+            [
+              1.000000000000004,
+              0.7163120803936378,
+              0.3989411880186479,
+              0.2957302277107003,
+              0.5222535451176982
+            ],
+            [
+              0.7163120803936378,
+              1.0000000000000038,
+              0.5412582440163308,
+              0.47448941157779684,
+              0.6342463696809015
+            ],
+            [
+              0.3989411880186479,
+              0.5412582440163308,
+              0.9999999999999989,
+              0.6408513202518832,
+              0.6201524221841686
+            ],
+            [
+              0.2957302277107003,
+              0.47448941157779684,
+              0.6408513202518832,
+              0.9999999999999997,
+              0.5040365146688671
+            ],
+            [
+              0.5222535451176982,
+              0.6342463696809015,
+              0.6201524221841686,
+              0.5040365146688671,
+              0.9999999999999991
+            ]
+          ]
+        },
+        "xg4": {
+          "cka_matrix": [
+            [
+              0.9999999999999996,
+              0.542295089937388,
+              0.4518615266759832,
+              0.48130360209504075,
+              0.5442772105064825
+            ],
+            [
+              0.542295089937388,
+              0.9999999999999984,
+              0.5585686113167371,
+              0.43683400621806734,
+              0.5909832224488579
+            ],
+            [
+              0.4518615266759832,
+              0.5585686113167371,
+              0.9999999999999993,
+              0.4443316663542622,
+              0.39271700005130383
+            ],
+            [
+              0.48130360209504075,
+              0.43683400621806734,
+              0.4443316663542622,
+              0.9999999999999997,
+              0.4556978076631216
+            ],
+            [
+              0.5442772105064825,
+              0.5909832224488579,
+              0.39271700005130383,
+              0.4556978076631216,
+              0.9999999999999992
+            ]
+          ],
+          "rsm_matrix": [
+            [
+              0.9999999999999987,
+              0.5098566163186026,
+              0.43157399757363696,
+              0.4526401451091742,
+              0.5116185854005079
+            ],
+            [
+              0.5098566163186026,
+              0.9999999999999972,
+              0.5339894231680443,
+              0.40338070854183694,
+              0.5457619361308703
+            ],
+            [
+              0.43157399757363696,
+              0.5339894231680443,
+              0.9999999999999996,
+              0.4126230807686745,
+              0.33761976482584505
+            ],
+            [
+              0.4526401451091742,
+              0.40338070854183694,
+              0.4126230807686745,
+              1.0000000000000029,
+              0.3828076623693903
+            ],
+            [
+              0.5116185854005079,
+              0.5457619361308703,
+              0.33761976482584505,
+              0.3828076623693903,
+              1.0000000000000049
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "operation": "replace",
+      "pointer": "/schema_version",
+      "before": 1,
+      "after": 2
+    },
+    {
+      "operation": "add",
+      "pointer": "/scientific_authorities",
+      "after": {
+        "base_evidence": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69",
+        "coordinate_free_geometry_snapshot": "2e65dd887ba4159d4024d85b8996306cfadec023"
+      }
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/paper~1iclr2027~1frozen_sources~1coordinate_free_geometry_v1~1coordinate_free_geometry_result.json",
+      "after": {
+        "authority_commit": "2e65dd887ba4159d4024d85b8996306cfadec023",
+        "git_blob": "95eae68296f96189d164cbafd570835d369c3acb",
+        "frozen_bytes_sha256": "a3fa6af9bb300ffb8a26e3448e14d3c0347f65c51ddbe91d398b3b7d719411fa",
+        "figures": [
+          "fig3"
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/paper~1iclr2027~1frozen_sources~1coordinate_free_geometry_v1~1provenance_manifest.json",
+      "after": {
+        "authority_commit": "2e65dd887ba4159d4024d85b8996306cfadec023",
+        "git_blob": "869ff69522e572758f699184659901a2e44ced78",
+        "frozen_bytes_sha256": "201420b7e8c8905740cb00dc43d6cd3cc05626cc2ff777cd0f317cac51566dd7",
+        "figures": [
+          "supporting"
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/paper~1iclr2027~1frozen_sources~1coordinate_free_geometry_v1~1snapshot_manifest.json",
+      "after": {
+        "authority_commit": "2e65dd887ba4159d4024d85b8996306cfadec023",
+        "git_blob": "636336f5b616599b4a55166ace037e785763e517",
+        "frozen_bytes_sha256": "b3f9c0a1aec10da77b03be1e4d2d1178592c0b133444a2fef5c006871b789b44",
+        "figures": [
+          "supporting"
+        ]
+      }
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_core_stable_residual_plastic_cross_scale_synthesis.md/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba130m_readout_behavior_pair_merge_v1~1descriptive_analysis.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba130m_readout_behavior_pair_merge_v1~1pair_level_merge.jsonl/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba130m_vanilla_lm_completeness_analysis_v1~1mamba130m_completeness_analysis.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba14b_confirmation_runs~1g4k-mamba14b-confirmation-xg1-4201-4500-2gpu-15304c1~1confirmation_inference.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba14b_geometry_preparation_runs~1g4k-mamba14b-geometry-xg2xg4-2gpu-c758d5e-retry1~1geometry_summary.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba14b_geometry_preparation_runs~1g4k-mamba14b-geometry-xg2xg4-2gpu-c758d5e-retry1~1geometry_summary.json/figures/0",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba1_five_scale_delta_l_descriptive_synthesis.md/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba1_native_geometry_functional_coupling_static_bridge.md/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba1_native_geometry_functional_coupling_static_bridge.md/figures/0",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba1_vanilla_lm_functional_control_analysis_v1~1functional_control_analysis.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba1_vanilla_lm_functional_control_analysis_v1~1functional_control_analysis.md/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba28b_confirmation_runs~1g4k-mamba28b-confirmation-xg1-6301-6600-p3-p5-2gpu-50a63a3~1confirmation_inference.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba28b_geometry_preparation_runs~1g4k-mamba28b-geometry-xg2xg4-2gpu-7744d94~1geometry_summary.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba28b_geometry_preparation_runs~1g4k-mamba28b-geometry-xg2xg4-2gpu-7744d94~1geometry_summary.json/figures/0",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba370m_confirmation_runs~1g4k-mamba370-confirmation-xg1-3301-3600-2gpu-ac69e80~1confirmation_inference.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba370m_geometry_preparation_runs~1g4k-mamba370-geometry-xg2xg4-2gpu-d8e71ad-retry2~1geometry_summary.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba370m_geometry_preparation_runs~1g4k-mamba370-geometry-xg2xg4-2gpu-d8e71ad-retry2~1geometry_summary.json/figures/0",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba790m_confirmation_runs~1g4k-mamba790m-confirmation-xg1-7201-7500-p2-p5-2gpu-d3117c1-fresh~1confirmation_inference.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba790m_geometry_preparation_runs~1g4k-mamba790m-geometry-xg2xg4-2gpu-774983b-retry2~1geometry_summary.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/sources/reports~1reason_router_gen4_mamba790m_geometry_preparation_runs~1g4k-mamba790m-geometry-xg2xg4-2gpu-774983b-retry2~1geometry_summary.json/figures/0",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_pp3_excluded_residual_static_analysis_7a6c30f.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/sources/reports~1reason_router_gen4_pp3_excluded_residual_static_analysis_7a6c30f.json/figures/0",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_pp3_pp5_fresh_xg1_specificity_primary_inference_report_candidate.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_pp3_transport_specificity_necessity_restoration_sufficiency_mechanism_synthesis.md/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/reports~1reason_router_gen4_seed181_behavioral_restoration_bridge_analysis_retry2.json/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "add",
+      "pointer": "/sources/scripts~1reason_router_gen4_k_directional_alignment_transport_core.py/authority_commit",
+      "after": "3bd8164bdf4b4f433d85a181bcfe8f6c81b41e69"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/sources/scripts~1reason_router_gen4_k_directional_alignment_transport_core.py/figures/0",
+      "before": "fig3",
+      "after": "supporting"
+    },
+    {
+      "operation": "remove",
+      "pointer": "/tools/pdftoppm",
+      "before": "pdftoppm version 26.07.0"
+    },
+    {
+      "operation": "add",
+      "pointer": "/tools/png_dpi",
+      "after": 400
+    },
+    {
+      "operation": "add",
+      "pointer": "/tools/pymupdf",
+      "after": "1.28.2"
+    },
+    {
+      "operation": "replace",
+      "pointer": "/tools/reportlab",
+      "before": "4.4.9",
+      "after": "5.0.1"
+    }
+  ],
+  "comparison": "reader convention audit; not source mismatch"
+}

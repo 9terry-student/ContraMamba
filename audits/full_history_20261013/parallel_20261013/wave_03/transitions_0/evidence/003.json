@@ -1,0 +1,317 @@
+{
+  "shard_ordinal": 3,
+  "original_queue_id": "WORK-085e0d47e9e22d36b740",
+  "original_source_ids": [
+    "HV000722"
+  ],
+  "original_source_identity": {
+    "commit": "3d2691afcc8ec6c0f59ba304f73631b6bc903208",
+    "path": "scripts/build_controlled_v5.py",
+    "blob": "7a534d40ab8177d8c46655bba728c113215beb7a",
+    "object_type": "commit",
+    "bytes": 25550,
+    "sha256": "c41e6a52401bd8c83970286b176950fc751509bee6d797d5da9aea4262c72802"
+  },
+  "before": {
+    "commit": "626a97d47498a4b9387f799555804b5dbf97e250",
+    "path": "scripts/build_controlled_v5.py",
+    "blob": "2167aec5431f3862689c76181b86007c6e19bfb5",
+    "object_type": "commit",
+    "bytes": 22344,
+    "sha256": "23f087cc22a50888943559a13b6e87c1ccb7427a73289964d0b044234df93e40"
+  },
+  "after": {
+    "commit": "3d2691afcc8ec6c0f59ba304f73631b6bc903208",
+    "path": "scripts/build_controlled_v5.py",
+    "blob": "7a534d40ab8177d8c46655bba728c113215beb7a",
+    "object_type": "commit",
+    "bytes": 25550,
+    "sha256": "c41e6a52401bd8c83970286b176950fc751509bee6d797d5da9aea4262c72802"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0085"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "_generated_fact_template",
+      "build_controlled_records",
+      "build_seed_records",
+      "build_v1_records",
+      "fact_templates_for_count",
+      "main"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 2 removed/replaced lines and 86 added/replaced lines in 6 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "2946265537455223b1897b5cfbf9ae047432c027",
+      "blob": "7a534d40ab8177d8c46655bba728c113215beb7a"
+    },
+    {
+      "commit": "a3cc887250179be3b724fa6bfca2c02204f54a58",
+      "blob": "7a534d40ab8177d8c46655bba728c113215beb7a"
+    },
+    {
+      "commit": "59303d2367b9c82833b3fb6edff60854067994c1",
+      "blob": null
+    }
+  ],
+  "immediate_parent_has_before_blob": false,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 257,
+      "before_end_exclusive": 257,
+      "after_start": 257,
+      "after_end_exclusive": 332,
+      "before": [],
+      "after": [
+        "_GENERATED_NAMES = (",
+        "    \"Avery Stone\", \"Bianca Flores\", \"Chidi Eze\", \"Daria Volkova\",",
+        "    \"Ethan Brooks\", \"Farah Qureshi\", \"Gabriel Costa\", \"Helena Wu\",",
+        "    \"Ismail Kaya\", \"Julia Novak\", \"Kwame Adu\", \"Lucia Romano\",",
+        ")",
+        "_GENERATED_TITLES = (",
+        "    \"Director\", \"Dr\", \"Professor\", \"Minister\", \"Engineer\", \"Coordinator\",",
+        ")",
+        "_GENERATED_ROLES = (",
+        "    \"program director\", \"research lead\", \"regional coordinator\",",
+        "    \"operations chief\", \"project curator\", \"technical adviser\",",
+        ")",
+        "_GENERATED_PREDICATES = (",
+        "    (\"approved\", \"reviewed\"),",
+        "    (\"launched\", \"tested\"),",
+        "    (\"restored\", \"surveyed\"),",
+        "    (\"published\", \"presented\"),",
+        "    (\"delivered\", \"inspected\"),",
+        "    (\"opened\", \"planned\"),",
+        "    (\"selected\", \"evaluated\"),",
+        ")",
+        "_GENERATED_TIMES = (",
+        "    \"January\", \"March\", \"May\", \"July\", \"September\", \"November\",",
+        ")",
+        "_GENERATED_LOCATIONS = (",
+        "    \"Aurora City\", \"Beacon Harbor\", \"Cedar Point\", \"Delta Bay\",",
+        "    \"Elm Valley\", \"Falcon Ridge\", \"Granite Coast\", \"Horizon Plains\",",
+        ")",
+        "",
+        "",
+        "def _generated_fact_template(index: int) -> dict:",
+        "    offset = index - len(FACT_TEMPLATES)",
+        "    name = _GENERATED_NAMES[offset % len(_GENERATED_NAMES)]",
+        "    alternate_name = _GENERATED_NAMES[(offset + 5) % len(_GENERATED_NAMES)]",
+        "    title = _GENERATED_TITLES[offset % len(_GENERATED_TITLES)]",
+        "    alternate_title = _GENERATED_TITLES[(offset + 2) % len(_GENERATED_TITLES)]",
+        "    role = _GENERATED_ROLES[offset % len(_GENERATED_ROLES)]",
+        "    alternate_role = _GENERATED_ROLES[(offset + 3) % len(_GENERATED_ROLES)]",
+        "    predicate, alternate_predicate = _GENERATED_PREDICATES[",
+        "        offset % len(_GENERATED_PREDICATES)",
+        "    ]",
+        "    time = _GENERATED_TIMES[offset % len(_GENERATED_TIMES)]",
+        "    alternate_time = _GENERATED_TIMES[(offset + 1) % len(_GENERATED_TIMES)]",
+        "    location = _GENERATED_LOCATIONS[offset % len(_GENERATED_LOCATIONS)]",
+        "    alternate_location = _GENERATED_LOCATIONS[",
+        "        (offset + 3) % len(_GENERATED_LOCATIONS)",
+        "    ]",
+        "    number = index + 1",
+        "    return {",
+        "        \"pair_id\": f\"generated_fact_{number:03d}\",",
+        "        \"title\": title,",
+        "        \"name\": name,",
+        "        \"alternate_title\": alternate_title,",
+        "        \"alternate_name\": alternate_name,",
+        "        \"role\": role,",
+        "        \"alternate_role\": alternate_role,",
+        "        \"predicate\": predicate,",
+        "        \"alternate_predicate\": alternate_predicate,",
+        "        \"object\": f\"the Meridian initiative {number}\",",
+        "        \"alternate_object\": f\"the Horizon initiative {number}\",",
+        "        \"time\": time,",
+        "        \"alternate_time\": alternate_time,",
+        "        \"location\": location,",
+        "        \"alternate_location\": alternate_location,",
+        "    }",
+        "",
+        "",
+        "def fact_templates_for_count(num_pairs: int) -> list[dict]:",
+        "    if num_pairs < 2:",
+        "        raise ValueError(\"num_pairs must be at least 2\")",
+        "    templates = list(FACT_TEMPLATES[:num_pairs])",
+        "    while len(templates) < num_pairs:",
+        "        templates.append(_generated_fact_template(len(templates)))",
+        "    return templates",
+        ""
+      ],
+      "before_context": [
+        ")",
+        "SEED_TEMPLATE_COUNT = 10",
+        "",
+        "",
+        "def _statement(fact: dict, *, negative: bool = False, **overrides: str) -> str:",
+        "    values = {**fact, **overrides}"
+      ],
+      "after_context": [
+        ")",
+        "SEED_TEMPLATE_COUNT = 10",
+        "",
+        "",
+        "def _statement(fact: dict, *, negative: bool = False, **overrides: str) -> str:",
+        "    values = {**fact, **overrides}"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 388,
+      "before_end_exclusive": 389,
+      "after_start": 463,
+      "after_end_exclusive": 464,
+      "before": [
+        "    return _build_records(FACT_TEMPLATES[:SEED_TEMPLATE_COUNT])"
+      ],
+      "after": [
+        "    return build_controlled_records(SEED_TEMPLATE_COUNT)"
+      ],
+      "before_context": [
+        "",
+        "",
+        "def build_seed_records() -> list[dict]:",
+        "",
+        "",
+        "def build_v1_records() -> list[dict]:"
+      ],
+      "after_context": [
+        "",
+        "",
+        "def build_seed_records() -> list[dict]:",
+        "",
+        "",
+        "def build_v1_records() -> list[dict]:"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 392,
+      "before_end_exclusive": 393,
+      "after_start": 467,
+      "after_end_exclusive": 472,
+      "before": [
+        "    return _build_records(FACT_TEMPLATES)"
+      ],
+      "after": [
+        "    return build_controlled_records(30)",
+        "",
+        "",
+        "def build_controlled_records(num_pairs: int) -> list[dict]:",
+        "    return _build_records(fact_templates_for_count(num_pairs))"
+      ],
+      "before_context": [
+        "",
+        "",
+        "def build_v1_records() -> list[dict]:",
+        "",
+        "",
+        "def validate_record(record: dict, row_number: int | None = None) -> None:"
+      ],
+      "after_context": [
+        "",
+        "",
+        "def build_v1_records() -> list[dict]:",
+        "",
+        "",
+        "def validate_record(record: dict, row_number: int | None = None) -> None:"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 489,
+      "before_end_exclusive": 489,
+      "after_start": 568,
+      "after_end_exclusive": 569,
+      "before": [],
+      "after": [
+        "    parser.add_argument(\"--num-pairs\", type=int)"
+      ],
+      "before_context": [
+        "    parser.add_argument(",
+        "        \"--dataset-version\", choices=(\"seed\", \"v1\"), default=\"seed\"",
+        "    )",
+        "    parser.add_argument(",
+        "        \"--output\",",
+        "        type=Path,"
+      ],
+      "after_context": [
+        "    parser.add_argument(",
+        "        \"--dataset-version\", choices=(\"seed\", \"v1\"), default=\"seed\"",
+        "    )",
+        "    parser.add_argument(",
+        "        \"--output\",",
+        "        type=Path,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 501,
+      "before_end_exclusive": 501,
+      "after_start": 581,
+      "after_end_exclusive": 583,
+      "before": [],
+      "after": [
+        "        if args.num_pairs is not None:",
+        "            parser.error(\"--num-pairs cannot be combined with --input\")"
+      ],
+      "before_context": [
+        "    args = parser.parse_args()",
+        "",
+        "    if args.input:",
+        "        records = load_jsonl(args.input)",
+        "    else:",
+        "        records = build_v1_records() if args.dataset_version == \"v1\" else build_seed_records()"
+      ],
+      "after_context": [
+        "    args = parser.parse_args()",
+        "",
+        "    if args.input:",
+        "        records = load_jsonl(args.input)",
+        "    elif args.num_pairs is not None:",
+        "        records = build_controlled_records(args.num_pairs)"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 502,
+      "before_end_exclusive": 502,
+      "after_start": 584,
+      "after_end_exclusive": 586,
+      "before": [],
+      "after": [
+        "    elif args.num_pairs is not None:",
+        "        records = build_controlled_records(args.num_pairs)"
+      ],
+      "before_context": [
+        "",
+        "    if args.input:",
+        "        records = load_jsonl(args.input)",
+        "    else:",
+        "        records = build_v1_records() if args.dataset_version == \"v1\" else build_seed_records()",
+        "    write_jsonl(records, args.output)"
+      ],
+      "after_context": [
+        "        if args.num_pairs is not None:",
+        "            parser.error(\"--num-pairs cannot be combined with --input\")",
+        "        records = load_jsonl(args.input)",
+        "    else:",
+        "        records = build_v1_records() if args.dataset_version == \"v1\" else build_seed_records()",
+        "    write_jsonl(records, args.output)"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "shard_ordinal": 51,
+  "original_queue_id": "WORK-84d1190b2a0bb15f7900",
+  "original_source_ids": [
+    "HV001440"
+  ],
+  "original_source_identity": {
+    "commit": "2c237fa7d2f4d2fdf7029826599a164c69455f36",
+    "path": "tests/test_reason_router_gen4_pp3_anchored_plane_additivity_fast_cuda.py",
+    "blob": "9051a45e58d3fa983edbcb8949a2034c9797684a",
+    "object_type": "commit",
+    "bytes": 5748,
+    "sha256": "57faa63ec2428a75d818275dd8f3023e63d34d169c46f2ffebae36def8022b24"
+  },
+  "before": {
+    "commit": "fbfcecb30f088a7c8c0224d8366bcefb73f4e739",
+    "path": "tests/test_reason_router_gen4_pp3_anchored_plane_additivity_fast_cuda.py",
+    "blob": "e283122e2d2dd1a52978978787f6a7277183302e",
+    "object_type": "commit",
+    "bytes": 4484,
+    "sha256": "6e5205b23ccbbd873c1a598a5910bf1b1515793d652114159579a66c0bd80022"
+  },
+  "after": {
+    "commit": "2c237fa7d2f4d2fdf7029826599a164c69455f36",
+    "path": "tests/test_reason_router_gen4_pp3_anchored_plane_additivity_fast_cuda.py",
+    "blob": "9051a45e58d3fa983edbcb8949a2034c9797684a",
+    "object_type": "commit",
+    "bytes": 5748,
+    "sha256": "57faa63ec2428a75d818275dd8f3023e63d34d169c46f2ffebae36def8022b24"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0259"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "test_interaction_algebra_accepts_float_roundoff"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate test assertion/fixture contracts and their relationship to the historical implementation and stage authority from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 0 removed/replaced lines and 49 added/replaced lines in 1 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "2b942fcd290d863eb790bcc38742bef380cf59b0",
+      "blob": "9051a45e58d3fa983edbcb8949a2034c9797684a"
+    }
+  ],
+  "immediate_parent_has_before_blob": false,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 152,
+      "before_end_exclusive": 152,
+      "after_start": 152,
+      "after_end_exclusive": 201,
+      "before": [],
+      "after": [
+        "def test_interaction_algebra_accepts_float_roundoff():",
+        "    q0 = -2.0313360211095804e-07",
+        "    q3 = -2.8861277617966834e-07",
+        "    q5 = -2.591794889855885e-07",
+        "    q35 = -2.283140354174052e-07",
+        "",
+        "    q = {",
+        "        \"p1_neutralized\": q0,",
+        "        \"p2_neutralized\": q0,",
+        "        \"p3_neutralized\": q3,",
+        "        \"p4_neutralized\": q0,",
+        "        \"p5_neutralized\": q5,",
+        "        \"p3_p1_joint_neutralized\": q3,",
+        "        \"p3_p2_joint_neutralized\": q3,",
+        "        \"p3_p4_joint_neutralized\": q3,",
+        "        \"p3_p5_joint_neutralized\": q35,",
+        "    }",
+        "",
+        "    out = m.endpoints_from_q(q0, q)",
+        "    row = out[\"pp3_pair_interactions\"][\"P5\"]",
+        "",
+        "    # This case intentionally exercises non-exact binary floating arithmetic.",
+        "    assert (",
+        "        row[\"interaction_effect\"]",
+        "        != -row[\"Q_interaction_residual\"]",
+        "    )",
+        "",
+        "    algebra_ulp = max(",
+        "        math.ulp(value)",
+        "        for value in (",
+        "            q0,",
+        "            q35,",
+        "            row[\"joint_effect\"],",
+        "            row[\"additive_effect_prediction\"],",
+        "            row[\"interaction_effect\"],",
+        "            row[\"Q_additive_prediction\"],",
+        "            row[\"Q_interaction_residual\"],",
+        "        )",
+        "    )",
+        "",
+        "    assert (",
+        "        abs(",
+        "            row[\"interaction_effect\"]",
+        "            + row[\"Q_interaction_residual\"]",
+        "        )",
+        "        <= m.FLOAT_IDENTITY_ULPS * algebra_ulp",
+        "    )",
+        "",
+        ""
+      ],
+      "before_context": [
+        "        )",
+        "",
+        "",
+        "def test_stage2_baseline_identity_constants():",
+        "    assert m.STAGE2_RESULT_COMMIT == (",
+        "        \"fb6498e52d0410c64d458896b555f4cbdbf5e407\""
+      ],
+      "after_context": [
+        "        )",
+        "",
+        "",
+        "def test_stage2_baseline_identity_constants():",
+        "    assert m.STAGE2_RESULT_COMMIT == (",
+        "        \"fb6498e52d0410c64d458896b555f4cbdbf5e407\""
+      ]
+    }
+  ]
+}

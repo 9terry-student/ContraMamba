@@ -1,0 +1,340 @@
+{
+  "shard_ordinal": 81,
+  "original_queue_id": "WORK-c30efc0ee2b5942609e2",
+  "original_source_ids": [
+    "HV000107"
+  ],
+  "original_source_identity": {
+    "commit": "ef1806bef9e4a7f55e1f7e77f7a0f08592fb4abe",
+    "path": "paper/iclr2027/figures/fig2_130m_causal_foundation.pdf",
+    "blob": "674b1394ba9d688c7c8ec31d88d39478fe4bbbb2",
+    "object_type": "commit",
+    "bytes": 102358,
+    "sha256": "d14b7041b0f8b44ff3591c0001c006ee77bec46b1257e642bedbce03478a0859"
+  },
+  "before": {
+    "commit": "cfd1e5b4f43be1ae3847ce943906dfc841ed5373",
+    "path": "paper/iclr2027/figures/fig2_130m_causal_foundation.pdf",
+    "blob": "d26b10c013bdffd96799a27abd7fbe9277a13a61",
+    "object_type": "commit",
+    "bytes": 102519,
+    "sha256": "f33acfea854331f8d9d8c41b904156d2859a7f74bfa6a23ef9f58e76c2ef41f2"
+  },
+  "after": {
+    "commit": "ef1806bef9e4a7f55e1f7e77f7a0f08592fb4abe",
+    "path": "paper/iclr2027/figures/fig2_130m_causal_foundation.pdf",
+    "blob": "674b1394ba9d688c7c8ec31d88d39478fe4bbbb2",
+    "object_type": "commit",
+    "bytes": 102358,
+    "sha256": "d14b7041b0f8b44ff3591c0001c006ee77bec46b1257e642bedbce03478a0859"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "versions_shard_1/semantic_revision_records.jsonl",
+      "jsonl_line": 45,
+      "record": {
+        "added_excerpt": [],
+        "added_lines": null,
+        "classification": "UNRESOLVED_CONTENT",
+        "from_blob": "d26b10c013bdffd96799a27abd7fbe9277a13a61",
+        "from_commit": "cfd1e5b4f43be1ae3847ce943906dfc841ed5373",
+        "from_id": "HV000108",
+        "manual_content_review": "NO",
+        "path": "paper/iclr2027/figures/fig2_130m_causal_foundation.pdf",
+        "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+        "removed_excerpt": [],
+        "removed_lines": null,
+        "semantic_disposition": "REVIEW_REQUIRED",
+        "to_blob": "674b1394ba9d688c7c8ec31d88d39478fe4bbbb2",
+        "to_commit": "ef1806bef9e4a7f55e1f7e77f7a0f08592fb4abe",
+        "to_id": "HV000107",
+        "truncated_diff": true
+      }
+    }
+  ],
+  "prior_interpretation": null,
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "2e65dd887ba4159d4024d85b8996306cfadec023",
+      "blob": "d26b10c013bdffd96799a27abd7fbe9277a13a61"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "extracted_pdf_text",
+  "changes": [
+    {
+      "operation": "replace",
+      "before_start": 3,
+      "before_end_exclusive": 5,
+      "after_start": 3,
+      "after_end_exclusive": 5,
+      "before": [
+        "Prospective PP3 evidence chain",
+        "Distinct estimands and XG1 holdouts; means are not magnitude-comparable."
+      ],
+      "after": [
+        "Prospective evidence chain at 130M",
+        "Four independent holdouts test distinct causal requirements; exact statistics are in Appendix A.3."
+      ],
+      "before_context": [
+        "PAGE 1",
+        "A",
+        "Transport",
+        "C_PP3",
+        "7.1202761928785655e-08"
+      ],
+      "after_context": [
+        "PAGE 1",
+        "A",
+        "Transport",
+        "Supported",
+        "N = 300"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 6,
+      "before_end_exclusive": 8,
+      "after_start": 6,
+      "after_end_exclusive": 7,
+      "before": [
+        "C_PP3",
+        "7.1202761928785655e-08"
+      ],
+      "after": [
+        "Supported"
+      ],
+      "before_context": [
+        "Prospective PP3 evidence chain",
+        "Distinct estimands and XG1 holdouts; means are not magnitude-comparable.",
+        "Transport",
+        "N = 300",
+        "Specificity",
+        "D_SPEC"
+      ],
+      "after_context": [
+        "Prospective evidence chain at 130M",
+        "Four independent holdouts test distinct causal requirements; exact statistics are in Appendix A.3.",
+        "Transport",
+        "N = 300",
+        "Specificity",
+        "Supported"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 10,
+      "before_end_exclusive": 12,
+      "after_start": 9,
+      "after_end_exclusive": 10,
+      "before": [
+        "D_SPEC",
+        "2.3040673691981465e-08"
+      ],
+      "after": [
+        "Supported"
+      ],
+      "before_context": [
+        "7.1202761928785655e-08",
+        "N = 300",
+        "Specificity",
+        "N = 300",
+        "Necessity",
+        "D_NEC"
+      ],
+      "after_context": [
+        "Supported",
+        "N = 300",
+        "Specificity",
+        "N = 300",
+        "Necessity",
+        "Supported"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 14,
+      "before_end_exclusive": 16,
+      "after_start": 12,
+      "after_end_exclusive": 13,
+      "before": [
+        "D_NEC",
+        "4.7414371121837106e-08"
+      ],
+      "after": [
+        "Supported"
+      ],
+      "before_context": [
+        "2.3040673691981465e-08",
+        "N = 300",
+        "Necessity",
+        "N = 300",
+        "Restoration",
+        "sufficiency"
+      ],
+      "after_context": [
+        "Supported",
+        "N = 300",
+        "Necessity",
+        "N = 300",
+        "Restoration",
+        "sufficiency"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 19,
+      "before_end_exclusive": 21,
+      "after_start": 16,
+      "after_end_exclusive": 17,
+      "before": [
+        "D_SUF",
+        "4.078872356598753e-08"
+      ],
+      "after": [
+        "Supported"
+      ],
+      "before_context": [
+        "N = 300",
+        "Restoration",
+        "sufficiency",
+        "N = 300",
+        "B",
+        "Behavioral restoration"
+      ],
+      "after_context": [
+        "N = 300",
+        "Restoration",
+        "sufficiency",
+        "N = 300",
+        "B",
+        "Behavioral restoration"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 24,
+      "before_end_exclusive": 28,
+      "after_start": 20,
+      "after_end_exclusive": 23,
+      "before": [
+        "Restored PP3 minus PP5 replacement",
+        "Mean D_BEH",
+        "+0.00833219",
+        "Task-margin contrast; seed 181"
+      ],
+      "after": [
+        "Restored selected component minus matched control",
+        "Mean task-margin shift",
+        "+0.00833"
+      ],
+      "before_context": [
+        "N = 300",
+        "B",
+        "Behavioral restoration",
+        "N = 300 paired items",
+        "Behavioral consequence is measured",
+        "by margin, not accuracy improvement."
+      ],
+      "after_context": [
+        "N = 300",
+        "B",
+        "Behavioral restoration",
+        "N = 300 paired items",
+        "Continuous margin consequence; not an accuracy-improvement claim.",
+        "C"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 29,
+      "before_end_exclusive": 31,
+      "after_start": 24,
+      "after_end_exclusive": 25,
+      "before": [
+        "Behavioral consequence is measured",
+        "by margin, not accuracy improvement."
+      ],
+      "after": [
+        "Continuous margin consequence; not an accuracy-improvement claim."
+      ],
+      "before_context": [
+        "+0.00833219",
+        "Task-margin contrast; seed 181",
+        "N = 300 paired items",
+        "C",
+        "Readout / behavior coupling",
+        "-0.01"
+      ],
+      "after_context": [
+        "Mean task-margin shift",
+        "+0.00833",
+        "N = 300 paired items",
+        "C",
+        "Local readout tracks behavioral effect",
+        "-0.01"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 32,
+      "before_end_exclusive": 33,
+      "after_start": 26,
+      "after_end_exclusive": 27,
+      "before": [
+        "Readout / behavior coupling"
+      ],
+      "after": [
+        "Local readout tracks behavioral effect"
+      ],
+      "before_context": [
+        "Behavioral consequence is measured",
+        "by margin, not accuracy improvement.",
+        "C",
+        "-0.01",
+        "0",
+        "0.01"
+      ],
+      "after_context": [
+        "N = 300 paired items",
+        "Continuous margin consequence; not an accuracy-improvement claim.",
+        "C",
+        "-0.01",
+        "0",
+        "0.01"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 40,
+      "before_end_exclusive": 45,
+      "after_start": 34,
+      "after_end_exclusive": 39,
+      "before": [
+        "D_BEH",
+        "Delta L (owned readout)",
+        "Pearson 0.61755   Spearman 0.83247",
+        "Sign agreement 0.82333",
+        "All points retained. Association values are frozen descriptive results; no fit or new test."
+      ],
+      "after": [
+        "Behavioral margin shift",
+        "Local task readout",
+        "Pearson 0.618   Spearman 0.832",
+        "Sign agreement 0.823",
+        "All 300 pairs retained; associations are frozen descriptive results."
+      ],
+      "before_context": [
+        "0",
+        "0.04",
+        "0.08"
+      ],
+      "after_context": [
+        "0",
+        "0.04",
+        "0.08"
+      ]
+    }
+  ]
+}

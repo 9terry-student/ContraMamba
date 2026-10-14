@@ -1,0 +1,1732 @@
+{
+  "shard_ordinal": 14,
+  "original_queue_id": "WORK-2364c78c1522d162dc0a",
+  "original_source_ids": [
+    "HV000137"
+  ],
+  "original_source_identity": {
+    "commit": "68bd1884510805f66a35317739d75ed7c444d799",
+    "path": "paper/iclr2027/main.pdf",
+    "blob": "17c7736881e6e38764a8f5c60f4eeb94403ca356",
+    "object_type": "commit",
+    "bytes": 651768,
+    "sha256": "5f52c66a3ee7099e203713333986d46e5c7c439e9f687995c8035ea2ade065da"
+  },
+  "before": {
+    "commit": "494f4e52ec93a8a63e0aaa88364b20078c644286",
+    "path": "paper/iclr2027/main.pdf",
+    "blob": "9a9fc0f52a37065526679bddf4453732c2efb9d8",
+    "object_type": "commit",
+    "bytes": 676953,
+    "sha256": "796220e97dead65b61a96f14ce9e7cb0f621ae4ce9ac2920ba9467335163165a"
+  },
+  "after": {
+    "commit": "68bd1884510805f66a35317739d75ed7c444d799",
+    "path": "paper/iclr2027/main.pdf",
+    "blob": "17c7736881e6e38764a8f5c60f4eeb94403ca356",
+    "object_type": "commit",
+    "bytes": 651768,
+    "sha256": "5f52c66a3ee7099e203713333986d46e5c7c439e9f687995c8035ea2ade065da"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "versions_shard_0/semantic_revision_records.jsonl",
+      "jsonl_line": 29,
+      "record": {
+        "after_commit": "68bd1884510805f66a35317739d75ed7c444d799",
+        "before_commit": "494f4e52ec93a8a63e0aaa88364b20078c644286",
+        "categories": [],
+        "evidence": [
+          {
+            "byte_sha256_after": "5f52c66a3ee7099e203713333986d46e5c7c439e9f687995c8035ea2ade065da",
+            "byte_sha256_before": "796220e97dead65b61a96f14ce9e7cb0f621ae4ce9ac2920ba9467335163165a"
+          }
+        ],
+        "from_blob": "9a9fc0f52a37065526679bddf4453732c2efb9d8",
+        "from_kind": "BINARY",
+        "from_size_bytes": 676953,
+        "id": "SR000029",
+        "interpretation": "UNRESOLVED_BINARY_CONTENT",
+        "path": "paper/iclr2027/main.pdf",
+        "relationship": "ANCESTRAL_PATH_EVENT_TRANSITION",
+        "selected_target_ids": [
+          "HV000137"
+        ],
+        "to_blob": "17c7736881e6e38764a8f5c60f4eeb94403ca356",
+        "to_kind": "BINARY",
+        "to_size_bytes": 651768
+      }
+    }
+  ],
+  "prior_interpretation": null,
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "494f4e52ec93a8a63e0aaa88364b20078c644286",
+      "blob": "9a9fc0f52a37065526679bddf4453732c2efb9d8"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "extracted_pdf_text",
+  "changes": [
+    {
+      "operation": "replace",
+      "before_start": 159,
+      "before_end_exclusive": 161,
+      "after_start": 159,
+      "after_end_exclusive": 161,
+      "before": [
+        "A",
+        "Deep causal establishment at Mamba-130M"
+      ],
+      "after": [
+        "A Deep causal establishment at Mamba-130M",
+        "Native susceptibility mechanism Task-functional bridge"
+      ],
+      "before_context": [
+        "106",
+        "107",
+        "Under review as a conference paper at ICLR 2027",
+        "Controlled",
+        "semantic contrasts",
+        "Local native-state"
+      ],
+      "after_context": [
+        "106",
+        "107",
+        "Under review as a conference paper at ICLR 2027",
+        "Controlled",
+        "contrasts",
+        "Native-state"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 162,
+      "before_end_exclusive": 164,
+      "after_start": 162,
+      "after_end_exclusive": 164,
+      "before": [
+        "semantic contrasts",
+        "Local native-state"
+      ],
+      "after": [
+        "contrasts",
+        "Native-state"
+      ],
+      "before_context": [
+        "A",
+        "Deep causal establishment at Mamba-130M",
+        "Controlled",
+        "localization",
+        "Geometry",
+        "specificity"
+      ],
+      "after_context": [
+        "A Deep causal establishment at Mamba-130M",
+        "Native susceptibility mechanism Task-functional bridge",
+        "Controlled",
+        "localization",
+        "Geometry",
+        "specificity"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 173,
+      "before_end_exclusive": 177,
+      "after_start": 173,
+      "after_end_exclusive": 174,
+      "before": [
+        "Native susceptibility mechanism",
+        "Task-functional bridge",
+        "B",
+        "Five scales: causal role recurs; geometry is only partially conserved"
+      ],
+      "after": [
+        "B Five scales: causal role recurs; geometry is only partially conserved"
+      ],
+      "before_context": [
+        "sufficiency",
+        "Task-margin",
+        "consequence",
+        "130M",
+        "P3 / P5",
+        "370M"
+      ],
+      "after_context": [
+        "sufficiency",
+        "Task-margin",
+        "consequence",
+        "130M",
+        "P3 / P5",
+        "Supported"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 179,
+      "before_end_exclusive": 179,
+      "after_start": 176,
+      "after_end_exclusive": 177,
+      "before": [],
+      "after": [
+        "Supported"
+      ],
+      "before_context": [
+        "Five scales: causal role recurs; geometry is only partially conserved",
+        "130M",
+        "P3 / P5",
+        "370M",
+        "P3 / P5",
+        "790M"
+      ],
+      "after_context": [
+        "B Five scales: causal role recurs; geometry is only partially conserved",
+        "130M",
+        "P3 / P5",
+        "370M",
+        "P3 / P5",
+        "Supported"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 181,
+      "before_end_exclusive": 181,
+      "after_start": 179,
+      "after_end_exclusive": 180,
+      "before": [],
+      "after": [
+        "Supported"
+      ],
+      "before_context": [
+        "P3 / P5",
+        "370M",
+        "P3 / P5",
+        "790M",
+        "P2 / P5",
+        "1.4B"
+      ],
+      "after_context": [
+        "Supported",
+        "370M",
+        "P3 / P5",
+        "790M",
+        "P2 / P5",
+        "Supported"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 183,
+      "before_end_exclusive": 183,
+      "after_start": 182,
+      "after_end_exclusive": 183,
+      "before": [],
+      "after": [
+        "Supported"
+      ],
+      "before_context": [
+        "P3 / P5",
+        "790M",
+        "P2 / P5",
+        "1.4B",
+        "P5 / P4",
+        "2.8B"
+      ],
+      "after_context": [
+        "Supported",
+        "790M",
+        "P2 / P5",
+        "1.4B",
+        "P5 / P4",
+        "Supported"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 185,
+      "before_end_exclusive": 185,
+      "after_start": 185,
+      "after_end_exclusive": 186,
+      "before": [],
+      "after": [
+        "Supported"
+      ],
+      "before_context": [
+        "P2 / P5",
+        "1.4B",
+        "P5 / P4",
+        "2.8B",
+        "P3 / P5",
+        "Selected / control are scale-local ranks; equal rank numbers do not imply semantic homology."
+      ],
+      "after_context": [
+        "Supported",
+        "1.4B",
+        "P5 / P4",
+        "2.8B",
+        "P3 / P5",
+        "Supported"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 187,
+      "before_end_exclusive": 187,
+      "after_start": 188,
+      "after_end_exclusive": 189,
+      "before": [],
+      "after": [
+        "Supported"
+      ],
+      "before_context": [
+        "P5 / P4",
+        "2.8B",
+        "P3 / P5",
+        "Selected / control are scale-local ranks; equal rank numbers do not imply semantic homology.",
+        "C",
+        "Objective-conditioned functional readout"
+      ],
+      "after_context": [
+        "Supported",
+        "2.8B",
+        "P3 / P5",
+        "Selected / control are scale-local ranks; equal rank numbers do not imply semantic homology.",
+        "C Objective-conditioned functional readout",
+        "Within each scale"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 188,
+      "before_end_exclusive": 191,
+      "after_start": 190,
+      "after_end_exclusive": 192,
+      "before": [
+        "C",
+        "Objective-conditioned functional readout",
+        "Within each scale:"
+      ],
+      "after": [
+        "C Objective-conditioned functional readout",
+        "Within each scale"
+      ],
+      "before_context": [
+        "2.8B",
+        "P3 / P5",
+        "Selected / control are scale-local ranks; equal rank numbers do not imply semantic homology.",
+        "same frozen native",
+        "Mamba substrate",
+        "Structured downstream task objective"
+      ],
+      "after_context": [
+        "P3 / P5",
+        "Supported",
+        "Selected / control are scale-local ranks; equal rank numbers do not imply semantic homology.",
+        "same frozen native",
+        "Mamba substrate",
+        "Structured downstream task objective"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 194,
+      "before_end_exclusive": 196,
+      "after_start": 195,
+      "after_end_exclusive": 199,
+      "before": [
+        "Vanilla Mamba: pretrained next-token LM objective",
+        "Causal role   |   Native geometry   |   Objective-conditioned readout"
+      ],
+      "after": [
+        "Point-estimate signs: + + + − −",
+        "Vanilla Mamba pretrained next-token LM objective",
+        "Point-estimate signs: − − − + +",
+        "Causal role | Native geometry | Objective-conditioned readout"
+      ],
+      "before_context": [
+        "same frozen native",
+        "Mamba substrate",
+        "Structured downstream task objective",
+        "Figure 1: Study design. Native geometry and a selected causal component are reconstructed inde-",
+        "pendently within each scale. The same scale-local contrast is read under downstream and pretrained",
+        "objectives. Arrows indicate study order, not a continuous scaling law or shared plane identity."
+      ],
+      "after_context": [
+        "same frozen native",
+        "Mamba substrate",
+        "Structured downstream task objective",
+        "Figure 1: Study design. Native geometry and a selected causal component are reconstructed inde-",
+        "pendently within each scale. The same scale-local contrast is read under downstream and pretrained",
+        "objectives. Arrows indicate study order, not a continuous scaling law or shared plane identity."
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 221,
+      "before_end_exclusive": 223,
+      "after_start": 224,
+      "after_end_exclusive": 224,
+      "before": [
+        "Our question is complementary. Rather than asking whether Mamba contains an interpretable fea-",
+        "ture or circuit for a particular benchmark, or whether two architectures implement analogous al-"
+      ],
+      "after": [],
+      "before_context": [
+        "identifying Mamba-specific differences (Wang et al., 2025). More recent work identifies activation-",
+        "subspace bottlenecks across several state-space models and tests their causal relevance through in-",
+        "terventions and steering (Mohan et al., 2026).",
+        "2",
+        "PAGE 3",
+        "108"
+      ],
+      "after_context": [
+        "identifying Mamba-specific differences (Wang et al., 2025). More recent work identifies activation-",
+        "subspace bottlenecks across several state-space models and tests their causal relevance through in-",
+        "terventions and steering (Mohan et al., 2026).",
+        "2",
+        "PAGE 3",
+        "108"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 280,
+      "before_end_exclusive": 280,
+      "after_start": 281,
+      "after_end_exclusive": 283,
+      "before": [],
+      "after": [
+        "Our question is complementary. Rather than asking whether Mamba contains an interpretable fea-",
+        "ture or circuit for a particular benchmark, or whether two architectures implement analogous al-"
+      ],
+      "before_context": [
+        "160",
+        "161",
+        "Under review as a conference paper at ICLR 2027",
+        "gorithms, we ask whether acausal role identified inside one Mamba scale recurs after native",
+        "geometry is independently reconstructed at larger scales. We then separate that recurrence from",
+        "both geometric invariance and downstream functional interpretation."
+      ],
+      "after_context": [
+        "160",
+        "161",
+        "Under review as a conference paper at ICLR 2027",
+        "gorithms, we ask whether acausal role identified inside one Mamba scale recurs after native",
+        "geometry is independently reconstructed at larger scales. We then separate that recurrence from",
+        "both geometric invariance and downstream functional interpretation."
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 327,
+      "before_end_exclusive": 329,
+      "after_start": 330,
+      "after_end_exclusive": 330,
+      "before": [
+        "and showed that PP3 retained the stronger effect. Subsequent matched interventions established",
+        "both necessity and restoration sufficiency: neutralizing PP3 attenuated the endpoint more strongly"
+      ],
+      "after": [],
+      "before_context": [
+        "its rank label is local to this model and does not denote a globally shared semantic feature.",
+        "The localized PP3 effect first transported to an independent 300-pair population. A second holdout",
+        "then compared PP3 against PP5, selected independently from response values as a geometric control,",
+        "3",
+        "PAGE 4",
+        "162"
+      ],
+      "after_context": [
+        "its rank label is local to this model and does not denote a globally shared semantic feature.",
+        "The localized PP3 effect first transported to an independent 300-pair population. A second holdout",
+        "then compared PP3 against PP5, selected independently from response values as a geometric control,",
+        "3",
+        "PAGE 4",
+        "162"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 386,
+      "before_end_exclusive": 389,
+      "after_start": 387,
+      "after_end_exclusive": 389,
+      "before": [
+        "A",
+        "Prospective evidence chain at 130M",
+        "Four independent holdouts test distinct causal requirements; exact statistics are in Appendix A.3."
+      ],
+      "after": [
+        "A Prospective evidence chain at 130M",
+        "Four independent holdouts test distinct causal requirements."
+      ],
+      "before_context": [
+        "214",
+        "215",
+        "Under review as a conference paper at ICLR 2027",
+        "Transport",
+        "Supported",
+        "N = 300"
+      ],
+      "after_context": [
+        "214",
+        "215",
+        "Under review as a conference paper at ICLR 2027",
+        "Transport",
+        "Supported",
+        "N = 300"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 402,
+      "before_end_exclusive": 405,
+      "after_start": 402,
+      "after_end_exclusive": 405,
+      "before": [
+        "B",
+        "Behavioral restoration",
+        "Restored selected component minus matched control"
+      ],
+      "after": [
+        "B Behavioral restoration",
+        "selected restoration",
+        "− matched control"
+      ],
+      "before_context": [
+        "sufficiency",
+        "Supported",
+        "N = 300",
+        "Mean task-margin shift",
+        "+0.00833",
+        "N = 300 paired items"
+      ],
+      "after_context": [
+        "sufficiency",
+        "Supported",
+        "N = 300",
+        "Mean task-margin shift",
+        "+0.00833",
+        "N = 300 paired items"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 408,
+      "before_end_exclusive": 415,
+      "after_start": 408,
+      "after_end_exclusive": 420,
+      "before": [
+        "Continuous margin consequence; not an accuracy-improvement claim.",
+        "C",
+        "Local readout tracks behavioral effect",
+        "-0.01",
+        "0",
+        "0.01",
+        "0.02"
+      ],
+      "after": [
+        "Continuous margin",
+        "consequence; not an",
+        "accuracy-improvement claim.",
+        "C Local readout tracks behavioral effect",
+        "Pearson",
+        "0.618",
+        "Spearman",
+        "0.832",
+        "Sign agreement",
+        "0.823",
+        "−0.01 0 0.01 0.02",
+        "−0.02"
+      ],
+      "before_context": [
+        "Mean task-margin shift",
+        "+0.00833",
+        "N = 300 paired items",
+        "0",
+        "0.04",
+        "0.08"
+      ],
+      "after_context": [
+        "Mean task-margin shift",
+        "+0.00833",
+        "N = 300 paired items",
+        "0",
+        "0.04",
+        "0.08"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 418,
+      "before_end_exclusive": 418,
+      "after_start": 423,
+      "after_end_exclusive": 424,
+      "before": [],
+      "after": [
+        "Local task readout"
+      ],
+      "before_context": [
+        "0",
+        "0.04",
+        "0.08",
+        "Behavioral margin shift",
+        "Local task readout",
+        "Pearson 0.618   Spearman 0.832"
+      ],
+      "after_context": [
+        "0",
+        "0.04",
+        "0.08",
+        "Behavioral margin shift",
+        "All 300 pairs retained; associations are frozen descriptive results.",
+        "Figure 2: Deep 130M causal foundation. (A) Independent holdouts support transport, response-"
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 419,
+      "before_end_exclusive": 422,
+      "after_start": 425,
+      "after_end_exclusive": 425,
+      "before": [
+        "Local task readout",
+        "Pearson 0.618   Spearman 0.832",
+        "Sign agreement 0.823"
+      ],
+      "after": [],
+      "before_context": [
+        "0.04",
+        "0.08",
+        "Behavioral margin shift",
+        "All 300 pairs retained; associations are frozen descriptive results.",
+        "Figure 2: Deep 130M causal foundation. (A) Independent holdouts support transport, response-",
+        "blind specificity, matched necessity, and restoration; their distinct endpoints are not comparable as"
+      ],
+      "after_context": [
+        "0.08",
+        "Local task readout",
+        "Behavioral margin shift",
+        "All 300 pairs retained; associations are frozen descriptive results.",
+        "Figure 2: Deep 130M causal foundation. (A) Independent holdouts support transport, response-",
+        "blind specificity, matched necessity, and restoration; their distinct endpoints are not comparable as"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 427,
+      "before_end_exclusive": 427,
+      "after_start": 430,
+      "after_end_exclusive": 432,
+      "before": [],
+      "after": [
+        "and showed that PP3 retained the stronger effect. Subsequent matched interventions established",
+        "both necessity and restoration sufficiency: neutralizing PP3 attenuated the endpoint more strongly"
+      ],
+      "before_context": [
+        "blind specificity, matched necessity, and restoration; their distinct endpoints are not comparable as",
+        "raw magnitudes. (B) Restoration reaches a continuous task margin, without an accuracy claim. (C)",
+        "Local readout and behavioral effects covary descriptively.",
+        "than the control intervention, while restoring the exact PP3 component recovered the endpoint more",
+        "strongly than an equal-norm PP5 replacement. All four pre-specified tests supported their respective",
+        "hypotheses. Exact test statistics are reported in Appendix A."
+      ],
+      "after_context": [
+        "blind specificity, matched necessity, and restoration; their distinct endpoints are not comparable as",
+        "raw magnitudes. (B) Restoration reaches a continuous task margin, without an accuracy claim. (C)",
+        "Local readout and behavioral effects covary descriptively.",
+        "than the control intervention, while restoring the exact PP3 component recovered the endpoint more",
+        "strongly than an equal-norm PP5 replacement. All four pre-specified tests supported their respective",
+        "hypotheses. Exact test statistics are reported in Appendix A."
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 447,
+      "before_end_exclusive": 449,
+      "after_start": 452,
+      "after_end_exclusive": 452,
+      "before": [
+        "labels and inferential families differ; their exact chronology, including the separate failed 370M",
+        "residual criterion, is retained in Appendix A.4 rather than used as the narrative spine here."
+      ],
+      "after": [],
+      "before_context": [
+        "P3/P5 at 2.8B (Fig. 3A). These are scale-local identities rather than claims of same-numbered-plane",
+        "homology. At every scale, the selected component is supported relative to its coefficient-matched",
+        "control under the common contrastQ selected restored −Q matched control. The historical endpoint",
+        "4",
+        "PAGE 5",
+        "216"
+      ],
+      "after_context": [
+        "P3/P5 at 2.8B (Fig. 3A). These are scale-local identities rather than claims of same-numbered-plane",
+        "homology. At every scale, the selected component is supported relative to its coefficient-matched",
+        "control under the common contrastQ selected restored −Q matched control. The historical endpoint",
+        "4",
+        "PAGE 5",
+        "216"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 506,
+      "before_end_exclusive": 513,
+      "after_start": 509,
+      "after_end_exclusive": 511,
+      "before": [
+        "A",
+        "The causal role recurs across all five Mamba-1 scales",
+        "130M",
+        "370M",
+        "790M",
+        "1.4B",
+        "2.8B"
+      ],
+      "after": [
+        "A The causal role recurs across all five Mamba-1 scales",
+        "130M 370M 790M 1.4B 2.8B"
+      ],
+      "before_context": [
+        "268",
+        "269",
+        "Under review as a conference paper at ICLR 2027",
+        "Selected / control",
+        "P3 / P5",
+        "P3 / P5"
+      ],
+      "after_context": [
+        "268",
+        "269",
+        "Under review as a conference paper at ICLR 2027",
+        "Selected / control",
+        "Causal role",
+        "P3/P5"
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 514,
+      "before_end_exclusive": 519,
+      "after_start": 512,
+      "after_end_exclusive": 512,
+      "before": [
+        "P3 / P5",
+        "P3 / P5",
+        "P2 / P5",
+        "P5 / P4",
+        "P3 / P5"
+      ],
+      "after": [],
+      "before_context": [
+        "1.4B",
+        "2.8B",
+        "Selected / control",
+        "Causal role",
+        "Supported",
+        "Supported"
+      ],
+      "after_context": [
+        "A The causal role recurs across all five Mamba-1 scales",
+        "130M 370M 790M 1.4B 2.8B",
+        "Selected / control",
+        "Causal role",
+        "P3/P5",
+        "Supported"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 520,
+      "before_end_exclusive": 520,
+      "after_start": 513,
+      "after_end_exclusive": 514,
+      "before": [],
+      "after": [
+        "P3/P5"
+      ],
+      "before_context": [
+        "P5 / P4",
+        "P3 / P5",
+        "Causal role",
+        "Supported",
+        "Supported",
+        "Supported"
+      ],
+      "after_context": [
+        "130M 370M 790M 1.4B 2.8B",
+        "Selected / control",
+        "Causal role",
+        "Supported",
+        "P3/P5",
+        "Supported"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 521,
+      "before_end_exclusive": 521,
+      "after_start": 515,
+      "after_end_exclusive": 516,
+      "before": [],
+      "after": [
+        "P3/P5"
+      ],
+      "before_context": [
+        "P3 / P5",
+        "Causal role",
+        "Supported",
+        "Supported",
+        "Supported",
+        "Supported"
+      ],
+      "after_context": [
+        "Causal role",
+        "P3/P5",
+        "Supported",
+        "Supported",
+        "P2/P5",
+        "Supported"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 522,
+      "before_end_exclusive": 522,
+      "after_start": 517,
+      "after_end_exclusive": 518,
+      "before": [],
+      "after": [
+        "P2/P5"
+      ],
+      "before_context": [
+        "Causal role",
+        "Supported",
+        "Supported",
+        "Supported",
+        "Supported",
+        "Supported"
+      ],
+      "after_context": [
+        "Supported",
+        "P3/P5",
+        "Supported",
+        "Supported",
+        "P5/P4",
+        "Supported"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 523,
+      "before_end_exclusive": 523,
+      "after_start": 519,
+      "after_end_exclusive": 520,
+      "before": [],
+      "after": [
+        "P5/P4"
+      ],
+      "before_context": [
+        "Supported",
+        "Supported",
+        "Supported",
+        "Supported",
+        "Supported",
+        "Common scale-local contrast: selected restoration minus coefficient-matched control."
+      ],
+      "after_context": [
+        "Supported",
+        "P2/P5",
+        "Supported",
+        "Supported",
+        "P3/P5",
+        "Supported"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 524,
+      "before_end_exclusive": 524,
+      "after_start": 521,
+      "after_end_exclusive": 522,
+      "before": [],
+      "after": [
+        "P3/P5"
+      ],
+      "before_context": [
+        "Supported",
+        "Supported",
+        "Supported",
+        "Supported",
+        "Common scale-local contrast: selected restoration minus coefficient-matched control.",
+        "Historical endpoint labels and inferential-family details are retained in Appendix A.4."
+      ],
+      "after_context": [
+        "Supported",
+        "P5/P4",
+        "Supported",
+        "Supported",
+        "Common scale-local contrast: selected restoration minus coefficient-matched control.",
+        "Historical endpoint labels and inferential-family details are retained in Appendix A.4."
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 527,
+      "before_end_exclusive": 531,
+      "after_start": 525,
+      "after_end_exclusive": 527,
+      "before": [
+        "B",
+        "XG2 centered linear CKA",
+        "C",
+        "XG4 centered linear CKA"
+      ],
+      "after": [
+        "B XG2 centered linear CKA",
+        "130M"
+      ],
+      "before_context": [
+        "Supported",
+        "Common scale-local contrast: selected restoration minus coefficient-matched control.",
+        "Historical endpoint labels and inferential-family details are retained in Appendix A.4.",
+        "130M",
+        "370M",
+        "790M"
+      ],
+      "after_context": [
+        "Supported",
+        "Common scale-local contrast: selected restoration minus coefficient-matched control.",
+        "Historical endpoint labels and inferential-family details are retained in Appendix A.4.",
+        "130M",
+        "370M",
+        "370M"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 533,
+      "before_end_exclusive": 533,
+      "after_start": 529,
+      "after_end_exclusive": 531,
+      "before": [],
+      "after": [
+        "370M",
+        "790M"
+      ],
+      "before_context": [
+        "XG4 centered linear CKA",
+        "130M",
+        "370M",
+        "790M",
+        "1.4B",
+        "2.8B"
+      ],
+      "after_context": [
+        "130M",
+        "130M",
+        "370M",
+        "790M",
+        "1.4B",
+        "1.4B"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 535,
+      "before_end_exclusive": 535,
+      "after_start": 533,
+      "after_end_exclusive": 534,
+      "before": [],
+      "after": [
+        "1.4B"
+      ],
+      "before_context": [
+        "370M",
+        "790M",
+        "1.4B",
+        "2.8B",
+        "130M",
+        "1.00"
+      ],
+      "after_context": [
+        "790M",
+        "790M",
+        "1.4B",
+        "2.8B",
+        "2.8B",
+        "1.00 0.74 0.44 0.34 0.56"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 536,
+      "before_end_exclusive": 536,
+      "after_start": 535,
+      "after_end_exclusive": 542,
+      "before": [],
+      "after": [
+        "2.8B",
+        "1.00 0.74 0.44 0.34 0.56",
+        "0.74 1.00 0.56 0.50 0.65",
+        "0.44 0.56 1.00 0.66 0.64",
+        "0.34 0.50 0.66 1.00 0.53",
+        "0.56 0.65 0.64 0.53 1.00",
+        "C XG4 centered linear CKA"
+      ],
+      "before_context": [
+        "790M",
+        "1.4B",
+        "2.8B",
+        "130M",
+        "1.00",
+        "0.74"
+      ],
+      "after_context": [
+        "1.4B",
+        "1.4B",
+        "2.8B",
+        "130M",
+        "130M",
+        "370M"
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 537,
+      "before_end_exclusive": 566,
+      "after_start": 543,
+      "after_end_exclusive": 543,
+      "before": [
+        "1.00",
+        "0.74",
+        "0.44",
+        "0.34",
+        "0.56",
+        "370M",
+        "0.74",
+        "1.00",
+        "0.56",
+        "0.50",
+        "0.65",
+        "790M",
+        "0.44",
+        "0.56",
+        "1.00",
+        "0.66",
+        "0.64",
+        "1.4B",
+        "0.34",
+        "0.50",
+        "0.66",
+        "1.00",
+        "0.53",
+        "2.8B",
+        "0.56",
+        "0.65",
+        "0.64",
+        "0.53",
+        "1.00"
+      ],
+      "after": [],
+      "before_context": [
+        "1.4B",
+        "2.8B",
+        "130M",
+        "130M",
+        "370M",
+        "790M"
+      ],
+      "after_context": [
+        "0.56 0.65 0.64 0.53 1.00",
+        "C XG4 centered linear CKA",
+        "130M",
+        "130M",
+        "370M",
+        "370M"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 568,
+      "before_end_exclusive": 568,
+      "after_start": 545,
+      "after_end_exclusive": 547,
+      "before": [],
+      "after": [
+        "370M",
+        "790M"
+      ],
+      "before_context": [
+        "1.00",
+        "130M",
+        "370M",
+        "790M",
+        "1.4B",
+        "2.8B"
+      ],
+      "after_context": [
+        "130M",
+        "130M",
+        "370M",
+        "790M",
+        "1.4B",
+        "1.4B"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 570,
+      "before_end_exclusive": 570,
+      "after_start": 549,
+      "after_end_exclusive": 550,
+      "before": [],
+      "after": [
+        "1.4B"
+      ],
+      "before_context": [
+        "370M",
+        "790M",
+        "1.4B",
+        "2.8B",
+        "130M",
+        "1.00"
+      ],
+      "after_context": [
+        "790M",
+        "790M",
+        "1.4B",
+        "2.8B",
+        "2.8B",
+        "1.00 0.54 0.45 0.48 0.54"
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 571,
+      "before_end_exclusive": 595,
+      "after_start": 551,
+      "after_end_exclusive": 551,
+      "before": [
+        "130M",
+        "1.00",
+        "0.54",
+        "0.45",
+        "0.48",
+        "0.54",
+        "370M",
+        "0.54",
+        "1.00",
+        "0.56",
+        "0.44",
+        "0.59",
+        "790M",
+        "0.45",
+        "0.56",
+        "1.00",
+        "0.44",
+        "0.39",
+        "1.4B",
+        "0.48",
+        "0.44",
+        "0.44",
+        "1.00",
+        "0.46"
+      ],
+      "after": [],
+      "before_context": [
+        "790M",
+        "1.4B",
+        "2.8B",
+        "2.8B",
+        "0.54",
+        "0.59"
+      ],
+      "after_context": [
+        "1.4B",
+        "1.4B",
+        "2.8B",
+        "2.8B",
+        "1.00 0.54 0.45 0.48 0.54",
+        "0.54 1.00 0.56 0.44 0.59"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 596,
+      "before_end_exclusive": 603,
+      "after_start": 552,
+      "after_end_exclusive": 560,
+      "before": [
+        "0.54",
+        "0.59",
+        "0.39",
+        "0.46",
+        "1.00",
+        "Same 300 response-blind pairs per family. CKA = 1 denotes identical centered sample geometry;",
+        "off-diagonal values show partial, not invariant, cross-scale geometry. Cosine-RSM: Appendix A.2."
+      ],
+      "after": [
+        "1.00 0.54 0.45 0.48 0.54",
+        "0.54 1.00 0.56 0.44 0.59",
+        "0.45 0.56 1.00 0.44 0.39",
+        "0.48 0.44 0.44 1.00 0.46",
+        "0.54 0.59 0.39 0.46 1.00",
+        "Same 300 response-blind pairs per family. CKA = 1 denotes identical centered sample",
+        "geometry; off-diagonal values show partial, not invariant, cross-scale geometry.",
+        "Cosine-RSM: Appendix A.2."
+      ],
+      "before_context": [
+        "1.00",
+        "0.46",
+        "2.8B",
+        "Figure 3: Causal-role recurrence with only partial geometric conservation. (A) The selected/control",
+        "identity is reconstructed independently within each scale, but the common scale-local causal contrast",
+        "is supported at all five sizes. (B–C) Centered linear CKA compares the frozen response-blind XG2"
+      ],
+      "after_context": [
+        "1.4B",
+        "2.8B",
+        "2.8B",
+        "Figure 3: Causal-role recurrence with only partial geometric conservation. (A) The selected/control",
+        "identity is reconstructed independently within each scale, but the common scale-local causal contrast",
+        "is supported at all five sizes. (B–C) Centered linear CKA compares the frozen response-blind XG2"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 609,
+      "before_end_exclusive": 609,
+      "after_start": 566,
+      "after_end_exclusive": 568,
+      "before": [],
+      "after": [
+        "labels and inferential families differ; their exact chronology, including the separate failed 370M",
+        "residual criterion, is retained in Appendix A.4 rather than used as the narrative spine here."
+      ],
+      "before_context": [
+        "and XG4 alignment geometry on the same 300 source pairs per family. Off-diagonal values below",
+        "one show that recurrence of causal role does not require invariant sample geometry. Historical",
+        "protocol details and secondary cosine-RSM values are reported in the appendix.",
+        "We then test geometric invariance directly. For each scale and each response-blind family (XG2 and",
+        "XG4), the frozen geometry preparation provides 300alignment_delta_hvectors on the same",
+        "ordered source-pair population. We row-normalize these vectors, form their sample Gram matrix,"
+      ],
+      "after_context": [
+        "and XG4 alignment geometry on the same 300 source pairs per family. Off-diagonal values below",
+        "one show that recurrence of causal role does not require invariant sample geometry. Historical",
+        "protocol details and secondary cosine-RSM values are reported in the appendix.",
+        "We then test geometric invariance directly. For each scale and each response-blind family (XG2 and",
+        "XG4), the frozen geometry preparation provides 300alignment_delta_hvectors on the same",
+        "ordered source-pair population. We row-normalize these vectors, form their sample Gram matrix,"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 793,
+      "before_end_exclusive": 801,
+      "after_start": 752,
+      "after_end_exclusive": 756,
+      "before": [
+        "A",
+        "Downstream task objective",
+        "B",
+        "Vanilla next-token LM objective",
+        "Mean Delta L (forward-equivalent)",
+        "Mean TASK_MATCHED readout",
+        "-0.002",
+        "0.000"
+      ],
+      "after": [
+        "A Downstream task objective",
+        "Mean ΔL (forward-equivalent)",
+        "−0.002",
+        "0"
+      ],
+      "before_context": [
+        "376",
+        "377",
+        "Under review as a conference paper at ICLR 2027",
+        "0.002",
+        "0.004",
+        "0.006"
+      ],
+      "after_context": [
+        "376",
+        "377",
+        "Under review as a conference paper at ICLR 2027",
+        "0.002",
+        "0.004",
+        "0.006"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 805,
+      "before_end_exclusive": 805,
+      "after_start": 760,
+      "after_end_exclusive": 761,
+      "before": [],
+      "after": [
+        "+"
+      ],
+      "before_context": [
+        "0.004",
+        "0.006",
+        "130M",
+        "370M",
+        "790M",
+        "1.4B"
+      ],
+      "after_context": [
+        "0.004",
+        "0.006",
+        "130M",
+        "370M",
+        "+",
+        "790M"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 806,
+      "before_end_exclusive": 806,
+      "after_start": 762,
+      "after_end_exclusive": 763,
+      "before": [],
+      "after": [
+        "+"
+      ],
+      "before_context": [
+        "0.006",
+        "130M",
+        "370M",
+        "790M",
+        "1.4B",
+        "2.8B"
+      ],
+      "after_context": [
+        "130M",
+        "+",
+        "370M",
+        "790M",
+        "+",
+        "1.4B"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 807,
+      "before_end_exclusive": 807,
+      "after_start": 764,
+      "after_end_exclusive": 765,
+      "before": [],
+      "after": [
+        "+"
+      ],
+      "before_context": [
+        "130M",
+        "370M",
+        "790M",
+        "1.4B",
+        "2.8B",
+        "-0.06"
+      ],
+      "after_context": [
+        "370M",
+        "+",
+        "790M",
+        "1.4B",
+        "−",
+        "2.8B"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 808,
+      "before_end_exclusive": 808,
+      "after_start": 766,
+      "after_end_exclusive": 767,
+      "before": [],
+      "after": [
+        "−"
+      ],
+      "before_context": [
+        "370M",
+        "790M",
+        "1.4B",
+        "2.8B",
+        "-0.06",
+        "-0.04"
+      ],
+      "after_context": [
+        "790M",
+        "+",
+        "1.4B",
+        "2.8B",
+        "−",
+        "Point-estimate sign"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 809,
+      "before_end_exclusive": 813,
+      "after_start": 768,
+      "after_end_exclusive": 776,
+      "before": [
+        "-0.06",
+        "-0.04",
+        "-0.02",
+        "0.00"
+      ],
+      "after": [
+        "−",
+        "Point-estimate sign",
+        "B Vanilla next-token LM objective",
+        "Mean TASK_MATCHED readout",
+        "−0.06",
+        "−0.04",
+        "−0.02",
+        "0"
+      ],
+      "before_context": [
+        "790M",
+        "1.4B",
+        "2.8B",
+        "0.02",
+        "130M",
+        "370M"
+      ],
+      "after_context": [
+        "1.4B",
+        "−",
+        "2.8B",
+        "0.02",
+        "130M",
+        "−"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 815,
+      "before_end_exclusive": 815,
+      "after_start": 778,
+      "after_end_exclusive": 779,
+      "before": [],
+      "after": [
+        "−"
+      ],
+      "before_context": [
+        "0.00",
+        "0.02",
+        "130M",
+        "370M",
+        "790M",
+        "1.4B"
+      ],
+      "after_context": [
+        "0",
+        "0.02",
+        "130M",
+        "370M",
+        "−",
+        "790M"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 816,
+      "before_end_exclusive": 816,
+      "after_start": 780,
+      "after_end_exclusive": 781,
+      "before": [],
+      "after": [
+        "−"
+      ],
+      "before_context": [
+        "0.02",
+        "130M",
+        "370M",
+        "790M",
+        "1.4B",
+        "2.8B"
+      ],
+      "after_context": [
+        "130M",
+        "−",
+        "370M",
+        "790M",
+        "−",
+        "1.4B"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 817,
+      "before_end_exclusive": 817,
+      "after_start": 782,
+      "after_end_exclusive": 783,
+      "before": [],
+      "after": [
+        "−"
+      ],
+      "before_context": [
+        "130M",
+        "370M",
+        "790M",
+        "1.4B",
+        "2.8B",
+        "+"
+      ],
+      "after_context": [
+        "370M",
+        "−",
+        "790M",
+        "1.4B",
+        "+",
+        "2.8B"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 818,
+      "before_end_exclusive": 818,
+      "after_start": 784,
+      "after_end_exclusive": 785,
+      "before": [],
+      "after": [
+        "+"
+      ],
+      "before_context": [
+        "370M",
+        "790M",
+        "1.4B",
+        "2.8B",
+        "+",
+        "+"
+      ],
+      "after_context": [
+        "790M",
+        "−",
+        "1.4B",
+        "2.8B",
+        "+",
+        "Point-estimate sign"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 820,
+      "before_end_exclusive": 829,
+      "after_start": 787,
+      "after_end_exclusive": 788,
+      "before": [
+        "+",
+        "+",
+        "-",
+        "-",
+        "-",
+        "-",
+        "-",
+        "+",
+        "+"
+      ],
+      "after": [
+        "Point-estimate sign"
+      ],
+      "before_context": [
+        "1.4B",
+        "2.8B",
+        "+",
+        "Separate y-scales; bars and signs are point means, whiskers are percentile 95% pair intervals.",
+        "C",
+        "Pair-level associations remain mixed"
+      ],
+      "after_context": [
+        "+",
+        "2.8B",
+        "+",
+        "Separate y-scales; bars and signs are point means, whiskers are percentile 95% pair intervals.",
+        "C Pair-level associations remain mixed",
+        "130M 370M 790M 1.4B 2.8B"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 830,
+      "before_end_exclusive": 856,
+      "after_start": 789,
+      "after_end_exclusive": 796,
+      "before": [
+        "C",
+        "Pair-level associations remain mixed",
+        "130M",
+        "370M",
+        "790M",
+        "1.4B",
+        "2.8B",
+        "Pearson",
+        "+0.3208",
+        "-0.4593",
+        "+0.1862",
+        "-0.3664",
+        "+0.1330",
+        "Spearman",
+        "+0.2044",
+        "+0.0346",
+        "-0.0379",
+        "-0.1827",
+        "+0.0966",
+        "Pair sign agreement",
+        "0.5567",
+        "0.6033",
+        "0.4433",
+        "0.4567",
+        "0.5733",
+        "All five scales are shown descriptively; the 130M LM cell is the later completeness extension (Appendix A.6)."
+      ],
+      "after": [
+        "C Pair-level associations remain mixed",
+        "130M 370M 790M 1.4B 2.8B",
+        "Pearson +0.3208 −0.4593 +0.1862 −0.3664 +0.1330",
+        "Spearman +0.2044 +0.0346 −0.0379 −0.1827 +0.0966",
+        "Pair sign agreement 0.5567 0.6033 0.4433 0.4567 0.5733",
+        "All five scales are shown descriptively; the 130M LM cell is the later completeness",
+        "extension (Appendix A.6)."
+      ],
+      "before_context": [
+        "+",
+        "+",
+        "Separate y-scales; bars and signs are point means, whiskers are percentile 95% pair intervals.",
+        "Figure 4: Objective-conditioned readouts of fixed scale-local contrasts. Bars are frozen point means;",
+        "whiskers are percentile 95% pair-resampling intervals. Point-estimate aggregate orientations differ",
+        "across objectives at all five scales, but the two smallest-magnitude cells lack individual sign stability."
+      ],
+      "after_context": [
+        "+",
+        "Point-estimate sign",
+        "Separate y-scales; bars and signs are point means, whiskers are percentile 95% pair intervals.",
+        "Figure 4: Objective-conditioned readouts of fixed scale-local contrasts. Bars are frozen point means;",
+        "whiskers are percentile 95% pair-resampling intervals. Point-estimate aggregate orientations differ",
+        "across objectives at all five scales, but the two smallest-magnitude cells lack individual sign stability."
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 878,
+      "before_end_exclusive": 881,
+      "after_start": 818,
+      "after_end_exclusive": 818,
+      "before": [
+        "Task-functional readout.The separately trained structured downstream model supplies a correct-",
+        "class task margin. At each frozen native state, its local gradient defines∆L i =g ⊤",
+        "i (csel,i −c ctrl,i)."
+      ],
+      "after": [],
+      "before_context": [
+        "inal inferential families under the common scale-local contrastQ selected restored −Q matched control;",
+        "Appendix A.3–A.4 gives endpoints, populations, and the 370M residual caveat. No cross-scale",
+        "inferential family or magnitude scaling is asserted.",
+        "7",
+        "PAGE 8",
+        "378"
+      ],
+      "after_context": [
+        "inal inferential families under the common scale-local contrastQ selected restored −Q matched control;",
+        "Appendix A.3–A.4 gives endpoints, populations, and the 370M residual caveat. No cross-scale",
+        "inferential family or magnitude scaling is asserted.",
+        "7",
+        "PAGE 8",
+        "378"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 938,
+      "before_end_exclusive": 938,
+      "after_start": 875,
+      "after_end_exclusive": 878,
+      "before": [],
+      "after": [
+        "Task-functional readout.The separately trained structured downstream model supplies a correct-",
+        "class task margin. At each frozen native state, its local gradient defines∆L i =g ⊤",
+        "i (csel,i −c ctrl,i)."
+      ],
+      "before_context": [
+        "430",
+        "431",
+        "Under review as a conference paper at ICLR 2027",
+        "Selected and control components have numerically equal norms. The frozen branch-ownership con-",
+        "vention gives∆L forward = 2∆Lowned, preserving signs and correlations. The exact algebraic de-",
+        "composition is reported in Appendix A.5."
+      ],
+      "after_context": [
+        "430",
+        "431",
+        "Under review as a conference paper at ICLR 2027",
+        "Selected and control components have numerically equal norms. The frozen branch-ownership con-",
+        "vention gives∆L forward = 2∆Lowned, preserving signs and correlations. The exact algebraic de-",
+        "composition is reported in Appendix A.5."
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 981,
+      "before_end_exclusive": 983,
+      "after_start": 921,
+      "after_end_exclusive": 921,
+      "before": [
+        "Machine Learning Research, pp. 10920–10948, 2025. URLhttps://proceedings.mlr.",
+        "press/v267/ciernik25a.html."
+      ],
+      "after": [],
+      "before_context": [
+        "Laure Ciernik, Lorenz Linhardt, Marco Morik, Jonas Dippel, Simon Kornblith, and Lukas Mutten-",
+        "thaler. Objective drives the consistency of representational similarity across datasets. InProceed-",
+        "ings of the 42nd International Conference on Machine Learning, volume 267 ofProceedings of",
+        "8",
+        "PAGE 9",
+        "432"
+      ],
+      "after_context": [
+        "Laure Ciernik, Lorenz Linhardt, Marco Morik, Jonas Dippel, Simon Kornblith, and Lukas Mutten-",
+        "thaler. Objective drives the consistency of representational similarity across datasets. InProceed-",
+        "ings of the 42nd International Conference on Machine Learning, volume 267 ofProceedings of",
+        "8",
+        "PAGE 9",
+        "432"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 1040,
+      "before_end_exclusive": 1040,
+      "after_start": 978,
+      "after_end_exclusive": 980,
+      "before": [],
+      "after": [
+        "Machine Learning Research, pp. 10920–10948, 2025. URLhttps://proceedings.mlr.",
+        "press/v267/ciernik25a.html."
+      ],
+      "before_context": [
+        "484",
+        "485",
+        "Under review as a conference paper at ICLR 2027",
+        "Damai Dai, Li Dong, Yaru Hao, Zhifang Sui, Baobao Chang, and Furu Wei. Knowledge neurons",
+        "in pretrained transformers. InProceedings of the 60th Annual Meeting of the Association for",
+        "Computational Linguistics, pp. 8493–8502, 2022. doi: 10.18653/v1/2022.acl-long.581. URL"
+      ],
+      "after_context": [
+        "484",
+        "485",
+        "Under review as a conference paper at ICLR 2027",
+        "Damai Dai, Li Dong, Yaru Hao, Zhifang Sui, Baobao Chang, and Furu Wei. Knowledge neurons",
+        "in pretrained transformers. InProceedings of the 60th Annual Meeting of the Association for",
+        "Computational Linguistics, pp. 8493–8502, 2022. doi: 10.18653/v1/2022.acl-long.581. URL"
+      ]
+    }
+  ]
+}

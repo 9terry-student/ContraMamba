@@ -1,0 +1,38 @@
+PAGE 1
+A
+Prospective evidence chain at 130M
+Four independent holdouts test distinct causal requirements; exact statistics are in Appendix A.3.
+Transport
+Supported
+N = 300
+Specificity
+Supported
+N = 300
+Necessity
+Supported
+N = 300
+Restoration
+sufficiency
+Supported
+N = 300
+B
+Behavioral restoration
+Restored selected component minus matched control
+Mean task-margin shift
++0.00833
+N = 300 paired items
+Continuous margin consequence; not an accuracy-improvement claim.
+C
+Local readout tracks behavioral effect
+-0.01
+0
+0.01
+0.02
+0
+0.04
+0.08
+Behavioral margin shift
+Local task readout
+Pearson 0.618   Spearman 0.832
+Sign agreement 0.823
+All 300 pairs retained; associations are frozen descriptive results.

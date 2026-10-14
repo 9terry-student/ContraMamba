@@ -1,0 +1,236 @@
+{
+  "shard_ordinal": 82,
+  "original_queue_id": "WORK-c41e136b68d681adb371",
+  "original_source_ids": [
+    "HV000959"
+  ],
+  "original_source_identity": {
+    "commit": "cf6122588ccb59277c7b636f87cc805dfc83377f",
+    "path": "scripts/reason_router_p3w6f2_manual_review.py",
+    "blob": "4f59be63c32507e071eb7b7af7a2536457a881a5",
+    "object_type": "commit",
+    "bytes": 47209,
+    "sha256": "25aae2941e3b59d5aa6b8bc33bed47bc5e816d2d28cd8dbeea0c86b3a3bf6a2f"
+  },
+  "before": {
+    "commit": "00822821ba74b4027757481d07f033ec3b4c86f1",
+    "path": "scripts/reason_router_p3w6f2_manual_review.py",
+    "blob": "2bb94ff1c8f65332ff50243891100280bf622010",
+    "object_type": "commit",
+    "bytes": 47249,
+    "sha256": "1c259f99c34050e7764864f204b3018190adcfaaf0d8340dfcaee491e9031e39"
+  },
+  "after": {
+    "commit": "cf6122588ccb59277c7b636f87cc805dfc83377f",
+    "path": "scripts/reason_router_p3w6f2_manual_review.py",
+    "blob": "4f59be63c32507e071eb7b7af7a2536457a881a5",
+    "object_type": "commit",
+    "bytes": 47209,
+    "sha256": "25aae2941e3b59d5aa6b8bc33bed47bc5e816d2d28cd8dbeea0c86b3a3bf6a2f"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0125"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "make_review_record",
+      "require_no_validation_errors",
+      "strict_load_wip",
+      "upsert_wip_record",
+      "verify_pair_membership"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 5 removed/replaced lines and 9 added/replaced lines in 6 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "00822821ba74b4027757481d07f033ec3b4c86f1",
+      "blob": "2bb94ff1c8f65332ff50243891100280bf622010"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 216,
+      "before_end_exclusive": 216,
+      "after_start": 216,
+      "after_end_exclusive": 221,
+      "before": [],
+      "after": [
+        "",
+        "",
+        "def require_no_validation_errors(errors: list[str]) -> None:",
+        "    if errors:",
+        "        raise ReviewInfrastructureError(f\"{errors[0]}: {','.join(errors)}\")"
+      ],
+      "before_context": [
+        "def require(condition: bool, code: str, detail: str = \"\") -> None:",
+        "    if not condition:",
+        "        raise ReviewInfrastructureError(code if not detail else f\"{code}: {detail}\")",
+        "",
+        "",
+        "def resolve_repo_root(start: Path | None = None) -> Path:"
+      ],
+      "after_context": [
+        "def require(condition: bool, code: str, detail: str = \"\") -> None:",
+        "    if not condition:",
+        "        raise ReviewInfrastructureError(code if not detail else f\"{code}: {detail}\")",
+        "",
+        "",
+        "def resolve_repo_root(start: Path | None = None) -> Path:"
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 552,
+      "before_end_exclusive": 553,
+      "after_start": 557,
+      "after_end_exclusive": 557,
+      "before": [
+        "    require([row[\"pair_id\"] for row in source_rows] == [row[\"pair_id\"] for row in source_rows], \"AUTHORITY_PAIR_UNIVERSE_MISMATCH\")"
+      ],
+      "after": [],
+      "before_context": [
+        "    require(len(f2_records) == EXPECTED_PAIR_COUNT, \"AUTHORITY_PAIR_UNIVERSE_MISMATCH\", \"P3-W4 pair authority F2 count mismatch\")",
+        "    f2_by_pair = {str(record.get(\"pair_id\", \"\")): record for record in f2_records}",
+        "    require(len(f2_by_pair) == EXPECTED_PAIR_COUNT, \"AUTHORITY_PAIR_UNIVERSE_MISMATCH\", \"P3-W4 duplicate F2 pair IDs\")",
+        "    expected_members = 0",
+        "    for row in source_rows:",
+        "        pair_record = f2_by_pair.get(row[\"pair_id\"])"
+      ],
+      "after_context": [
+        "    require(len(f2_records) == EXPECTED_PAIR_COUNT, \"AUTHORITY_PAIR_UNIVERSE_MISMATCH\", \"P3-W4 pair authority F2 count mismatch\")",
+        "    f2_by_pair = {str(record.get(\"pair_id\", \"\")): record for record in f2_records}",
+        "    require(len(f2_by_pair) == EXPECTED_PAIR_COUNT, \"AUTHORITY_PAIR_UNIVERSE_MISMATCH\", \"P3-W4 duplicate F2 pair IDs\")",
+        "    expected_members = 0",
+        "    for row in source_rows:",
+        "        pair_record = f2_by_pair.get(row[\"pair_id\"])"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 617,
+      "before_end_exclusive": 618,
+      "after_start": 621,
+      "after_end_exclusive": 622,
+      "before": [
+        "    require(not errors, errors[0], \",\".join(errors))"
+      ],
+      "after": [
+        "    require_no_validation_errors(errors)"
+      ],
+      "before_context": [
+        "    require_wip_path_outside_repo(authority.repo_root, path)",
+        "    records, duplicate_pair_ids = load_wip(path)",
+        "    errors = validate_wip_records(authority, records, duplicate_pair_ids)",
+        "    return records, duplicate_pair_ids",
+        "",
+        ""
+      ],
+      "after_context": [
+        "    require_wip_path_outside_repo(authority.repo_root, path)",
+        "    records, duplicate_pair_ids = load_wip(path)",
+        "    errors = validate_wip_records(authority, records, duplicate_pair_ids)",
+        "    return records, duplicate_pair_ids",
+        "",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 681,
+      "before_end_exclusive": 682,
+      "after_start": 685,
+      "after_end_exclusive": 686,
+      "before": [
+        "    require(not errors, errors[0], \",\".join(errors))"
+      ],
+      "after": [
+        "    require_no_validation_errors(errors)"
+      ],
+      "before_context": [
+        "        \"reviewed_at_utc\": utc_timestamp(clock),",
+        "    }",
+        "    errors = validate_review_record(record, authority)",
+        "    return record",
+        "",
+        ""
+      ],
+      "after_context": [
+        "        \"reviewed_at_utc\": utc_timestamp(clock),",
+        "    }",
+        "    errors = validate_review_record(record, authority)",
+        "    return record",
+        "",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 689,
+      "before_end_exclusive": 690,
+      "after_start": 693,
+      "after_end_exclusive": 694,
+      "before": [
+        "    require(not errors, errors[0], \",\".join(errors))"
+      ],
+      "after": [
+        "    require_no_validation_errors(errors)"
+      ],
+      "before_context": [
+        "    require_wip_path_outside_repo(authority.repo_root, path)",
+        "    records, duplicate_pair_ids = load_wip(path)",
+        "    errors = validate_wip_records(authority, records, duplicate_pair_ids)",
+        "    record_errors = validate_review_record(record, authority)",
+        "    require(not record_errors, record_errors[0], \",\".join(record_errors))",
+        "    replaced = False"
+      ],
+      "after_context": [
+        "    require_wip_path_outside_repo(authority.repo_root, path)",
+        "    records, duplicate_pair_ids = load_wip(path)",
+        "    errors = validate_wip_records(authority, records, duplicate_pair_ids)",
+        "    record_errors = validate_review_record(record, authority)",
+        "    require_no_validation_errors(record_errors)",
+        "    replaced = False"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 691,
+      "before_end_exclusive": 692,
+      "after_start": 695,
+      "after_end_exclusive": 696,
+      "before": [
+        "    require(not record_errors, record_errors[0], \",\".join(record_errors))"
+      ],
+      "after": [
+        "    require_no_validation_errors(record_errors)"
+      ],
+      "before_context": [
+        "    errors = validate_wip_records(authority, records, duplicate_pair_ids)",
+        "    require(not errors, errors[0], \",\".join(errors))",
+        "    record_errors = validate_review_record(record, authority)",
+        "    replaced = False",
+        "    next_records: list[dict[str, Any]] = []",
+        "    for existing in records:"
+      ],
+      "after_context": [
+        "    errors = validate_wip_records(authority, records, duplicate_pair_ids)",
+        "    require_no_validation_errors(errors)",
+        "    record_errors = validate_review_record(record, authority)",
+        "    replaced = False",
+        "    next_records: list[dict[str, Any]] = []",
+        "    for existing in records:"
+      ]
+    }
+  ]
+}

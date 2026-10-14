@@ -1,0 +1,621 @@
+{
+  "shard_ordinal": 12,
+  "original_queue_id": "WORK-1fd2c1a43fa421e89ff4",
+  "original_source_ids": [
+    "HV000781"
+  ],
+  "original_source_identity": {
+    "commit": "137927d758f5e155b94f7c00c11b3d97e34daa38",
+    "path": "scripts/evaluate_stage32_shadow_composer.py",
+    "blob": "18906b8b45d3de840d186422a6e845d0c6686e86",
+    "object_type": "commit",
+    "bytes": 64011,
+    "sha256": "812eb88a041540f6a34c2ce124dcaf99530197cc97fbdb56657dc043627f7cc7"
+  },
+  "before": {
+    "commit": "cfd9342d52cdc7cdfc50733a3248530f59f47258",
+    "path": "scripts/evaluate_stage32_shadow_composer.py",
+    "blob": "12950a45f2ba013d14bd38b3a53c7916b2ede704",
+    "object_type": "commit",
+    "bytes": 55608,
+    "sha256": "bec4c868899416660b44cdb1ad1597390fdeec3b49acde6e74e7922d312f2cb8"
+  },
+  "after": {
+    "commit": "137927d758f5e155b94f7c00c11b3d97e34daa38",
+    "path": "scripts/evaluate_stage32_shadow_composer.py",
+    "blob": "18906b8b45d3de840d186422a6e845d0c6686e86",
+    "object_type": "commit",
+    "bytes": 64011,
+    "sha256": "812eb88a041540f6a34c2ce124dcaf99530197cc97fbdb56657dc043627f7cc7"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0099"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "compute_stage31_diagnostics_from_values",
+      "compute_stage33_conditional_summary",
+      "decide",
+      "main",
+      "write_markdown"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 0 removed/replaced lines and 195 added/replaced lines in 14 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "cfd9342d52cdc7cdfc50733a3248530f59f47258",
+      "blob": "12950a45f2ba013d14bd38b3a53c7916b2ede704"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 393,
+      "before_end_exclusive": 393,
+      "after_start": 393,
+      "after_end_exclusive": 442,
+      "before": [],
+      "after": [
+        "def compute_stage33_conditional_summary(rows: list[dict[str, Any]]) -> dict[str, Any] | None:",
+        "    fields = {",
+        "        \"stage33_conditional_fallback_enabled\",",
+        "        \"stage33_conditional_action\",",
+        "        \"stage33_conditional_fallback_used\",",
+        "        \"stage33_conditional_override_applied\",",
+        "        \"stage33_conditional_override_type\",",
+        "        \"stage33_conditional_original_current_label\",",
+        "        \"stage33_conditional_shadow_label\",",
+        "    }",
+        "    if not any(any(field in row for field in fields) for row in rows):",
+        "        return None",
+        "    fallback_used = sum(",
+        "        normalize_bool(row.get(\"stage33_conditional_fallback_used\")) is True",
+        "        for row in rows",
+        "    )",
+        "    override_applied = sum(",
+        "        normalize_bool(row.get(\"stage33_conditional_override_applied\")) is True",
+        "        for row in rows",
+        "    )",
+        "    enabled_count = sum(",
+        "        normalize_bool(row.get(\"stage33_conditional_fallback_enabled\")) is True",
+        "        for row in rows",
+        "    )",
+        "    return {",
+        "        \"stage33_conditional_enabled_count\": enabled_count,",
+        "        \"stage33_conditional_action_counts\": group_distribution(",
+        "            rows, \"stage33_conditional_action\"",
+        "        ),",
+        "        \"stage33_conditional_fallback_used_count\": fallback_used,",
+        "        \"stage33_conditional_fallback_used_rate\": round(",
+        "            safe_div(fallback_used, len(rows)), 4",
+        "        ),",
+        "        \"stage33_conditional_override_applied_count\": override_applied,",
+        "        \"stage33_conditional_override_applied_rate\": round(",
+        "            safe_div(override_applied, len(rows)), 4",
+        "        ),",
+        "        \"stage33_conditional_override_type_counts\": group_distribution(",
+        "            rows, \"stage33_conditional_override_type\"",
+        "        ),",
+        "        \"stage33_conditional_original_current_label_counts\": group_distribution(",
+        "            rows, \"stage33_conditional_original_current_label\"",
+        "        ),",
+        "        \"stage33_conditional_shadow_label_counts\": group_distribution(",
+        "            rows, \"stage33_conditional_shadow_label\"",
+        "        ),",
+        "    }",
+        "",
+        ""
+      ],
+      "before_context": [
+        "    }",
+        "",
+        "",
+        "def compute_group_metrics(",
+        "    rows: list[dict[str, Any]],",
+        "    group_field: str | None,"
+      ],
+      "after_context": [
+        "    }",
+        "",
+        "",
+        "def compute_group_metrics(",
+        "    rows: list[dict[str, Any]],",
+        "    group_field: str | None,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 517,
+      "before_end_exclusive": 517,
+      "after_start": 566,
+      "after_end_exclusive": 569,
+      "before": [],
+      "after": [
+        "        conditional_enabled = (",
+        "            normalize_bool(row.get(\"stage33_conditional_fallback_enabled\")) is True",
+        "        )"
+      ],
+      "before_context": [
+        "        rows, current, shadow, v2_routes, structured_routes, structured_reasons",
+        "    ):",
+        "        group = str(row.get(group_field, \"\"))",
+        "        if group in SUPPORT_ENTAILMENT_GROUPS:",
+        "            if structured_route == \"ENTAILMENT_PRESERVE\":",
+        "                diag[\"support_entailment_stage33_entailment_preserve\"] += 1"
+      ],
+      "after_context": [
+        "        rows, current, shadow, v2_routes, structured_routes, structured_reasons",
+        "    ):",
+        "        group = str(row.get(group_field, \"\"))",
+        "        if group in SUPPORT_ENTAILMENT_GROUPS:",
+        "            if structured_route == \"ENTAILMENT_PRESERVE\":",
+        "                diag[\"support_entailment_stage33_entailment_preserve\"] += 1"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 532,
+      "before_end_exclusive": 532,
+      "after_start": 584,
+      "after_end_exclusive": 586,
+      "before": [],
+      "after": [
+        "                if conditional_enabled:",
+        "                    diag[\"stage33_conditional_support_still_ne\"] += 1"
+      ],
+      "before_context": [
+        "                diag[\"support_entailment_shadow_ne\"] += 1",
+        "                diag[\"shadow_support_to_ne\"] += 1",
+        "                diag[\"stage33_shadow_support_to_ne\"] += 1",
+        "            if shadow_label == \"SUPPORT\":",
+        "                diag[\"support_entailment_shadow_support\"] += 1",
+        "                diag[\"support_entailment_stage33_shadow_support\"] += 1"
+      ],
+      "after_context": [
+        "                diag[\"support_entailment_shadow_ne\"] += 1",
+        "                diag[\"shadow_support_to_ne\"] += 1",
+        "                diag[\"stage33_shadow_support_to_ne\"] += 1",
+        "            if shadow_label == \"SUPPORT\":",
+        "                diag[\"support_entailment_shadow_support\"] += 1",
+        "                diag[\"support_entailment_stage33_shadow_support\"] += 1"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 536,
+      "before_end_exclusive": 536,
+      "after_start": 590,
+      "after_end_exclusive": 592,
+      "before": [],
+      "after": [
+        "                if conditional_enabled:",
+        "                    diag[\"stage33_conditional_support_recovered\"] += 1"
+      ],
+      "before_context": [
+        "                diag[\"support_entailment_shadow_support\"] += 1",
+        "                diag[\"support_entailment_stage33_shadow_support\"] += 1",
+        "                support_by_reason[structured_reason or \"missing\"] += 1",
+        "            if shadow_label == \"REFUTE\":",
+        "                diag[\"shadow_support_to_refute\"] += 1",
+        "                diag[\"stage33_shadow_support_to_refute\"] += 1"
+      ],
+      "after_context": [
+        "                diag[\"support_entailment_shadow_support\"] += 1",
+        "                diag[\"support_entailment_stage33_shadow_support\"] += 1",
+        "                support_by_reason[structured_reason or \"missing\"] += 1",
+        "            if shadow_label == \"REFUTE\":",
+        "                diag[\"shadow_support_to_refute\"] += 1",
+        "                diag[\"stage33_shadow_support_to_refute\"] += 1"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 556,
+      "before_end_exclusive": 556,
+      "after_start": 612,
+      "after_end_exclusive": 614,
+      "before": [],
+      "after": [
+        "                if conditional_enabled:",
+        "                    diag[\"stage33_conditional_overclaim_to_support\"] += 1"
+      ],
+      "before_context": [
+        "                diag[\"overclaim_stage33_shadow_support\"] += 1",
+        "                diag[\"stage33_shadow_overclaim_to_support\"] += 1",
+        "                overclaim_support_by_reason[structured_reason or \"missing\"] += 1",
+        "            if shadow_label == \"NOT_ENTITLED\":",
+        "                diag[\"overclaim_shadow_ne\"] += 1",
+        "        elif group in REFUTE_GROUPS:"
+      ],
+      "after_context": [
+        "                diag[\"overclaim_stage33_shadow_support\"] += 1",
+        "                diag[\"stage33_shadow_overclaim_to_support\"] += 1",
+        "                overclaim_support_by_reason[structured_reason or \"missing\"] += 1",
+        "            if shadow_label == \"NOT_ENTITLED\":",
+        "                diag[\"overclaim_shadow_ne\"] += 1",
+        "        elif group in REFUTE_GROUPS:"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 574,
+      "before_end_exclusive": 574,
+      "after_start": 632,
+      "after_end_exclusive": 634,
+      "before": [],
+      "after": [
+        "                if conditional_enabled:",
+        "                    diag[\"stage33_conditional_refute_to_support\"] += 1"
+      ],
+      "before_context": [
+        "                diag[\"shadow_refute_to_support\"] += 1",
+        "                diag[\"stage33_shadow_refute_to_support\"] += 1",
+        "                refute_support_by_reason[structured_reason or \"missing\"] += 1",
+        "            if shadow_label == \"REFUTE\":",
+        "                diag[\"refute_shadow_refute\"] += 1",
+        "                diag[\"refute_stage33_shadow_refute\"] += 1"
+      ],
+      "after_context": [
+        "                diag[\"shadow_refute_to_support\"] += 1",
+        "                diag[\"stage33_shadow_refute_to_support\"] += 1",
+        "                refute_support_by_reason[structured_reason or \"missing\"] += 1",
+        "            if shadow_label == \"REFUTE\":",
+        "                diag[\"refute_shadow_refute\"] += 1",
+        "                diag[\"refute_stage33_shadow_refute\"] += 1"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 577,
+      "before_end_exclusive": 577,
+      "after_start": 637,
+      "after_end_exclusive": 639,
+      "before": [],
+      "after": [
+        "                if conditional_enabled:",
+        "                    diag[\"stage33_conditional_refute_recovered\"] += 1"
+      ],
+      "before_context": [
+        "            if shadow_label == \"REFUTE\":",
+        "                diag[\"refute_shadow_refute\"] += 1",
+        "                diag[\"refute_stage33_shadow_refute\"] += 1",
+        "            if shadow_label == \"NOT_ENTITLED\":",
+        "                diag[\"refute_shadow_ne\"] += 1",
+        ""
+      ],
+      "after_context": [
+        "            if shadow_label == \"REFUTE\":",
+        "                diag[\"refute_shadow_refute\"] += 1",
+        "                diag[\"refute_stage33_shadow_refute\"] += 1",
+        "            if shadow_label == \"NOT_ENTITLED\":",
+        "                diag[\"refute_shadow_ne\"] += 1",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 614,
+      "before_end_exclusive": 614,
+      "after_start": 676,
+      "after_end_exclusive": 681,
+      "before": [],
+      "after": [
+        "        \"stage33_conditional_support_recovered\",",
+        "        \"stage33_conditional_support_still_ne\",",
+        "        \"stage33_conditional_overclaim_to_support\",",
+        "        \"stage33_conditional_refute_to_support\",",
+        "        \"stage33_conditional_refute_recovered\","
+      ],
+      "before_context": [
+        "        \"stage33_shadow_refute_to_support\",",
+        "        \"stage33_shadow_support_to_ne\",",
+        "        \"stage33_shadow_support_to_refute\",",
+        "    ):",
+        "        diag.setdefault(key, 0)",
+        "    result = dict(diag)"
+      ],
+      "after_context": [
+        "        \"stage33_shadow_refute_to_support\",",
+        "        \"stage33_shadow_support_to_ne\",",
+        "        \"stage33_shadow_support_to_refute\",",
+        "    ):",
+        "        diag.setdefault(key, 0)",
+        "    result = dict(diag)"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 808,
+      "before_end_exclusive": 808,
+      "after_start": 875,
+      "after_end_exclusive": 876,
+      "before": [],
+      "after": [
+        "    stage33_conditional_summary: dict[str, Any] | None = None,"
+      ],
+      "before_context": [
+        "    stage31_diag: dict[str, Any] | None,",
+        "    coverage_v2_summary: dict[str, Any] | None,",
+        "    stage33_summary: dict[str, Any] | None = None,",
+        ") -> dict[str, str]:",
+        "    macro_delta = shadow_metrics[\"macro_f1\"] - current_metrics[\"macro_f1\"]",
+        "    if stage33_summary is not None:"
+      ],
+      "after_context": [
+        "    stage31_diag: dict[str, Any] | None,",
+        "    coverage_v2_summary: dict[str, Any] | None,",
+        "    stage33_summary: dict[str, Any] | None = None,",
+        ") -> dict[str, str]:",
+        "    macro_delta = shadow_metrics[\"macro_f1\"] - current_metrics[\"macro_f1\"]",
+        "    if ("
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 810,
+      "before_end_exclusive": 810,
+      "after_start": 878,
+      "after_end_exclusive": 934,
+      "before": [],
+      "after": [
+        "    if (",
+        "        stage33_conditional_summary is not None",
+        "        and stage33_conditional_summary.get(\"stage33_conditional_enabled_count\", 0) > 0",
+        "    ):",
+        "        cond_support = (",
+        "            stage31_diag.get(\"stage33_conditional_support_recovered\", 0)",
+        "            if stage31_diag else 0",
+        "        )",
+        "        cond_overclaim_support = (",
+        "            stage31_diag.get(\"stage33_conditional_overclaim_to_support\", 0)",
+        "            if stage31_diag else 0",
+        "        )",
+        "        cond_refute_support = (",
+        "            stage31_diag.get(\"stage33_conditional_refute_to_support\", 0)",
+        "            if stage31_diag else 0",
+        "        )",
+        "        fallback_used = stage33_conditional_summary.get(",
+        "            \"stage33_conditional_fallback_used_count\", 0",
+        "        )",
+        "        if (",
+        "            cond_overclaim_support > 0",
+        "            or cond_refute_support > 0",
+        "            or macro_delta <= -0.05",
+        "            or fallback_used == 0",
+        "        ):",
+        "            return {",
+        "                \"label\": \"STAGE33C_CONDITIONAL_UNSAFE\",",
+        "                \"reason\": (",
+        "                    \"Conditional structured fallback is unsafe or ineffective: \"",
+        "                    \"safety errors appeared, macro-F1 dropped materially, or fallback \"",
+        "                    \"was not used.\"",
+        "                ),",
+        "            }",
+        "        if cond_support > 0 and macro_delta > -0.02:",
+        "            return {",
+        "                \"label\": \"STAGE33C_CONDITIONAL_PROMISING\",",
+        "                \"reason\": (",
+        "                    \"Conditional fallback recovers Stage31 SUPPORT cases without \"",
+        "                    \"overclaim/refute to SUPPORT errors and without material macro-F1 drop.\"",
+        "                ),",
+        "            }",
+        "        if cond_support > 0:",
+        "            return {",
+        "                \"label\": \"STAGE33C_CONDITIONAL_DIAGNOSTIC_ONLY\",",
+        "                \"reason\": (",
+        "                    \"Conditional fallback recovers some Stage31 SUPPORT cases, but \"",
+        "                    \"aggregate dev behavior is still neutral or unclear.\"",
+        "                ),",
+        "            }",
+        "        return {",
+        "            \"label\": \"STAGE33C_CONDITIONAL_DIAGNOSTIC_ONLY\",",
+        "            \"reason\": (",
+        "                \"Conditional fallback fields are present, but support recovery has \"",
+        "                \"not been demonstrated in this export.\"",
+        "            ),",
+        "        }"
+      ],
+      "before_context": [
+        "    stage33_summary: dict[str, Any] | None = None,",
+        ") -> dict[str, str]:",
+        "    macro_delta = shadow_metrics[\"macro_f1\"] - current_metrics[\"macro_f1\"]",
+        "    if stage33_summary is not None:",
+        "        if stage31_diag:",
+        "            stage33_overclaim_support = stage31_diag.get("
+      ],
+      "after_context": [
+        "    stage33_conditional_summary: dict[str, Any] | None = None,",
+        ") -> dict[str, str]:",
+        "    macro_delta = shadow_metrics[\"macro_f1\"] - current_metrics[\"macro_f1\"]",
+        "    if stage33_summary is not None:",
+        "        if stage31_diag:",
+        "            stage33_overclaim_support = stage31_diag.get("
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 1071,
+      "before_end_exclusive": 1071,
+      "after_start": 1195,
+      "after_end_exclusive": 1219,
+      "before": [],
+      "after": [
+        "    if report.get(\"stage33_conditional_summary\") is not None:",
+        "        summary = report[\"stage33_conditional_summary\"]",
+        "        lines.extend([\"\", \"## Stage33-C Conditional Fallback Summary\"])",
+        "        lines.append(",
+        "            f\"- Fallback used: {summary['stage33_conditional_fallback_used_count']} \"",
+        "            f\"({summary['stage33_conditional_fallback_used_rate']:.4f})\"",
+        "        )",
+        "        lines.append(",
+        "            f\"- Overrides applied: {summary['stage33_conditional_override_applied_count']} \"",
+        "            f\"({summary['stage33_conditional_override_applied_rate']:.4f})\"",
+        "        )",
+        "        for title, key in (",
+        "            (\"Conditional Action Counts\", \"stage33_conditional_action_counts\"),",
+        "            (\"Conditional Override Type Counts\", \"stage33_conditional_override_type_counts\"),",
+        "            (",
+        "                \"Conditional Original Current Label Counts\",",
+        "                \"stage33_conditional_original_current_label_counts\",",
+        "            ),",
+        "            (\"Conditional Shadow Label Counts\", \"stage33_conditional_shadow_label_counts\"),",
+        "        ):",
+        "            lines.extend([\"\", f\"### {title}\", \"| Value | Count |\", \"|---|---:|\"])",
+        "            for name, count in sorted(summary[key].items()):",
+        "                lines.append(f\"| {name} | {count} |\")",
+        ""
+      ],
+      "before_context": [
+        "        ].items():",
+        "            lines.append(f\"- {key}: {value}\")",
+        "",
+        "    if report[\"group_metrics\"]:",
+        "        lines.extend([\"\", \"## Group-Level Metrics\", \"| Group | N | Current Acc | Shadow Acc | Delta |\", \"|---|---:|---:|---:|---:|\"])",
+        "        for group, metrics in report[\"group_metrics\"].items():"
+      ],
+      "after_context": [
+        "        ].items():",
+        "            lines.append(f\"- {key}: {value}\")",
+        "",
+        "    if report[\"group_metrics\"]:",
+        "        lines.extend([\"\", \"## Group-Level Metrics\", \"| Group | N | Current Acc | Shadow Acc | Delta |\", \"|---|---:|---:|---:|---:|\"])",
+        "        for group, metrics in report[\"group_metrics\"].items():"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 1233,
+      "before_end_exclusive": 1233,
+      "after_start": 1381,
+      "after_end_exclusive": 1382,
+      "before": [],
+      "after": [
+        "    stage33_conditional_summary = compute_stage33_conditional_summary(rows)"
+      ],
+      "before_context": [
+        "    stage31_diag = compute_stage31_diagnostics(rows, group_field, current_field, shadow_field)",
+        "    coverage_v2_summary = compute_coverage_v2_summary(rows)",
+        "    stage33_summary = compute_stage33_structured_summary(rows, gold_field, shadow_field)",
+        "    offline_sweep: list[dict[str, Any]] | None = None",
+        "    offline_sweep_best: dict[str, Any] | None = None",
+        "    offline_sweep_decision: dict[str, str] | None = None"
+      ],
+      "after_context": [
+        "    stage31_diag = compute_stage31_diagnostics(rows, group_field, current_field, shadow_field)",
+        "    coverage_v2_summary = compute_coverage_v2_summary(rows)",
+        "    stage33_summary = compute_stage33_structured_summary(rows, gold_field, shadow_field)",
+        "    offline_sweep: list[dict[str, Any]] | None = None",
+        "    offline_sweep_best: dict[str, Any] | None = None",
+        "    offline_sweep_decision: dict[str, str] | None = None"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 1293,
+      "before_end_exclusive": 1293,
+      "after_start": 1442,
+      "after_end_exclusive": 1443,
+      "before": [],
+      "after": [
+        "        stage33_conditional_summary,"
+      ],
+      "before_context": [
+        "        stage31_diag,",
+        "        coverage_v2_summary,",
+        "        stage33_summary,",
+        "    )",
+        "    report = {",
+        "        \"run_name\": args.run_name,"
+      ],
+      "after_context": [
+        "        stage31_diag,",
+        "        coverage_v2_summary,",
+        "        stage33_summary,",
+        "    )",
+        "    report = {",
+        "        \"run_name\": args.run_name,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 1395,
+      "before_end_exclusive": 1395,
+      "after_start": 1545,
+      "after_end_exclusive": 1590,
+      "before": [],
+      "after": [
+        "        \"stage33_conditional_summary\": stage33_conditional_summary,",
+        "        \"stage33_conditional_action_counts\": (",
+        "            stage33_conditional_summary.get(\"stage33_conditional_action_counts\")",
+        "            if stage33_conditional_summary else None",
+        "        ),",
+        "        \"stage33_conditional_fallback_used_count\": (",
+        "            stage33_conditional_summary.get(",
+        "                \"stage33_conditional_fallback_used_count\"",
+        "            )",
+        "            if stage33_conditional_summary else None",
+        "        ),",
+        "        \"stage33_conditional_fallback_used_rate\": (",
+        "            stage33_conditional_summary.get(\"stage33_conditional_fallback_used_rate\")",
+        "            if stage33_conditional_summary else None",
+        "        ),",
+        "        \"stage33_conditional_override_applied_count\": (",
+        "            stage33_conditional_summary.get(",
+        "                \"stage33_conditional_override_applied_count\"",
+        "            )",
+        "            if stage33_conditional_summary else None",
+        "        ),",
+        "        \"stage33_conditional_override_applied_rate\": (",
+        "            stage33_conditional_summary.get(",
+        "                \"stage33_conditional_override_applied_rate\"",
+        "            )",
+        "            if stage33_conditional_summary else None",
+        "        ),",
+        "        \"stage33_conditional_override_type_counts\": (",
+        "            stage33_conditional_summary.get(",
+        "                \"stage33_conditional_override_type_counts\"",
+        "            )",
+        "            if stage33_conditional_summary else None",
+        "        ),",
+        "        \"stage33_conditional_original_current_label_counts\": (",
+        "            stage33_conditional_summary.get(",
+        "                \"stage33_conditional_original_current_label_counts\"",
+        "            )",
+        "            if stage33_conditional_summary else None",
+        "        ),",
+        "        \"stage33_conditional_shadow_label_counts\": (",
+        "            stage33_conditional_summary.get(",
+        "                \"stage33_conditional_shadow_label_counts\"",
+        "            )",
+        "            if stage33_conditional_summary else None",
+        "        ),"
+      ],
+      "before_context": [
+        "            stage33_summary.get(\"stage33_structured_coverage_confidence_summary\")",
+        "            if stage33_summary else None",
+        "        ),",
+        "        \"group_metrics\": compute_group_metrics(",
+        "            rows, group_field, gold_field, current_field, shadow_field",
+        "        ),"
+      ],
+      "after_context": [
+        "            stage33_summary.get(\"stage33_structured_coverage_confidence_summary\")",
+        "            if stage33_summary else None",
+        "        ),",
+        "        \"group_metrics\": compute_group_metrics(",
+        "            rows, group_field, gold_field, current_field, shadow_field",
+        "        ),"
+      ]
+    }
+  ]
+}

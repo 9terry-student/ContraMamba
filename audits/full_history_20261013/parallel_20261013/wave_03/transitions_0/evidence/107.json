@@ -1,0 +1,280 @@
+{
+  "shard_ordinal": 107,
+  "original_queue_id": "WORK-fa841cf55a9c207ee292",
+  "original_source_ids": [
+    "HV000806"
+  ],
+  "original_source_identity": {
+    "commit": "5f5f4d6a80085ad8baf43445475d1c3049535c22",
+    "path": "scripts/longterm_k0_rvg_divergence_aligned_state_audit.py",
+    "blob": "df508d489b89ec7b4e7d042aa11c33b70c857e3a",
+    "object_type": "commit",
+    "bytes": 29612,
+    "sha256": "926a540343e641063d2126880982a0d4c65f2fdd6ca8b553bce52c2cb9af0672"
+  },
+  "before": {
+    "commit": "f3ac972c96defa9b7346f6e29f782ace65c9b89e",
+    "path": "scripts/longterm_k0_rvg_divergence_aligned_state_audit.py",
+    "blob": "425538f51e30564e0d64de623206b5d346cbc3a2",
+    "object_type": "commit",
+    "bytes": 28000,
+    "sha256": "aeadb0f6f9f1b8ecb30b4ffe3666ef0925529e4816849c4bb0df8f6cfc289a98"
+  },
+  "after": {
+    "commit": "5f5f4d6a80085ad8baf43445475d1c3049535c22",
+    "path": "scripts/longterm_k0_rvg_divergence_aligned_state_audit.py",
+    "blob": "df508d489b89ec7b4e7d042aa11c33b70c857e3a",
+    "object_type": "commit",
+    "bytes": 29612,
+    "sha256": "926a540343e641063d2126880982a0d4c65f2fdd6ca8b553bce52c2cb9af0672"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0105"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "comparison_rows_for_pair",
+      "make_scientific_summary",
+      "scientific_execute"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 2 removed/replaced lines and 34 added/replaced lines in 7 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "dcac03006a97079061d7955e287e1f8b54aa2853",
+      "blob": "df508d489b89ec7b4e7d042aa11c33b70c857e3a"
+    }
+  ],
+  "immediate_parent_has_before_blob": false,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 7,
+      "before_end_exclusive": 7,
+      "after_start": 7,
+      "after_end_exclusive": 9,
+      "before": [],
+      "after": [
+        "- each matched/swapped pair is prefix-truncated through k=+6,",
+        "- matched/swapped effective execution lengths are therefore equal,"
+      ],
+      "before_context": [
+        "- frozen active token IDs only; no tokenizer invocation,",
+        "- per-role matched-vs-swapped first token difference is the anchor,",
+        "- common full-population window k=-1..+6,",
+        "- layer 23 S_prev/G/W/S_post exact SHA256 comparison,",
+        "- no logits, no heads, no geometry, no training, no intervention.",
+        ""
+      ],
+      "after_context": [
+        "- frozen active token IDs only; no tokenizer invocation,",
+        "- per-role matched-vs-swapped first token difference is the anchor,",
+        "- common full-population window k=-1..+6,",
+        "- layer 23 S_prev/G/W/S_post exact SHA256 comparison,",
+        "- no logits, no heads, no geometry, no training, no intervention.",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 544,
+      "before_end_exclusive": 544,
+      "after_start": 546,
+      "after_end_exclusive": 548,
+      "before": [],
+      "after": [
+        "        \"effective_execution_length\": anchor + POST_HORIZON + 1,",
+        "        \"execution_protocol\": \"EQUAL_LENGTH_PREFIX_TRUNCATED_THROUGH_K_PLUS_6\","
+      ],
+      "before_context": [
+        "        \"swapped_length\": int(plan_row[\"swapped_length\"]),",
+        "        \"divergence_anchor_token_index\": anchor,",
+        "        \"common_post_horizon\": int(plan_row[\"common_post_horizon\"]),",
+        "        \"first_state_hash_difference_relative_coordinate\": first_state_difference,",
+        "        \"first_state_hash_difference_fields\": first_difference_fields,",
+        "        \"state_hash_identity_through_k_plus_6\": first_state_difference is None,"
+      ],
+      "after_context": [
+        "        \"swapped_length\": int(plan_row[\"swapped_length\"]),",
+        "        \"divergence_anchor_token_index\": anchor,",
+        "        \"common_post_horizon\": int(plan_row[\"common_post_horizon\"]),",
+        "        \"first_state_hash_difference_relative_coordinate\": first_state_difference,",
+        "        \"first_state_hash_difference_fields\": first_difference_fields,",
+        "        \"state_hash_identity_through_k_plus_6\": first_state_difference is None,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 624,
+      "before_end_exclusive": 624,
+      "after_start": 628,
+      "after_end_exclusive": 631,
+      "before": [],
+      "after": [
+        "        \"execution_protocol\": \"EQUAL_LENGTH_PREFIX_TRUNCATED_THROUGH_K_PLUS_6\",",
+        "        \"future_suffix_executed\": False,",
+        "        \"matched_swapped_effective_length_equal\": True,"
+      ],
+      "before_context": [
+        "        \"comparison_row_count\": len(comparison_rows),",
+        "        \"primary_layer\": PRIMARY_LAYER,",
+        "        \"relative_coordinates\": list(RELATIVE_COORDINATES),",
+        "        \"tokenizer_invoked\": False,",
+        "        \"logits_read\": False,",
+        "        \"task_heads_executed\": False,"
+      ],
+      "after_context": [
+        "        \"comparison_row_count\": len(comparison_rows),",
+        "        \"primary_layer\": PRIMARY_LAYER,",
+        "        \"relative_coordinates\": list(RELATIVE_COORDINATES),",
+        "        \"tokenizer_invoked\": False,",
+        "        \"logits_read\": False,",
+        "        \"task_heads_executed\": False,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 710,
+      "before_end_exclusive": 710,
+      "after_start": 717,
+      "after_end_exclusive": 739,
+      "before": [],
+      "after": [
+        "        # Equal-length causal replay through the final audited coordinate.",
+        "        # This removes full-sequence-length / future-suffix execution-path",
+        "        # differences while preserving every token needed for k=-1..+6.",
+        "        cutoff = int(row[\"anchor\"]) + POST_HORIZON + 1",
+        "        matched_prefix = tuple(row[\"matched_ids\"][:cutoff])",
+        "        swapped_prefix = tuple(row[\"swapped_ids\"][:cutoff])",
+        "",
+        "        require(",
+        "            len(matched_prefix) == cutoff",
+        "            and len(swapped_prefix) == cutoff,",
+        "            f\"PREFIX_TRUNCATION_LENGTH_FAILURE:{row['local_template_index']}:{row['role']}\",",
+        "        )",
+        "        require(",
+        "            len(matched_prefix) == len(swapped_prefix),",
+        "            f\"EFFECTIVE_LENGTH_MISMATCH:{row['local_template_index']}:{row['role']}\",",
+        "        )",
+        "        require(",
+        "            matched_prefix[: int(row[\"anchor\"])]",
+        "            == swapped_prefix[: int(row[\"anchor\"])],",
+        "            f\"PREANCHOR_PREFIX_MISMATCH:{row['local_template_index']}:{row['role']}\",",
+        "        )",
+        ""
+      ],
+      "before_context": [
+        "    forward_count = 0",
+        "",
+        "    for n, row in enumerate(plan, start=1):",
+        "        matched_hashes = capture_branch_hashes(",
+        "            observer,",
+        "            model,"
+      ],
+      "after_context": [
+        "    forward_count = 0",
+        "",
+        "    for n, row in enumerate(plan, start=1):",
+        "        matched_hashes = capture_branch_hashes(",
+        "            observer,",
+        "            model,"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 715,
+      "before_end_exclusive": 716,
+      "after_start": 744,
+      "after_end_exclusive": 745,
+      "before": [
+        "            row[\"matched_ids\"],"
+      ],
+      "after": [
+        "            matched_prefix,"
+      ],
+      "before_context": [
+        "            model,",
+        "            layer_map,",
+        "            binding,",
+        "            row[\"targets\"],",
+        "        )",
+        "        forward_count += 1"
+      ],
+      "after_context": [
+        "            model,",
+        "            layer_map,",
+        "            binding,",
+        "            row[\"targets\"],",
+        "        )",
+        "        forward_count += 1"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 725,
+      "before_end_exclusive": 726,
+      "after_start": 754,
+      "after_end_exclusive": 755,
+      "before": [
+        "            row[\"swapped_ids\"],"
+      ],
+      "after": [
+        "            swapped_prefix,"
+      ],
+      "before_context": [
+        "            model,",
+        "            layer_map,",
+        "            binding,",
+        "            row[\"targets\"],",
+        "        )",
+        "        forward_count += 1"
+      ],
+      "after_context": [
+        "            model,",
+        "            layer_map,",
+        "            binding,",
+        "            row[\"targets\"],",
+        "        )",
+        "        forward_count += 1"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 791,
+      "before_end_exclusive": 791,
+      "after_start": 820,
+      "after_end_exclusive": 823,
+      "before": [],
+      "after": [
+        "        \"execution_protocol\": \"EQUAL_LENGTH_PREFIX_TRUNCATED_THROUGH_K_PLUS_6\",",
+        "        \"future_suffix_executed\": False,",
+        "        \"matched_swapped_effective_length_equal\": True,"
+      ],
+      "before_context": [
+        "        \"item_count\": EXPECTED_ITEM_COUNT,",
+        "        \"pair_role_count\": EXPECTED_ITEM_COUNT * 2,",
+        "        \"model_forward_count\": forward_count,",
+        "        \"scientific_model_forward_executed\": True,",
+        "        \"scientific_recurrent_state_read\": True,",
+        "        \"tokenizer_invoked\": False,"
+      ],
+      "after_context": [
+        "        \"item_count\": EXPECTED_ITEM_COUNT,",
+        "        \"pair_role_count\": EXPECTED_ITEM_COUNT * 2,",
+        "        \"model_forward_count\": forward_count,",
+        "        \"scientific_model_forward_executed\": True,",
+        "        \"scientific_recurrent_state_read\": True,",
+        "        \"tokenizer_invoked\": False,"
+      ]
+    }
+  ]
+}

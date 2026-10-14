@@ -1,0 +1,465 @@
+{
+  "shard_ordinal": 86,
+  "original_queue_id": "WORK-ce86737d17b0488b5af0",
+  "original_source_ids": [
+    "HV001143"
+  ],
+  "original_source_identity": {
+    "commit": "4826444953a460c025bb6eb17207ce20f125f5de",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "aba27d085b7d64b312d5f3520d5b2eb0d9f808ff",
+    "object_type": "commit",
+    "bytes": 165640,
+    "sha256": "ac2357a75a99682e8f3ab1f60fcc76834ce0014a85e9784366e7ca92bd6ed441"
+  },
+  "before": {
+    "commit": "16214150b9f4846fed2abf16708fc5a141ae5c72",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "06eb03e18f7740c7e6e0d316e22f1295dc143ada",
+    "object_type": "commit",
+    "bytes": 156610,
+    "sha256": "58466154aa9668d76514c1bccb48878255017bbe36d1227300f151cadd83cb1e"
+  },
+  "after": {
+    "commit": "4826444953a460c025bb6eb17207ce20f125f5de",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "aba27d085b7d64b312d5f3520d5b2eb0d9f808ff",
+    "object_type": "commit",
+    "bytes": 165640,
+    "sha256": "ac2357a75a99682e8f3ab1f60fcc76834ce0014a85e9784366e7ca92bd6ed441"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0143"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "build_parser",
+      "main",
+      "run_training_v6b"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate trainer objectives, gradient ownership, data/evaluation selection, ablation defaults and historical authority from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 0 removed/replaced lines and 171 added/replaced lines in 9 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "16214150b9f4846fed2abf16708fc5a141ae5c72",
+      "blob": "06eb03e18f7740c7e6e0d316e22f1295dc143ada"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 1614,
+      "before_end_exclusive": 1614,
+      "after_start": 1614,
+      "after_end_exclusive": 1656,
+      "before": [],
+      "after": [
+        "    parser.add_argument(",
+        "        \"--use-td-constrained-selection\",",
+        "        action=\"store_true\",",
+        "        default=False,",
+        "        help=(",
+        "            \"Enable TD-aware constrained checkpoint selection. \"",
+        "            \"An epoch is eligible only when clean-dev paraphrase_preserved pass_rate >= \"",
+        "            \"--td-selection-min-paraphrase-preserved AND dev td_mismatch_recall >= \"",
+        "            \"--td-selection-min-mismatch-recall AND dev td_control_acceptance >= \"",
+        "            \"--td-selection-min-control-acceptance. Among eligible epochs the one with \"",
+        "            \"highest clean-dev final_macro_f1 is selected. Falls back to unconstrained \"",
+        "            \"final_macro_f1 selection if no epoch is eligible. \"",
+        "            \"Never uses Stage15/OOD metrics. Default off.\"",
+        "        ),",
+        "    )",
+        "    parser.add_argument(",
+        "        \"--td-selection-min-paraphrase-preserved\",",
+        "        type=float,",
+        "        default=0.80,",
+        "        help=(",
+        "            \"Minimum clean-dev paraphrase_preserved pass_rate required for an epoch to be \"",
+        "            \"eligible under --use-td-constrained-selection. Default 0.80.\"",
+        "        ),",
+        "    )",
+        "    parser.add_argument(",
+        "        \"--td-selection-min-mismatch-recall\",",
+        "        type=float,",
+        "        default=0.50,",
+        "        help=(",
+        "            \"Minimum temporal diagnostic dev td_mismatch_recall required for an epoch to be \"",
+        "            \"eligible under --use-td-constrained-selection. Default 0.50.\"",
+        "        ),",
+        "    )",
+        "    parser.add_argument(",
+        "        \"--td-selection-min-control-acceptance\",",
+        "        type=float,",
+        "        default=0.80,",
+        "        help=(",
+        "            \"Minimum temporal diagnostic dev td_control_acceptance required for an epoch to be \"",
+        "            \"eligible under --use-td-constrained-selection. Default 0.80.\"",
+        "        ),",
+        "    )"
+      ],
+      "before_context": [
+        "            \"Default 2.0 = 600/300.\"",
+        "        ),",
+        "    )",
+        "",
+        "    return parser",
+        ""
+      ],
+      "after_context": [
+        "            \"Default 2.0 = 600/300.\"",
+        "        ),",
+        "    )",
+        "",
+        "    return parser",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 2022,
+      "before_end_exclusive": 2022,
+      "after_start": 2064,
+      "after_end_exclusive": 2069,
+      "before": [],
+      "after": [
+        "        # TD-constrained checkpoint selection (default off; never uses Stage15/OOD metrics)",
+        "        use_td_constrained_selection=False,",
+        "        td_sel_min_paraphrase_preserved=0.80,",
+        "        td_sel_min_mismatch_recall=0.50,",
+        "        td_sel_min_control_acceptance=0.80,"
+      ],
+      "before_context": [
+        "        td_dev_mask=None,",
+        "        td_loss_weight=0.0,",
+        "        td_loss_pos_weight=2.0,",
+        "    ):",
+        "        \"\"\"Modified run_training that passes flags to v6b model.\"\"\"",
+        "        if epochs < 1:"
+      ],
+      "after_context": [
+        "        td_dev_mask=None,",
+        "        td_loss_weight=0.0,",
+        "        td_loss_pos_weight=2.0,",
+        "    ):",
+        "        \"\"\"Modified run_training that passes flags to v6b model.\"\"\"",
+        "        if epochs < 1:"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 2037,
+      "before_end_exclusive": 2037,
+      "after_start": 2084,
+      "after_end_exclusive": 2096,
+      "before": [],
+      "after": [
+        "        # TD-constrained selection tracking (parallel to unconstrained; fallback is existing best_*)",
+        "        _tc_epoch: int = -1",
+        "        _tc_score: float = float(\"-inf\")",
+        "        _tc_state: \"dict[str, torch.Tensor] | None\" = None",
+        "        _tc_dev_metrics: \"dict | None\" = None",
+        "        _tc_dev_interventions: \"dict | None\" = None",
+        "        _tc_dev_pairwise_checks: \"dict | None\" = None",
+        "        _tc_dev_predictions: \"list | None\" = None",
+        "        _tc_pc_metrics: dict[str, Any] = {}",
+        "        _tc_mismatch_recall: float = float(\"nan\")",
+        "        _tc_ctrl_acc: float = float(\"nan\")",
+        "        _tc_paraphrase_preserved: float = float(\"nan\")"
+      ],
+      "before_context": [
+        "        best_trainable_state = None",
+        "        best_pc_metrics: dict[str, Any] = {}",
+        "        best_state: dict[str, torch.Tensor] | None = None",
+        "",
+        "        for epoch in range(1, epochs + 1):",
+        "            model.train()"
+      ],
+      "after_context": [
+        "        best_trainable_state = None",
+        "        best_pc_metrics: dict[str, Any] = {}",
+        "        best_state: dict[str, torch.Tensor] | None = None",
+        "",
+        "        for epoch in range(1, epochs + 1):",
+        "            model.train()"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 2357,
+      "before_end_exclusive": 2357,
+      "after_start": 2416,
+      "after_end_exclusive": 2450,
+      "before": [],
+      "after": [
+        "            # TD-constrained checkpoint selection (parallel, default off, never uses Stage15/OOD)",
+        "            if use_td_constrained_selection and not smoke_mode:",
+        "                _ep_pw = v5.pairwise_checks(dev_records, dev_output)",
+        "                _ep_pp = _ep_pw.get(\"paraphrase_preserved\", {}).get(\"pass_rate\", 0.0)",
+        "                _ep_mr = _dtdm.get(\"td_mismatch_recall\", float(\"nan\")) if _dtdm else float(\"nan\")",
+        "                _ep_ca = _dtdm.get(\"td_control_acceptance\", float(\"nan\")) if _dtdm else float(\"nan\")",
+        "                # NaN means metric absent; treat as failing the constraint",
+        "                _ep_mr_v = _ep_mr if _ep_mr == _ep_mr else 0.0",
+        "                _ep_ca_v = _ep_ca if _ep_ca == _ep_ca else 0.0",
+        "                _ep_eligible = (",
+        "                    _ep_pp >= td_sel_min_paraphrase_preserved",
+        "                    and _ep_mr_v >= td_sel_min_mismatch_recall",
+        "                    and _ep_ca_v >= td_sel_min_control_acceptance",
+        "                )",
+        "                if _ep_eligible and score > _tc_score:",
+        "                    _tc_score = score",
+        "                    _tc_epoch = epoch",
+        "                    _tc_dev_metrics = dev_metrics",
+        "                    _tc_dev_interventions = intervention_diagnostics_v6b(dev_records, dev_output)",
+        "                    _tc_dev_pairwise_checks = _ep_pw",
+        "                    _tc_dev_predictions = prediction_records_v6b(dev_records, dev_output)",
+        "                    _tc_state = {",
+        "                        k: v.detach().cpu().clone() for k, v in model.state_dict().items()",
+        "                    }",
+        "                    _tc_pc_metrics = {",
+        "                        **_pc_eval_metrics,",
+        "                        \"pair_contrastive_use_case\": args.pair_contrastive_use_case,",
+        "                        \"count_by_preservation_construction_type\": _pc_pres_type_counts,",
+        "                        \"count_by_frame_construction_type\": _pc_frame_type_counts,",
+        "                    }",
+        "                    _tc_mismatch_recall = _ep_mr",
+        "                    _tc_ctrl_acc = _ep_ca",
+        "                    _tc_paraphrase_preserved = _ep_pp",
+        ""
+      ],
+      "before_context": [
+        "                if capture_best_trainable_state:",
+        "                    best_trainable_state = v5.capture_trainable_state(model)",
+        "",
+        "            print(",
+        "                f\"run={run_name} \"",
+        "                + v5.format_epoch("
+      ],
+      "after_context": [
+        "                if capture_best_trainable_state:",
+        "                    best_trainable_state = v5.capture_trainable_state(model)",
+        "",
+        "            print(",
+        "                f\"run={run_name} \"",
+        "                + v5.format_epoch("
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 2437,
+      "before_end_exclusive": 2437,
+      "after_start": 2530,
+      "after_end_exclusive": 2585,
+      "before": [],
+      "after": [
+        "        # Apply TD-constrained checkpoint selection after all epochs",
+        "        _tc_used = False",
+        "        _tc_fallback_used = False",
+        "        _tc_reason = \"unconstrained_default\"",
+        "        if use_td_constrained_selection:",
+        "            _tc_used = True",
+        "            if _tc_epoch >= 1:",
+        "                # At least one epoch satisfied all constraints — override best_* with constrained",
+        "                print(",
+        "                    f\"  [td_constrained_sel] selected epoch={_tc_epoch}\"",
+        "                    f\" clean_macro={_tc_score:.4f}\"",
+        "                    f\" paraphrase_preserved={_tc_paraphrase_preserved:.3f}\"",
+        "                    f\" td_mismatch_recall={_tc_mismatch_recall}\"",
+        "                    f\" td_ctrl_acc={_tc_ctrl_acc}\"",
+        "                    f\" (unconstrained_fallback_epoch={best_epoch})\"",
+        "                )",
+        "                best_epoch = _tc_epoch",
+        "                best_dev_metrics = _tc_dev_metrics",
+        "                best_dev_interventions = _tc_dev_interventions",
+        "                best_dev_pairwise_checks = _tc_dev_pairwise_checks",
+        "                best_dev_predictions = _tc_dev_predictions",
+        "                best_state = _tc_state",
+        "                best_pc_metrics = _tc_pc_metrics",
+        "                _tc_reason = \"constrained_selection_applied\"",
+        "            else:",
+        "                # No epoch met all constraints — fall back to unconstrained best",
+        "                _tc_fallback_used = True",
+        "                _tc_reason = \"constrained_fallback_no_eligible_epoch\"",
+        "                print(",
+        "                    f\"  [td_constrained_sel] WARNING: no eligible epoch found \"",
+        "                    f\"(min_pp={td_sel_min_paraphrase_preserved}\"",
+        "                    f\" min_mr={td_sel_min_mismatch_recall}\"",
+        "                    f\" min_ca={td_sel_min_control_acceptance}); \"",
+        "                    f\"falling back to unconstrained best epoch={best_epoch}\"",
+        "                )",
+        "        _tc_selection_info: dict[str, Any] = {",
+        "            \"td_constrained_selection_used\": _tc_used,",
+        "            \"td_constrained_selection_fallback_used\": _tc_fallback_used,",
+        "            \"td_constrained_selection_reason\": _tc_reason,",
+        "            \"td_constrained_selection_eligible_epoch_count\": (",
+        "                -1 if not use_td_constrained_selection else (0 if _tc_epoch < 1 else 1)",
+        "            ),",
+        "            \"td_constrained_selection_selected_epoch\": best_epoch if _tc_used else None,",
+        "            \"td_constrained_selection_best_clean_macro\": _tc_score if _tc_used else None,",
+        "            \"td_constrained_selection_selected_td_mismatch_recall\": (",
+        "                _tc_mismatch_recall if _tc_used and not _tc_fallback_used else None",
+        "            ),",
+        "            \"td_constrained_selection_selected_td_control_acceptance\": (",
+        "                _tc_ctrl_acc if _tc_used and not _tc_fallback_used else None",
+        "            ),",
+        "            \"td_constrained_selection_selected_paraphrase_preserved\": (",
+        "                _tc_paraphrase_preserved if _tc_used and not _tc_fallback_used else None",
+        "            ),",
+        "        }",
+        ""
+      ],
+      "before_context": [
+        "                        f\" frame={_pc_frame_type_counts}\"",
+        "                    )",
+        "",
+        "        report = {",
+        "            \"run_name\": run_name,",
+        "            \"final_epoch\": epochs,"
+      ],
+      "after_context": [
+        "                        f\" frame={_pc_frame_type_counts}\"",
+        "                    )",
+        "",
+        "        report = {",
+        "            \"run_name\": run_name,",
+        "            \"final_epoch\": epochs,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 2448,
+      "before_end_exclusive": 2448,
+      "after_start": 2596,
+      "after_end_exclusive": 2597,
+      "before": [],
+      "after": [
+        "            **_tc_selection_info,"
+      ],
+      "before_context": [
+        "            \"_best_dev_predictions\": best_dev_predictions,",
+        "            \"loss_config\": loss_config,",
+        "            \"best_pair_contrastive_frame_metrics\": best_pc_metrics,",
+        "        }",
+        "        report[\"_best_state\"] = best_state",
+        "        if best_trainable_state is not None:"
+      ],
+      "after_context": [
+        "            \"_best_dev_predictions\": best_dev_predictions,",
+        "            \"loss_config\": loss_config,",
+        "            \"best_pair_contrastive_frame_metrics\": best_pc_metrics,",
+        "        }",
+        "        report[\"_best_state\"] = best_state",
+        "        if best_trainable_state is not None:"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 2541,
+      "before_end_exclusive": 2541,
+      "after_start": 2690,
+      "after_end_exclusive": 2694,
+      "before": [],
+      "after": [
+        "            use_td_constrained_selection=args.use_td_constrained_selection,",
+        "            td_sel_min_paraphrase_preserved=args.td_selection_min_paraphrase_preserved,",
+        "            td_sel_min_mismatch_recall=args.td_selection_min_mismatch_recall,",
+        "            td_sel_min_control_acceptance=args.td_selection_min_control_acceptance,"
+      ],
+      "before_context": [
+        "                if args.use_temporal_diagnostic_loss else 0.0",
+        "            ),",
+        "            td_loss_pos_weight=args.temporal_diagnostic_loss_pos_weight,",
+        "            pc_pres_inputs=_pc_pres_inputs if args.use_pair_contrastive_frame_loss else None,",
+        "            pc_frame_inputs=_pc_frame_inputs if args.use_pair_contrastive_frame_loss else None,",
+        "            pc_loss_weight=("
+      ],
+      "after_context": [
+        "                if args.use_temporal_diagnostic_loss else 0.0",
+        "            ),",
+        "            td_loss_pos_weight=args.temporal_diagnostic_loss_pos_weight,",
+        "            pc_pres_inputs=_pc_pres_inputs if args.use_pair_contrastive_frame_loss else None,",
+        "            pc_frame_inputs=_pc_frame_inputs if args.use_pair_contrastive_frame_loss else None,",
+        "            pc_loss_weight=("
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 2672,
+      "before_end_exclusive": 2672,
+      "after_start": 2825,
+      "after_end_exclusive": 2831,
+      "before": [],
+      "after": [
+        "            \"use_td_constrained_selection\": args.use_td_constrained_selection,",
+        "            \"td_selection_min_paraphrase_preserved\": args.td_selection_min_paraphrase_preserved,",
+        "            \"td_selection_min_mismatch_recall\": args.td_selection_min_mismatch_recall,",
+        "            \"td_selection_min_control_acceptance\": args.td_selection_min_control_acceptance,",
+        "            \"td_selection_fallback\": \"final_macro_f1\",",
+        "            \"stage15_used_for_td_constrained_selection\": False,"
+      ],
+      "before_context": [
+        "            \"temporal_diagnostic_train_count\": len(_td_train_records),",
+        "            \"temporal_diagnostic_dev_count\": len(_td_dev_records),",
+        "            \"stage15_used_for_temporal_diagnostic_training\": False,",
+        "            \"dev_calibrated_ne_shift_candidates\": args.dev_calibrated_ne_shift_candidates,",
+        "            \"dev_calibrated_ne_gate\": args.dev_calibrated_ne_gate,",
+        "            \"dev_calibrated_ne_threshold\": args.dev_calibrated_ne_threshold,"
+      ],
+      "after_context": [
+        "            \"temporal_diagnostic_train_count\": len(_td_train_records),",
+        "            \"temporal_diagnostic_dev_count\": len(_td_dev_records),",
+        "            \"stage15_used_for_temporal_diagnostic_training\": False,",
+        "            \"dev_calibrated_ne_shift_candidates\": args.dev_calibrated_ne_shift_candidates,",
+        "            \"dev_calibrated_ne_gate\": args.dev_calibrated_ne_gate,",
+        "            \"dev_calibrated_ne_threshold\": args.dev_calibrated_ne_threshold,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3060,
+      "before_end_exclusive": 3060,
+      "after_start": 3219,
+      "after_end_exclusive": 3231,
+      "before": [],
+      "after": [
+        "            \"use_td_constrained_selection\": getattr(",
+        "                args, \"use_td_constrained_selection\", False",
+        "            ),",
+        "            \"td_constrained_selection_used\": (",
+        "                next(iter(reports.values()), {}).get(\"td_constrained_selection_used\", False)",
+        "                if len(reports) == 1 else None",
+        "            ),",
+        "            \"td_constrained_selection_fallback_used\": (",
+        "                next(iter(reports.values()), {}).get(\"td_constrained_selection_fallback_used\", False)",
+        "                if len(reports) == 1 else None",
+        "            ),",
+        "            \"stage15_used_for_td_constrained_selection\": False,"
+      ],
+      "before_context": [
+        "                args, \"temporal_diagnostic_loss_pos_weight\", 2.0",
+        "            ),",
+        "            \"stage15_used_for_temporal_diagnostic_training\": False,",
+        "            \"use_pair_contrastive_frame_loss\": getattr(",
+        "                args, \"use_pair_contrastive_frame_loss\", False",
+        "            ),"
+      ],
+      "after_context": [
+        "                args, \"temporal_diagnostic_loss_pos_weight\", 2.0",
+        "            ),",
+        "            \"stage15_used_for_temporal_diagnostic_training\": False,",
+        "            \"use_pair_contrastive_frame_loss\": getattr(",
+        "                args, \"use_pair_contrastive_frame_loss\", False",
+        "            ),"
+      ]
+    }
+  ]
+}

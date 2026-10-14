@@ -1,0 +1,43 @@
+{
+  "phase": "CENSUS_RECOVERY_ONLY",
+  "status": "COMPLETE_TWO_INDEPENDENT_VERDICTS_NO_CREDIT",
+  "started_utc": "2026-10-14T07:14:39.104903+00:00",
+  "expected_head": "ff806bd5bd8efc62fcf6420cf8b097a63ed70571",
+  "targets": [
+    "HV000107",
+    "HV000113"
+  ],
+  "completed_owners": [
+    {
+      "source_id": "HV000107",
+      "debt_id": "DEBT-44a94a2575ad6f3415ca",
+      "verdict": "VERIFIED_FULL_DOCUMENTARY_SATISFACTION",
+      "jsonl_line": 1,
+      "line_sha256": "16d675ee798f65b325623eb9e177c4665f696f27f3ea672b82d7c4b75ee2521c",
+      "evidence_sha256": "ac59997cfa82320ac4abde5a9fdf46d1a5f7e79060fa46267a3344fa8c214236",
+      "completed_utc": "2026-10-14T07:22:15.063412+00:00"
+    },
+    {
+      "source_id": "HV000113",
+      "debt_id": "DEBT-86b191b570af6722edd7",
+      "verdict": "VERIFIED_FULL_DOCUMENTARY_SATISFACTION",
+      "jsonl_line": 2,
+      "line_sha256": "24a8865a31709a3ad096c21dc6507112a56db1ebddc3b264dd0a779d0c1fc455",
+      "evidence_sha256": "5569172073915a7003fe671220d4159c29b9c6555403a97336bc0aa13ea848be",
+      "completed_utc": "2026-10-14T07:24:07.005414+00:00"
+    }
+  ],
+  "new_closure_credits": 0,
+  "accounting": [
+    222,
+    18,
+    194
+  ],
+  "authority": "Current controller > frozen census reconciliation > original Wave03 records > frozen P01 > integrated HV000103 > AGENTS.md",
+  "baseline_sha256": "0f71d9aa2a719da46f05d9eb0b495d58bc3732121fa8b0c51cf18a5902b21b88",
+  "preexisting_file_count": 4391,
+  "unfinished_owners": [],
+  "owner_verdicts_sha256": "e2365df80a80524ce1ba66135156d726000dd182fd079bac1ed8b3a2b8ab1ff8",
+  "finished_utc": "2026-10-14T07:32:31.086142+00:00",
+  "validation_scope": "Documentary verification and preservation only; raw ref FAILs retained with authenticated bounded nonblocking qualifications."
+}

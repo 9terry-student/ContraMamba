@@ -1,0 +1,367 @@
+{
+  "shard_ordinal": 71,
+  "original_queue_id": "WORK-a58e14130d5785078fcc",
+  "original_source_ids": [
+    "HV000114"
+  ],
+  "original_source_identity": {
+    "commit": "ef1806bef9e4a7f55e1f7e77f7a0f08592fb4abe",
+    "path": "paper/iclr2027/figures/fig3_five_scale_recurrence_reorganization.pdf",
+    "blob": "f12d9bb756806b6438ac3cd1ac7c9deccd2d4670",
+    "object_type": "commit",
+    "bytes": 75453,
+    "sha256": "f62ce8455f61f6fb9f36438e129438e94181fdcd3ae04ded08cd53b91040f3f9"
+  },
+  "before": {
+    "commit": "cfd1e5b4f43be1ae3847ce943906dfc841ed5373",
+    "path": "paper/iclr2027/figures/fig3_five_scale_recurrence_reorganization.pdf",
+    "blob": "189bb1e1d45dae5ca13d829ec286d58808cdbb9a",
+    "object_type": "commit",
+    "bytes": 75245,
+    "sha256": "4593ccaf5752047141732dca64af30d6cbafa369ab8ee7d05e6d958b18dc47f8"
+  },
+  "after": {
+    "commit": "ef1806bef9e4a7f55e1f7e77f7a0f08592fb4abe",
+    "path": "paper/iclr2027/figures/fig3_five_scale_recurrence_reorganization.pdf",
+    "blob": "f12d9bb756806b6438ac3cd1ac7c9deccd2d4670",
+    "object_type": "commit",
+    "bytes": 75453,
+    "sha256": "f62ce8455f61f6fb9f36438e129438e94181fdcd3ae04ded08cd53b91040f3f9"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "versions_shard_1/semantic_revision_records.jsonl",
+      "jsonl_line": 47,
+      "record": {
+        "added_excerpt": [],
+        "added_lines": null,
+        "classification": "UNRESOLVED_CONTENT",
+        "from_blob": "189bb1e1d45dae5ca13d829ec286d58808cdbb9a",
+        "from_commit": "cfd1e5b4f43be1ae3847ce943906dfc841ed5373",
+        "from_id": "HV000115",
+        "manual_content_review": "NO",
+        "path": "paper/iclr2027/figures/fig3_five_scale_recurrence_reorganization.pdf",
+        "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+        "removed_excerpt": [],
+        "removed_lines": null,
+        "semantic_disposition": "REVIEW_REQUIRED",
+        "to_blob": "f12d9bb756806b6438ac3cd1ac7c9deccd2d4670",
+        "to_commit": "ef1806bef9e4a7f55e1f7e77f7a0f08592fb4abe",
+        "to_id": "HV000114",
+        "truncated_diff": true
+      }
+    }
+  ],
+  "prior_interpretation": null,
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "2e65dd887ba4159d4024d85b8996306cfadec023",
+      "blob": "189bb1e1d45dae5ca13d829ec286d58808cdbb9a"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "extracted_pdf_text",
+  "changes": [
+    {
+      "operation": "replace",
+      "before_start": 3,
+      "before_end_exclusive": 5,
+      "after_start": 3,
+      "after_end_exclusive": 5,
+      "before": [
+        "Scale-local causal roles across all five Mamba-1 scales",
+        "Selected / control ranks are local identities, not semantic homologues."
+      ],
+      "after": [
+        "The causal role recurs across all five Mamba-1 scales",
+        "Selected/control ranks are local identities; equal rank numbers do not imply semantic homology."
+      ],
+      "before_context": [
+        "PAGE 1",
+        "A",
+        "130M",
+        "370M",
+        "790M"
+      ],
+      "after_context": [
+        "PAGE 1",
+        "A",
+        "130M",
+        "370M",
+        "790M"
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 10,
+      "before_end_exclusive": 11,
+      "after_start": 10,
+      "after_end_exclusive": 10,
+      "before": [
+        "Common contrast: Q(selected restored) - Q(coefficient-matched control)"
+      ],
+      "after": [],
+      "before_context": [
+        "790M",
+        "1.4B",
+        "2.8B",
+        "Selected / control",
+        "P3 / P5",
+        "P3 / P5"
+      ],
+      "after_context": [
+        "790M",
+        "1.4B",
+        "2.8B",
+        "Selected / control",
+        "P3 / P5",
+        "P3 / P5"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 17,
+      "before_end_exclusive": 24,
+      "after_start": 16,
+      "after_end_exclusive": 17,
+      "before": [
+        "Historical label",
+        "D_SUF",
+        "D_DOM",
+        "D_CORE",
+        "D_CORE",
+        "D_CORE",
+        "Result"
+      ],
+      "after": [
+        "Causal role"
+      ],
+      "before_context": [
+        "P2 / P5",
+        "P5 / P4",
+        "P3 / P5",
+        "Supported",
+        "Supported",
+        "Supported"
+      ],
+      "after_context": [
+        "P2 / P5",
+        "P5 / P4",
+        "P3 / P5",
+        "Supported",
+        "Supported",
+        "Supported"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 29,
+      "before_end_exclusive": 31,
+      "after_start": 22,
+      "after_end_exclusive": 24,
+      "before": [
+        "130M restoration sufficiency; 370M two-test Holm family (residual criterion failed).",
+        "790M-2.8B: later core confirmations. Distinct protocols; no magnitude scaling."
+      ],
+      "after": [
+        "Common scale-local contrast: selected restoration minus coefficient-matched control.",
+        "Historical endpoint labels and inferential-family details are retained in Appendix A.4."
+      ],
+      "before_context": [
+        "Supported",
+        "Supported",
+        "Supported",
+        "B",
+        "Native kernel reorganization",
+        "C"
+      ],
+      "after_context": [
+        "Supported",
+        "Supported",
+        "Supported",
+        "B",
+        "XG2 centered linear CKA",
+        "C"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 32,
+      "before_end_exclusive": 33,
+      "after_start": 25,
+      "after_end_exclusive": 26,
+      "before": [
+        "Native kernel reorganization"
+      ],
+      "after": [
+        "XG2 centered linear CKA"
+      ],
+      "before_context": [
+        "130M restoration sufficiency; 370M two-test Holm family (residual criterion failed).",
+        "790M-2.8B: later core confirmations. Distinct protocols; no magnitude scaling.",
+        "B",
+        "C",
+        "Native geometry reorganization",
+        "Kernel mean squared weight (mu_k2)"
+      ],
+      "after_context": [
+        "Common scale-local contrast: selected restoration minus coefficient-matched control.",
+        "Historical endpoint labels and inferential-family details are retained in Appendix A.4.",
+        "B",
+        "C",
+        "XG4 centered linear CKA",
+        "130M"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 34,
+      "before_end_exclusive": 41,
+      "after_start": 27,
+      "after_end_exclusive": 28,
+      "before": [
+        "Native geometry reorganization",
+        "Kernel mean squared weight (mu_k2)",
+        "Leading plane lambda1",
+        "0.00",
+        "0.01",
+        "0.02",
+        "0.03"
+      ],
+      "after": [
+        "XG4 centered linear CKA"
+      ],
+      "before_context": [
+        "B",
+        "Native kernel reorganization",
+        "C",
+        "130M",
+        "370M",
+        "790M"
+      ],
+      "after_context": [
+        "B",
+        "XG2 centered linear CKA",
+        "C",
+        "130M",
+        "370M",
+        "790M"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 46,
+      "before_end_exclusive": 49,
+      "after_start": 33,
+      "after_end_exclusive": 62,
+      "before": [
+        "0.85",
+        "0.90",
+        "0.95"
+      ],
+      "after": [
+        "130M",
+        "1.00",
+        "0.74",
+        "0.44",
+        "0.34",
+        "0.56",
+        "370M",
+        "0.74",
+        "1.00",
+        "0.56",
+        "0.50",
+        "0.65",
+        "790M",
+        "0.44",
+        "0.56",
+        "1.00",
+        "0.66",
+        "0.64",
+        "1.4B",
+        "0.34",
+        "0.50",
+        "0.66",
+        "1.00",
+        "0.53",
+        "2.8B",
+        "0.56",
+        "0.65",
+        "0.64",
+        "0.53"
+      ],
+      "before_context": [
+        "790M",
+        "1.4B",
+        "2.8B",
+        "1.00",
+        "130M",
+        "370M"
+      ],
+      "after_context": [
+        "790M",
+        "1.4B",
+        "2.8B",
+        "1.00",
+        "130M",
+        "370M"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 55,
+      "before_end_exclusive": 57,
+      "after_start": 68,
+      "after_end_exclusive": 100,
+      "before": [
+        "Open markers: historical response-blind 130M; filled markers: later matched 370M-2.8B bridge.",
+        "Categorical scale positions; raw values, no scaling fit. Geometry axis begins at 0.85."
+      ],
+      "after": [
+        "130M",
+        "1.00",
+        "0.54",
+        "0.45",
+        "0.48",
+        "0.54",
+        "370M",
+        "0.54",
+        "1.00",
+        "0.56",
+        "0.44",
+        "0.59",
+        "790M",
+        "0.45",
+        "0.56",
+        "1.00",
+        "0.44",
+        "0.39",
+        "1.4B",
+        "0.48",
+        "0.44",
+        "0.44",
+        "1.00",
+        "0.46",
+        "2.8B",
+        "0.54",
+        "0.59",
+        "0.39",
+        "0.46",
+        "1.00",
+        "Same 300 response-blind pairs per family. CKA = 1 denotes identical centered sample geometry;",
+        "off-diagonal values show partial, not invariant, cross-scale geometry. Cosine-RSM: Appendix A.2."
+      ],
+      "before_context": [
+        "790M",
+        "1.4B",
+        "2.8B"
+      ],
+      "after_context": [
+        "790M",
+        "1.4B",
+        "2.8B"
+      ]
+    }
+  ]
+}

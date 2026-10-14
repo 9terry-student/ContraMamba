@@ -1,0 +1,480 @@
+{
+  "shard_ordinal": 53,
+  "original_queue_id": "WORK-87f4612da51fd87a9fc7",
+  "original_source_ids": [
+    "HV000592"
+  ],
+  "original_source_identity": {
+    "commit": "47ff8d16a28a17cb3dca2104c51b4d63c67d6109",
+    "path": "scripts/aggregate_reason_router_p3w1_calibration.py",
+    "blob": "418f747df0e4224bc25124d0053e235fa8bd95b9",
+    "object_type": "commit",
+    "bytes": 30298,
+    "sha256": "9bd671a5efb2870572c3a5effd8386e75bca4d680e1174a066345412030b7252"
+  },
+  "before": {
+    "commit": "6df1d013b74cb95c658a3ffddbcff8ed0214cdb3",
+    "path": "scripts/aggregate_reason_router_p3w1_calibration.py",
+    "blob": "03319ebce00a0d909eb8c39ac36adb90c1fabf49",
+    "object_type": "commit",
+    "bytes": 21505,
+    "sha256": "815faa0e5bb2576a25d6ce395ba39260ca756bb305b8ddd095b24bdbfb8bb59b"
+  },
+  "after": {
+    "commit": "47ff8d16a28a17cb3dca2104c51b4d63c67d6109",
+    "path": "scripts/aggregate_reason_router_p3w1_calibration.py",
+    "blob": "418f747df0e4224bc25124d0053e235fa8bd95b9",
+    "object_type": "commit",
+    "bytes": 30298,
+    "sha256": "9bd671a5efb2870572c3a5effd8386e75bca4d680e1174a066345412030b7252"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0069"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "_cohort_count_pair",
+      "_validate_expected_identity",
+      "_validate_readiness_fields",
+      "build_aggregate",
+      "validate_unit_artifact"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 3 removed/replaced lines and 152 added/replaced lines in 10 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "6fd1b5e8e89295aeefe94ea8bec53a66de7cf082",
+      "blob": "506ac1937294e9d0267493de3793a5df11d88db5"
+    }
+  ],
+  "immediate_parent_has_before_blob": false,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "replace",
+      "before_start": 29,
+      "before_end_exclusive": 30,
+      "after_start": 29,
+      "after_end_exclusive": 34,
+      "before": [
+        "EXPECTED_SPLIT_SEED = 174"
+      ],
+      "after": [
+        "EXPECTED_SPLIT_SEED = 8192",
+        "PRIMARY_REASON_MIN_TRAIN_COUNT = 50",
+        "CALIBRATION_GATE_SCOPE = \"PRIMARY_REASON_CLASS_COUNTS_ONLY\"",
+        "PRIMARY_REASON_CLASSES = (\"FRAME\", \"PREDICATE\", \"SUFFICIENCY\", \"AUTHORIZED\")",
+        "LOCAL_BINARY_COHORTS = (\"frame\", \"predicate\", \"sufficiency\", \"polarity\")"
+      ],
+      "before_context": [
+        "LOGICAL_UNITS_PER_SEED = 1",
+        "LOGICAL_UNIT_SCOPE = \"COMPLETE_AUTHORITATIVE_TRAIN_SPLIT\"",
+        "EXPECTED_DEV_RATIO = 0.2",
+        "EXPECTED_CONFIGURATION = {",
+        "    \"architecture\": \"v6b_minimal\",",
+        "    \"backbone\": \"mamba\","
+      ],
+      "after_context": [
+        "LOGICAL_UNITS_PER_SEED = 1",
+        "LOGICAL_UNIT_SCOPE = \"COMPLETE_AUTHORITATIVE_TRAIN_SPLIT\"",
+        "EXPECTED_DEV_RATIO = 0.2",
+        "EXPECTED_CONFIGURATION = {",
+        "    \"architecture\": \"v6b_minimal\",",
+        "    \"backbone\": \"mamba\","
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 48,
+      "before_end_exclusive": 49,
+      "after_start": 52,
+      "after_end_exclusive": 59,
+      "before": [
+        "    \"reason_loss_weight_placeholder\", \"architecture\", \"backbone\", \"model_name\","
+      ],
+      "after": [
+        "    \"reason_loss_weight_placeholder\", \"calibration_gate_scope\",",
+        "    \"primary_reason_min_train_count\", \"primary_reason_class_counts\",",
+        "    \"primary_reason_min_count_gate_pass\", \"local_binary_cohort_counts\",",
+        "    \"local_binary_training_readiness\", \"all_local_binary_cohorts_training_ready\",",
+        "    \"polarity_local_training_ready\", \"weight_resolution_measurement_valid\",",
+        "    \"normal_a1_a3_training_ready\", \"training_readiness_separate_from_weight_resolution\",",
+        "    \"architecture\", \"backbone\", \"model_name\","
+      ],
+      "before_context": [
+        "    \"schema_version\", \"status\", \"seed\", \"unit_index\", \"unit_scope\",",
+        "    \"ordered_train_row_count\", \"ordered_train_row_identity_hash\",",
+        "    \"model_mode\", \"measurement_arm\", \"measurement_gradient_ownership\",",
+        "    \"max_length\", \"device\", \"flag_source\", \"freeze_encoder\",",
+        "    \"reason_router_epsilon\", \"train_batch_size\", \"balanced_sampler\",",
+        "    \"weighted_label_loss\", \"class_weighting\", \"calibration_forward_batch_size\","
+      ],
+      "after_context": [
+        "    \"schema_version\", \"status\", \"seed\", \"unit_index\", \"unit_scope\",",
+        "    \"ordered_train_row_count\", \"ordered_train_row_identity_hash\",",
+        "    \"model_mode\", \"measurement_arm\", \"measurement_gradient_ownership\",",
+        "    \"max_length\", \"device\", \"flag_source\", \"freeze_encoder\",",
+        "    \"reason_router_epsilon\", \"train_batch_size\", \"balanced_sampler\",",
+        "    \"weighted_label_loss\", \"class_weighting\", \"calibration_forward_batch_size\","
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 156,
+      "before_end_exclusive": 157,
+      "after_start": 166,
+      "after_end_exclusive": 167,
+      "before": [
+        "    _require(expected_split_seed == EXPECTED_SPLIT_SEED, \"expected split seed must be exactly 174\")"
+      ],
+      "after": [
+        "    _require(expected_split_seed == EXPECTED_SPLIT_SEED, \"expected split seed must be exactly 8192\")"
+      ],
+      "before_context": [
+        "    _sha256(expected_ordered_train_row_identity_hash, \"expected ordered train identity hash\")",
+        "    _finite_dev_ratio(expected_dev_ratio, \"expected dev ratio\")",
+        "    _require(type(expected_split_seed) is int, \"expected split seed must be an exact integer\")",
+        "",
+        "",
+        "def validate_unit_artifact("
+      ],
+      "after_context": [
+        "    _sha256(expected_ordered_train_row_identity_hash, \"expected ordered train identity hash\")",
+        "    _finite_dev_ratio(expected_dev_ratio, \"expected dev ratio\")",
+        "    _require(type(expected_split_seed) is int, \"expected split seed must be an exact integer\")",
+        "",
+        "",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 159,
+      "before_end_exclusive": 159,
+      "after_start": 169,
+      "after_end_exclusive": 250,
+      "before": [],
+      "after": [
+        "",
+        "def _cohort_count_pair(value: Any, name: str) -> dict[int, int]:",
+        "    _require(isinstance(value, dict), f\"{name} must be an object\")",
+        "    result: dict[int, int] = {}",
+        "    for key in (0, 1):",
+        "        raw = value.get(key, value.get(str(key)))",
+        "        _require(type(raw) is int and raw >= 0, f\"{name}[{key}] must be an integer >= 0\")",
+        "        result[key] = raw",
+        "    return result",
+        "",
+        "",
+        "def _validate_readiness_fields(unit: dict[str, Any]) -> dict[str, Any]:",
+        "    _require(unit.get(\"calibration_gate_scope\") == CALIBRATION_GATE_SCOPE, \"calibration_gate_scope mismatch\")",
+        "    _require(unit.get(\"primary_reason_min_train_count\") == PRIMARY_REASON_MIN_TRAIN_COUNT and type(unit.get(\"primary_reason_min_train_count\")) is int, \"primary_reason_min_train_count mismatch\")",
+        "    _require(unit.get(\"primary_reason_min_count_gate_pass\") is True, \"primary_reason_min_count_gate_pass mismatch\")",
+        "    _require(unit.get(\"weight_resolution_measurement_valid\") is True, \"weight_resolution_measurement_valid mismatch\")",
+        "    _require(unit.get(\"training_readiness_separate_from_weight_resolution\") is True, \"training_readiness_separate_from_weight_resolution mismatch\")",
+        "    primary_counts = unit.get(\"primary_reason_class_counts\")",
+        "    _require(isinstance(primary_counts, dict), \"primary_reason_class_counts must be an object\")",
+        "    normalized_primary: dict[str, int] = {}",
+        "    for reason in PRIMARY_REASON_CLASSES:",
+        "        value = primary_counts.get(reason)",
+        "        _require(type(value) is int, f\"primary_reason_class_counts[{reason}] must be an exact integer\")",
+        "        _require(value >= PRIMARY_REASON_MIN_TRAIN_COUNT, f\"primary_reason_class_counts[{reason}] must be >= 50\")",
+        "        normalized_primary[reason] = value",
+        "    local_counts = unit.get(\"local_binary_cohort_counts\")",
+        "    readiness = unit.get(\"local_binary_training_readiness\")",
+        "    _require(isinstance(local_counts, dict), \"local_binary_cohort_counts must be an object\")",
+        "    _require(isinstance(readiness, dict), \"local_binary_training_readiness must be an object\")",
+        "    normalized_counts: dict[str, dict[int, int]] = {}",
+        "    normalized_readiness: dict[str, bool] = {}",
+        "    for cohort in LOCAL_BINARY_COHORTS:",
+        "        counts = _cohort_count_pair(local_counts.get(cohort), f\"local_binary_cohort_counts[{cohort}]\")",
+        "        expected_ready = counts[0] >= 1 and counts[1] >= 1",
+        "        _require(readiness.get(cohort) is expected_ready, f\"local_binary_training_readiness[{cohort}] mismatch\")",
+        "        normalized_counts[cohort] = counts",
+        "        normalized_readiness[cohort] = expected_ready",
+        "    frame_count = normalized_primary[\"FRAME\"]",
+        "    predicate_count = normalized_primary[\"PREDICATE\"]",
+        "    sufficiency_count = normalized_primary[\"SUFFICIENCY\"]",
+        "    authorized_count = normalized_primary[\"AUTHORIZED\"]",
+        "    _require(",
+        "        normalized_counts[\"frame\"][0] == frame_count,",
+        "        \"frame cohort count does not match primary FRAME count\",",
+        "    )",
+        "    _require(",
+        "        normalized_counts[\"frame\"][1] == predicate_count + sufficiency_count + authorized_count,",
+        "        \"frame cohort positive count does not match first-blocker remainder\",",
+        "    )",
+        "    _require(",
+        "        normalized_counts[\"predicate\"][0] == predicate_count,",
+        "        \"predicate cohort count does not match primary PREDICATE count\",",
+        "    )",
+        "    _require(",
+        "        normalized_counts[\"predicate\"][1] == sufficiency_count + authorized_count,",
+        "        \"predicate cohort positive count does not match first-blocker remainder\",",
+        "    )",
+        "    _require(",
+        "        normalized_counts[\"sufficiency\"][0] == sufficiency_count,",
+        "        \"sufficiency cohort count does not match primary SUFFICIENCY count\",",
+        "    )",
+        "    _require(",
+        "        normalized_counts[\"sufficiency\"][1] == authorized_count,",
+        "        \"sufficiency cohort positive count does not match AUTHORIZED count\",",
+        "    )",
+        "    _require(",
+        "        sum(normalized_counts[\"polarity\"].values()) == authorized_count,",
+        "        \"polarity applicable count does not match primary AUTHORIZED count\",",
+        "    )",
+        "    all_ready = all(normalized_readiness.values())",
+        "    _require(unit.get(\"all_local_binary_cohorts_training_ready\") is all_ready, \"all_local_binary_cohorts_training_ready mismatch\")",
+        "    _require(unit.get(\"polarity_local_training_ready\") is normalized_readiness[\"polarity\"], \"polarity_local_training_ready mismatch\")",
+        "    _require(unit.get(\"normal_a1_a3_training_ready\") is all_ready, \"normal_a1_a3_training_ready mismatch\")",
+        "    return {",
+        "        \"primary_reason_class_counts\": normalized_primary,",
+        "        \"local_binary_cohort_counts\": normalized_counts,",
+        "        \"local_binary_training_readiness\": normalized_readiness,",
+        "        \"all_local_binary_cohorts_training_ready\": all_ready,",
+        "        \"polarity_local_training_ready\": normalized_readiness[\"polarity\"],",
+        "        \"normal_a1_a3_training_ready\": all_ready,",
+        "    }"
+      ],
+      "before_context": [
+        "    _require(expected_split_seed == EXPECTED_SPLIT_SEED, \"expected split seed must be exactly 174\")",
+        "",
+        "",
+        "def validate_unit_artifact(",
+        "    unit: dict[str, Any],",
+        "    *,"
+      ],
+      "after_context": [
+        "    _require(expected_split_seed == EXPECTED_SPLIT_SEED, \"expected split seed must be exactly 8192\")",
+        "",
+        "",
+        "def validate_unit_artifact(",
+        "    unit: dict[str, Any],",
+        "    *,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 186,
+      "before_end_exclusive": 186,
+      "after_start": 277,
+      "after_end_exclusive": 278,
+      "before": [],
+      "after": [
+        "    readiness_summary = _validate_readiness_fields(unit)"
+      ],
+      "before_context": [
+        "    _require(unit.get(\"decision\") == UNIT_DECISION, \"unit decision mismatch\")",
+        "    _require(unit.get(\"calibration_data_scope\") == \"TRAIN_ONLY\", \"calibration_data_scope mismatch\")",
+        "    _require(unit.get(\"train_reason_supervision_built\") is True, \"train_reason_supervision_built mismatch\")",
+        "    for key in (",
+        "        \"dev_reason_supervision_built\",",
+        "        \"dev_inputs_accessed_for_calibration\","
+      ],
+      "after_context": [
+        "    _require(unit.get(\"decision\") == UNIT_DECISION, \"unit decision mismatch\")",
+        "    _require(unit.get(\"calibration_data_scope\") == \"TRAIN_ONLY\", \"calibration_data_scope mismatch\")",
+        "    _require(unit.get(\"train_reason_supervision_built\") is True, \"train_reason_supervision_built mismatch\")",
+        "    for key in (",
+        "        \"dev_reason_supervision_built\",",
+        "        \"dev_inputs_accessed_for_calibration\","
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 279,
+      "before_end_exclusive": 279,
+      "after_start": 371,
+      "after_end_exclusive": 378,
+      "before": [],
+      "after": [
+        "    primary_count_total = sum(readiness_summary[\"primary_reason_class_counts\"].values())",
+        "    _require(final_count == row_count, \"final_applicable_count must equal ordered_train_row_count\")",
+        "    _require(",
+        "        reason_count == primary_count_total,",
+        "        \"reason_eligible_count must equal the sum of primary_reason_class_counts\",",
+        "    )",
+        "    _require(reason_count <= final_count, \"reason_eligible_count must be <= final_applicable_count\")"
+      ],
+      "before_context": [
+        "    )",
+        "    final_count = _positive_int(unit.get(\"final_applicable_count\"), \"final_applicable_count\")",
+        "    reason_count = _positive_int(unit.get(\"reason_eligible_count\"), \"reason_eligible_count\")",
+        "    final_mean = _finite_positive(unit.get(\"final_loss_mean\"), \"final_loss_mean\")",
+        "    reason_mean = _finite_positive(unit.get(\"reason_loss_mean\"), \"reason_loss_mean\")",
+        "    final_sum = _finite_positive(unit.get(\"final_loss_sum_reconstructed\"), \"final_loss_sum_reconstructed\")"
+      ],
+      "after_context": [
+        "    )",
+        "    final_count = _positive_int(unit.get(\"final_applicable_count\"), \"final_applicable_count\")",
+        "    reason_count = _positive_int(unit.get(\"reason_eligible_count\"), \"reason_eligible_count\")",
+        "    final_mean = _finite_positive(unit.get(\"final_loss_mean\"), \"final_loss_mean\")",
+        "    reason_mean = _finite_positive(unit.get(\"reason_loss_mean\"), \"reason_loss_mean\")",
+        "    final_sum = _finite_positive(unit.get(\"final_loss_sum_reconstructed\"), \"final_loss_sum_reconstructed\")"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 294,
+      "before_end_exclusive": 294,
+      "after_start": 393,
+      "after_end_exclusive": 399,
+      "before": [],
+      "after": [
+        "        \"primary_reason_class_counts\": readiness_summary[\"primary_reason_class_counts\"],",
+        "        \"local_binary_cohort_counts\": readiness_summary[\"local_binary_cohort_counts\"],",
+        "        \"local_binary_training_readiness\": readiness_summary[\"local_binary_training_readiness\"],",
+        "        \"all_local_binary_cohorts_training_ready\": readiness_summary[\"all_local_binary_cohorts_training_ready\"],",
+        "        \"polarity_local_training_ready\": readiness_summary[\"polarity_local_training_ready\"],",
+        "        \"normal_a1_a3_training_ready\": readiness_summary[\"normal_a1_a3_training_ready\"],"
+      ],
+      "before_context": [
+        "        \"final_sum\": final_sum,",
+        "        \"reason_sum\": reason_sum,",
+        "        \"split_seed\": split_seed,",
+        "    }",
+        "",
+        ""
+      ],
+      "after_context": [
+        "        \"final_sum\": final_sum,",
+        "        \"reason_sum\": reason_sum,",
+        "        \"split_seed\": split_seed,",
+        "    }",
+        "",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 342,
+      "before_end_exclusive": 342,
+      "after_start": 447,
+      "after_end_exclusive": 478,
+      "before": [],
+      "after": [
+        "    common_primary_counts = summaries[0][\"primary_reason_class_counts\"]",
+        "    common_local_counts = summaries[0][\"local_binary_cohort_counts\"]",
+        "    common_local_readiness = summaries[0][\"local_binary_training_readiness\"]",
+        "    common_all_local_ready = summaries[0][\"all_local_binary_cohorts_training_ready\"]",
+        "    common_polarity_ready = summaries[0][\"polarity_local_training_ready\"]",
+        "    common_normal_ready = summaries[0][\"normal_a1_a3_training_ready\"]",
+        "    for summary in summaries[1:]:",
+        "        _require(",
+        "            summary[\"primary_reason_class_counts\"] == common_primary_counts,",
+        "            \"primary reason class counts mismatch across seeds\",",
+        "        )",
+        "        _require(",
+        "            summary[\"local_binary_cohort_counts\"] == common_local_counts,",
+        "            \"local binary cohort counts mismatch across seeds\",",
+        "        )",
+        "        _require(",
+        "            summary[\"local_binary_training_readiness\"] == common_local_readiness,",
+        "            \"local binary training readiness mismatch across seeds\",",
+        "        )",
+        "        _require(",
+        "            summary[\"all_local_binary_cohorts_training_ready\"] is common_all_local_ready,",
+        "            \"all local binary cohort readiness mismatch across seeds\",",
+        "        )",
+        "        _require(",
+        "            summary[\"polarity_local_training_ready\"] is common_polarity_ready,",
+        "            \"polarity local training readiness mismatch across seeds\",",
+        "        )",
+        "        _require(",
+        "            summary[\"normal_a1_a3_training_ready\"] is common_normal_ready,",
+        "            \"normal A1/A3 training readiness mismatch across seeds\",",
+        "        )"
+      ],
+      "before_context": [
+        "    _require(len(row_counts) == 1, \"ordered train row count mismatch\")",
+        "    _require(len(row_hashes) == 1, \"ordered train identity hash mismatch\")",
+        "    _require(len(split_seeds) == 1, \"split seed mismatch\")",
+        "    total_final_count = sum(summary[\"final_count\"] for summary in summaries)",
+        "    total_reason_count = sum(summary[\"reason_count\"] for summary in summaries)",
+        "    total_final_loss_sum = sum(summary[\"final_sum\"] for summary in summaries)"
+      ],
+      "after_context": [
+        "    _require(len(row_counts) == 1, \"ordered train row count mismatch\")",
+        "    _require(len(row_hashes) == 1, \"ordered train identity hash mismatch\")",
+        "    _require(len(split_seeds) == 1, \"split seed mismatch\")",
+        "    total_final_count = sum(summary[\"final_count\"] for summary in summaries)",
+        "    total_reason_count = sum(summary[\"reason_count\"] for summary in summaries)",
+        "    total_final_loss_sum = sum(summary[\"final_sum\"] for summary in summaries)"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 346,
+      "before_end_exclusive": 346,
+      "after_start": 482,
+      "after_end_exclusive": 485,
+      "before": [],
+      "after": [
+        "    readiness_by_seed = {str(summary[\"seed\"]): summary[\"local_binary_training_readiness\"] for summary in summaries}",
+        "    all_local_ready = common_all_local_ready",
+        "    all_polarity_ready = common_polarity_ready"
+      ],
+      "before_context": [
+        "    total_reason_count = sum(summary[\"reason_count\"] for summary in summaries)",
+        "    total_final_loss_sum = sum(summary[\"final_sum\"] for summary in summaries)",
+        "    total_reason_loss_sum = sum(summary[\"reason_sum\"] for summary in summaries)",
+        "    mu_final = total_final_loss_sum / total_final_count",
+        "    mu_reason = total_reason_loss_sum / total_reason_count",
+        "    resolved_reason_loss_weight = mu_final / mu_reason"
+      ],
+      "after_context": [
+        "    total_reason_count = sum(summary[\"reason_count\"] for summary in summaries)",
+        "    total_final_loss_sum = sum(summary[\"final_sum\"] for summary in summaries)",
+        "    total_reason_loss_sum = sum(summary[\"reason_sum\"] for summary in summaries)",
+        "    mu_final = total_final_loss_sum / total_final_count",
+        "    mu_reason = total_reason_loss_sum / total_reason_count",
+        "    resolved_reason_loss_weight = mu_final / mu_reason"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 384,
+      "before_end_exclusive": 384,
+      "after_start": 523,
+      "after_end_exclusive": 533,
+      "before": [],
+      "after": [
+        "        \"all_weight_resolution_measurements_valid\": True,",
+        "        \"all_primary_reason_min_count_gates_pass\": True,",
+        "        \"primary_reason_class_counts\": common_primary_counts,",
+        "        \"local_binary_cohort_counts\": common_local_counts,",
+        "        \"local_binary_training_readiness\": common_local_readiness,",
+        "        \"local_binary_training_readiness_by_seed\": readiness_by_seed,",
+        "        \"all_local_binary_cohorts_training_ready\": all_local_ready,",
+        "        \"all_polarity_local_training_ready\": all_polarity_ready,",
+        "        \"normal_a1_a3_training_ready\": all_local_ready,",
+        "        \"training_readiness_separate_from_weight_resolution\": True,"
+      ],
+      "before_context": [
+        "        \"all_a0_logits_unused\": True,",
+        "        \"all_a0_metrics_unused\": True,",
+        "        \"all_a0_checkpoints_unused\": True,",
+        "        \"total_final_count\": total_final_count,",
+        "        \"total_reason_count\": total_reason_count,",
+        "        \"total_final_loss_sum\": total_final_loss_sum,"
+      ],
+      "after_context": [
+        "        \"all_a0_logits_unused\": True,",
+        "        \"all_a0_metrics_unused\": True,",
+        "        \"all_a0_checkpoints_unused\": True,",
+        "        \"total_final_count\": total_final_count,",
+        "        \"total_reason_count\": total_reason_count,",
+        "        \"total_final_loss_sum\": total_final_loss_sum,"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "shard_ordinal": 84,
+  "original_queue_id": "WORK-c6e2a58b1be60d76aca5",
+  "original_source_ids": [
+    "HV000972"
+  ],
+  "original_source_identity": {
+    "commit": "e12e1c4a4242e3735123dbe33c8f6dd5c19c6321",
+    "path": "scripts/run_longterm_o0c_selective_ssm_native_state_dynamics.py",
+    "blob": "c9d5e2ae0fed2402ab32be811cf79cd33e93dd1d",
+    "object_type": "commit",
+    "bytes": 14534,
+    "sha256": "232c0477c0f282108218348e7ef21c1e36ee37883663d0c008b591035b0d0a31"
+  },
+  "before": {
+    "commit": "ab625ebd3989688c7760e5d58892beef553ac6bb",
+    "path": "scripts/run_longterm_o0c_selective_ssm_native_state_dynamics.py",
+    "blob": "3c727aaeded170b7e70be6b8f4f06d4268f4e3e4",
+    "object_type": "commit",
+    "bytes": 14503,
+    "sha256": "0f26a50f59e37918fc5630ecd0049e96749e634a74ae56fc91ebec32333da7f2"
+  },
+  "after": {
+    "commit": "e12e1c4a4242e3735123dbe33c8f6dd5c19c6321",
+    "path": "scripts/run_longterm_o0c_selective_ssm_native_state_dynamics.py",
+    "blob": "c9d5e2ae0fed2402ab32be811cf79cd33e93dd1d",
+    "object_type": "commit",
+    "bytes": 14534,
+    "sha256": "232c0477c0f282108218348e7ef21c1e36ee37883663d0c008b591035b0d0a31"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0131"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "load_observer"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 1 removed/replaced lines and 1 added/replaced lines in 1 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "ab625ebd3989688c7760e5d58892beef553ac6bb",
+      "blob": "3c727aaeded170b7e70be6b8f4f06d4268f4e3e4"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "replace",
+      "before_start": 26,
+      "before_end_exclusive": 27,
+      "after_start": 26,
+      "after_end_exclusive": 27,
+      "before": [
+        " path=Path(__file__).with_name(\"observe_longterm_o0c_selective_ssm_native_state_dynamics.py\"); spec=importlib.util.spec_from_file_location(\"o0c_observer\",path); require(spec and spec.loader,\"observer import\"); module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module); return module"
+      ],
+      "after": [
+        " path=Path(__file__).with_name(\"observe_longterm_o0c_selective_ssm_native_state_dynamics.py\"); spec=importlib.util.spec_from_file_location(\"o0c_observer\",path); require(spec and spec.loader,\"observer import\"); module=importlib.util.module_from_spec(spec); sys.modules[spec.name]=module; spec.loader.exec_module(module); return module"
+      ],
+      "before_context": [
+        "def parse_args(argv=None):",
+        " actual=list(sys.argv if argv is None else argv); ns=parser().parse_args(actual[1:] if actual and not actual[0].startswith(\"--\") else actual); _strings(ns); require(ns.exact_command==canonical_exact_command(actual),\"exact-command mismatch\"); return ns",
+        "def load_observer():",
+        "def git_head(): return subprocess.check_output([\"git\",\"rev-parse\",\"HEAD\"],text=True).strip()",
+        "def git_canonical_input(path):",
+        " rel=Path(path).as_posix()"
+      ],
+      "after_context": [
+        "def parse_args(argv=None):",
+        " actual=list(sys.argv if argv is None else argv); ns=parser().parse_args(actual[1:] if actual and not actual[0].startswith(\"--\") else actual); _strings(ns); require(ns.exact_command==canonical_exact_command(actual),\"exact-command mismatch\"); return ns",
+        "def load_observer():",
+        "def git_head(): return subprocess.check_output([\"git\",\"rev-parse\",\"HEAD\"],text=True).strip()",
+        "def git_canonical_input(path):",
+        " rel=Path(path).as_posix()"
+      ]
+    }
+  ]
+}

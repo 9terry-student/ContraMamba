@@ -1,0 +1,44 @@
+PAGE 1
+A
+Prospective PP3 evidence chain
+Distinct estimands and XG1 holdouts; means are not magnitude-comparable.
+Transport
+C_PP3
+7.1202761928785655e-08
+N = 300
+Specificity
+D_SPEC
+2.3040673691981465e-08
+N = 300
+Necessity
+D_NEC
+4.7414371121837106e-08
+N = 300
+Restoration
+sufficiency
+D_SUF
+4.078872356598753e-08
+N = 300
+B
+Behavioral restoration
+Restored PP3 minus PP5 replacement
+Mean D_BEH
++0.00833219
+Task-margin contrast; seed 181
+N = 300 paired items
+Behavioral consequence is measured
+by margin, not accuracy improvement.
+C
+Readout / behavior coupling
+-0.01
+0
+0.01
+0.02
+0
+0.04
+0.08
+D_BEH
+Delta L (owned readout)
+Pearson 0.61755   Spearman 0.83247
+Sign agreement 0.82333
+All points retained. Association values are frozen descriptive results; no fit or new test.

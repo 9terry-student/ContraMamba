@@ -1,0 +1,332 @@
+{
+  "shard_ordinal": 27,
+  "original_queue_id": "WORK-44c068e4cb3c06e49e39",
+  "original_source_ids": [
+    "HV000817"
+  ],
+  "original_source_identity": {
+    "commit": "5f5f4d6a80085ad8baf43445475d1c3049535c22",
+    "path": "scripts/longterm_k0_rvg_post_p2_token_window_static_audit.py",
+    "blob": "561bbcf8d34970cee22e4cbf40c1c814dfc31f50",
+    "object_type": "commit",
+    "bytes": 31797,
+    "sha256": "83390903028682b4d802ffab118fd16e5c8125305ce2a27a78cf829c504e0f19"
+  },
+  "before": {
+    "commit": "60045b76130a8b89a018d60111433616fd85588e",
+    "path": "scripts/longterm_k0_rvg_post_p2_token_window_static_audit.py",
+    "blob": "c18a6ce4296bb0c956a664482a484918aeaf9d44",
+    "object_type": "commit",
+    "bytes": 29810,
+    "sha256": "3daa40a6c48aad0c26e0901ade11bb8f2b42e2a0920388f883d1adab710efdae"
+  },
+  "after": {
+    "commit": "5f5f4d6a80085ad8baf43445475d1c3049535c22",
+    "path": "scripts/longterm_k0_rvg_post_p2_token_window_static_audit.py",
+    "blob": "561bbcf8d34970cee22e4cbf40c1c814dfc31f50",
+    "object_type": "commit",
+    "bytes": 31797,
+    "sha256": "83390903028682b4d802ffab118fd16e5c8125305ce2a27a78cf829c504e0f19"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0110"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "execute_real",
+      "load_local_tokenizer",
+      "tokenizer_snapshot_manifest",
+      "validate_execution_markers"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 20 removed/replaced lines and 65 added/replaced lines in 7 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "dcac03006a97079061d7955e287e1f8b54aa2853",
+      "blob": "561bbcf8d34970cee22e4cbf40c1c814dfc31f50"
+    }
+  ],
+  "immediate_parent_has_before_blob": false,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 78,
+      "before_end_exclusive": 78,
+      "after_start": 78,
+      "after_end_exclusive": 86,
+      "before": [],
+      "after": [
+        "",
+        "TOKENIZER_SNAPSHOT_PATTERNS = (",
+        "    \"config.json\",",
+        "    \"tokenizer*\",",
+        "    \"special_tokens_map.json\",",
+        "    \"vocab.*\",",
+        "    \"merges.txt\",",
+        ")"
+      ],
+      "before_context": [
+        "    \"TOKENIZER_REVISION\": HF_REVISION,",
+        "    \"TOKENIZER_TRANSFORMERS_VERSION\": TRANSFORMERS_VERSION,",
+        "}",
+        "",
+        "",
+        "class ContractError(RuntimeError):"
+      ],
+      "after_context": [
+        "    \"TOKENIZER_REVISION\": HF_REVISION,",
+        "    \"TOKENIZER_TRANSFORMERS_VERSION\": TRANSFORMERS_VERSION,",
+        "}",
+        "",
+        "",
+        "class ContractError(RuntimeError):"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 179,
+      "before_end_exclusive": 179,
+      "after_start": 187,
+      "after_end_exclusive": 193,
+      "before": [],
+      "after": [
+        "    snapshot_digest = markers.get(\"TOKENIZER_SNAPSHOT_MANIFEST_SHA256\", \"\")",
+        "    require(len(snapshot_digest) == 64, \"EXECUTION_AUTHORITY_TOKENIZER_SNAPSHOT_SHA256_INVALID\")",
+        "    require(",
+        "        all(ch in \"0123456789abcdef\" for ch in snapshot_digest),",
+        "        \"EXECUTION_AUTHORITY_TOKENIZER_SNAPSHOT_SHA256_NONHEX\",",
+        "    )"
+      ],
+      "before_context": [
+        "def validate_execution_markers(markers: Mapping[str, str], actual_impl_commit: str) -> None:",
+        "    for key, expected in REQUIRED_FUTURE_MARKERS.items():",
+        "        require(markers.get(key) == expected, f\"EXECUTION_AUTHORITY_MARKER_MISMATCH:{key}\")",
+        "    declared = markers.get(\"POST_P2_TOKEN_WINDOW_IMPLEMENTATION_COMMIT\", \"\")",
+        "    require(len(declared) == 40, \"EXECUTION_AUTHORITY_IMPLEMENTATION_COMMIT_INVALID\")",
+        "    require(all(ch in \"0123456789abcdef\" for ch in declared), \"EXECUTION_AUTHORITY_IMPLEMENTATION_COMMIT_NONHEX\")"
+      ],
+      "after_context": [
+        "def validate_execution_markers(markers: Mapping[str, str], actual_impl_commit: str) -> None:",
+        "    for key, expected in REQUIRED_FUTURE_MARKERS.items():",
+        "        require(markers.get(key) == expected, f\"EXECUTION_AUTHORITY_MARKER_MISMATCH:{key}\")",
+        "    declared = markers.get(\"POST_P2_TOKEN_WINDOW_IMPLEMENTATION_COMMIT\", \"\")",
+        "    require(len(declared) == 40, \"EXECUTION_AUTHORITY_IMPLEMENTATION_COMMIT_INVALID\")",
+        "    require(all(ch in \"0123456789abcdef\" for ch in declared), \"EXECUTION_AUTHORITY_IMPLEMENTATION_COMMIT_NONHEX\")"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 484,
+      "before_end_exclusive": 486,
+      "after_start": 498,
+      "after_end_exclusive": 501,
+      "before": [
+        "def load_local_tokenizer(snapshot_path: Path) -> tuple[Any, dict[str, Any]]:",
+        "    # No network fallback: local_files_only=True and a pre-existing local path are mandatory."
+      ],
+      "after": [
+        "def tokenizer_snapshot_manifest(snapshot_path: Path) -> tuple[dict[str, str], str]:",
+        "    # Match exactly the tokenizer/config file family used by the frozen P1 snapshot resolver.",
+        "    # Symlinked Hugging Face cache files are intentionally hashed by content."
+      ],
+      "before_context": [
+        "    }",
+        "",
+        "",
+        "    require(snapshot_path.is_dir(), \"TOKENIZER_LOCAL_SNAPSHOT_MISSING\")",
+        "    try:",
+        "        from transformers import AutoTokenizer, __version__ as transformers_version"
+      ],
+      "after_context": [
+        "    }",
+        "",
+        "",
+        "    require(snapshot_path.is_dir(), \"TOKENIZER_LOCAL_SNAPSHOT_MISSING\")",
+        "    file_hashes: dict[str, str] = {}",
+        "    for path in sorted(snapshot_path.rglob(\"*\")):"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 487,
+      "before_end_exclusive": 487,
+      "after_start": 502,
+      "after_end_exclusive": 529,
+      "before": [],
+      "after": [
+        "    file_hashes: dict[str, str] = {}",
+        "    for path in sorted(snapshot_path.rglob(\"*\")):",
+        "        if not path.is_file():",
+        "            continue",
+        "        rel = path.relative_to(snapshot_path)",
+        "        if not any(rel.match(pattern) for pattern in TOKENIZER_SNAPSHOT_PATTERNS):",
+        "            continue",
+        "        rel_text = rel.as_posix()",
+        "        require(rel_text not in file_hashes, \"TOKENIZER_SNAPSHOT_DUPLICATE_RELATIVE_PATH\")",
+        "        file_hashes[rel_text] = file_sha256(path)",
+        "    require(bool(file_hashes), \"TOKENIZER_SNAPSHOT_EMPTY\")",
+        "    ordered = dict(sorted(file_hashes.items()))",
+        "    return ordered, sha256_bytes(canonical_json_bytes(ordered))",
+        "",
+        "",
+        "def load_local_tokenizer(",
+        "    snapshot_path: Path,",
+        "    markers: Mapping[str, str],",
+        ") -> tuple[Any, dict[str, Any]]:",
+        "    # Authenticate exact tokenizer/config bytes before importing/loading Transformers.",
+        "    file_hashes, snapshot_digest = tokenizer_snapshot_manifest(snapshot_path)",
+        "    expected_digest = markers.get(\"TOKENIZER_SNAPSHOT_MANIFEST_SHA256\", \"\")",
+        "    require(",
+        "        snapshot_digest == expected_digest,",
+        "        \"TOKENIZER_SNAPSHOT_MANIFEST_SHA256_MISMATCH\",",
+        "    )",
+        ""
+      ],
+      "before_context": [
+        "def load_local_tokenizer(snapshot_path: Path) -> tuple[Any, dict[str, Any]]:",
+        "    # No network fallback: local_files_only=True and a pre-existing local path are mandatory.",
+        "    require(snapshot_path.is_dir(), \"TOKENIZER_LOCAL_SNAPSHOT_MISSING\")",
+        "    try:",
+        "        from transformers import AutoTokenizer, __version__ as transformers_version",
+        "    except Exception as exc:"
+      ],
+      "after_context": [
+        "    # Match exactly the tokenizer/config file family used by the frozen P1 snapshot resolver.",
+        "    # Symlinked Hugging Face cache files are intentionally hashed by content.",
+        "    require(snapshot_path.is_dir(), \"TOKENIZER_LOCAL_SNAPSHOT_MISSING\")",
+        "    try:",
+        "        from transformers import AutoTokenizer, __version__ as transformers_version",
+        "    except Exception as exc:"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 492,
+      "before_end_exclusive": 508,
+      "after_start": 534,
+      "after_end_exclusive": 553,
+      "before": [
+        "    tokenizer = AutoTokenizer.from_pretrained(",
+        "        str(snapshot_path),",
+        "        local_files_only=True,",
+        "        use_fast=True,",
+        "    )",
+        "    require(getattr(tokenizer, \"is_fast\", False), \"TOKENIZER_MUST_BE_FAST\")",
+        "    files = sorted(",
+        "        p for p in snapshot_path.rglob(\"*\")",
+        "        if p.is_file() and not p.is_symlink()",
+        "    )",
+        "    file_hashes = {",
+        "        p.relative_to(snapshot_path).as_posix(): file_sha256(p)",
+        "        for p in files",
+        "    }",
+        "    require(bool(file_hashes), \"TOKENIZER_SNAPSHOT_EMPTY\")",
+        "    snapshot_digest = sha256_bytes(canonical_json_bytes(file_hashes))"
+      ],
+      "after": [
+        "",
+        "    # Load from a curated temporary directory containing only authenticated files.",
+        "    # This prevents unmanifested files in a broader local cache snapshot from affecting tokenization.",
+        "    with tempfile.TemporaryDirectory(prefix=\"k0-rvg-tokenizer-\") as temp_name:",
+        "        curated = Path(temp_name)",
+        "        for rel_text, expected_sha in file_hashes.items():",
+        "            src = snapshot_path / Path(rel_text)",
+        "            dst = curated / Path(rel_text)",
+        "            dst.parent.mkdir(parents=True, exist_ok=True)",
+        "            shutil.copyfile(src, dst)",
+        "            require(file_sha256(dst) == expected_sha, \"TOKENIZER_CURATED_COPY_SHA256_MISMATCH\")",
+        "",
+        "        tokenizer = AutoTokenizer.from_pretrained(",
+        "            str(curated),",
+        "            local_files_only=True,",
+        "            use_fast=True,",
+        "        )",
+        "        require(getattr(tokenizer, \"is_fast\", False), \"TOKENIZER_MUST_BE_FAST\")",
+        ""
+      ],
+      "before_context": [
+        "    except Exception as exc:",
+        "        raise ContractError(\"TRANSFORMERS_IMPORT_FAILURE\") from exc",
+        "    require(transformers_version == TRANSFORMERS_VERSION, \"TRANSFORMERS_VERSION_MISMATCH\")",
+        "    return tokenizer, {",
+        "        \"model_id\": HF_MODEL,",
+        "        \"revision\": HF_REVISION,"
+      ],
+      "after_context": [
+        "    except Exception as exc:",
+        "        raise ContractError(\"TRANSFORMERS_IMPORT_FAILURE\") from exc",
+        "    require(transformers_version == TRANSFORMERS_VERSION, \"TRANSFORMERS_VERSION_MISMATCH\")",
+        "    return tokenizer, {",
+        "        \"model_id\": HF_MODEL,",
+        "        \"revision\": HF_REVISION,"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 598,
+      "before_end_exclusive": 599,
+      "after_start": 643,
+      "after_end_exclusive": 644,
+      "before": [
+        "    tokenizer_loader: Callable[[Path], tuple[Any, Mapping[str, Any]]] = load_local_tokenizer,"
+      ],
+      "after": [
+        "    tokenizer_loader: Callable[[Path, Mapping[str, str]], tuple[Any, Mapping[str, Any]]] = load_local_tokenizer,"
+      ],
+      "before_context": [
+        "    *,",
+        "    authority_authenticator: Callable[[Path, str], Mapping[str, str]] = authenticate_execution_authority,",
+        "    real_input_loader: Callable[[Path, Path], Mapping[str, Any]] = validate_real_inputs,",
+        ") -> dict[str, Any]:",
+        "    # Critical invariant: authority authentication precedes every real scientific input read",
+        "    # and precedes loading the real frozen tokenizer."
+      ],
+      "after_context": [
+        "    *,",
+        "    authority_authenticator: Callable[[Path, str], Mapping[str, str]] = authenticate_execution_authority,",
+        "    real_input_loader: Callable[[Path, Path], Mapping[str, Any]] = validate_real_inputs,",
+        ") -> dict[str, Any]:",
+        "    # Critical invariant: authority authentication precedes every real scientific input read",
+        "    # and precedes loading the real frozen tokenizer."
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 605,
+      "before_end_exclusive": 606,
+      "after_start": 650,
+      "after_end_exclusive": 651,
+      "before": [
+        "    tokenizer, tokenizer_provenance = tokenizer_loader(tokenizer_snapshot)"
+      ],
+      "after": [
+        "    tokenizer, tokenizer_provenance = tokenizer_loader(tokenizer_snapshot, markers)"
+      ],
+      "before_context": [
+        "    markers = authority_authenticator(repo_root, execution_authority_rel)",
+        "    require(not output_dir.exists(), \"OUTPUT_ALREADY_EXISTS\")",
+        "    inputs = real_input_loader(repo_root, p2_path)",
+        "    audit = build_real_audit(inputs, tokenizer, tokenizer_provenance)",
+        "    output_path = write_output_atomic(output_dir, audit)",
+        "    return {"
+      ],
+      "after_context": [
+        "    markers = authority_authenticator(repo_root, execution_authority_rel)",
+        "    require(not output_dir.exists(), \"OUTPUT_ALREADY_EXISTS\")",
+        "    inputs = real_input_loader(repo_root, p2_path)",
+        "    audit = build_real_audit(inputs, tokenizer, tokenizer_provenance)",
+        "    output_path = write_output_atomic(output_dir, audit)",
+        "    return {"
+      ]
+    }
+  ]
+}

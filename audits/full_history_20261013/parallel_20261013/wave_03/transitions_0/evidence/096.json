@@ -1,0 +1,1116 @@
+{
+  "shard_ordinal": 96,
+  "original_queue_id": "WORK-e65f3db3a397ebb42736",
+  "original_source_ids": [
+    "HV000015"
+  ],
+  "original_source_identity": {
+    "commit": "2ca6c447605b18ef924c4e401cb3247f3a8d31be",
+    "path": "README.md",
+    "blob": "11b654dff36233e7c86f7e7b3f5ba5a761dd5685",
+    "object_type": "commit",
+    "bytes": 12308,
+    "sha256": "b263b3ce49d6a38c72022f180e67b9ae3e36c4d0b9216959e7514621eb1f1a6d"
+  },
+  "before": {
+    "commit": "4234c4ab998d2ee1ea2820e413e2741d56f44a0b",
+    "path": "README.md",
+    "blob": "31c0822705d416580bca6b2bb3afb46c13ef1195",
+    "object_type": "commit",
+    "bytes": 5373,
+    "sha256": "2d826d0c74337381c8963e6b2973c629ae2113a0ba3bac5d74e7f5fc1c32d1af"
+  },
+  "after": {
+    "commit": "2ca6c447605b18ef924c4e401cb3247f3a8d31be",
+    "path": "README.md",
+    "blob": "11b654dff36233e7c86f7e7b3f5ba5a761dd5685",
+    "object_type": "commit",
+    "bytes": 12308,
+    "sha256": "b263b3ce49d6a38c72022f180e67b9ae3e36c4d0b9216959e7514621eb1f1a6d"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0012"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate every changed proposition, numerical definition, experiment endpoint and authority/result claim from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 64 removed/replaced lines and 277 added/replaced lines in 27 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "c744332e74bae5aa1c027bb4fa5f59f6e1196b55",
+      "blob": "ca1516a3f29aa59031e7fa59105485b7945322c5"
+    }
+  ],
+  "immediate_parent_has_before_blob": false,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "replace",
+      "before_start": 3,
+      "before_end_exclusive": 4,
+      "after_start": 3,
+      "after_end_exclusive": 4,
+      "before": [
+        "ContraMamba studies whether final-label correctness and internal evidence-entitlement faithfulness can diverge in claim-evidence verification. The current Stage 5 system predicts `REFUTE`, `NOT_ENTITLED`, or `SUPPORT` while exposing intermediate signals for frame compatibility, predicate coverage, evidence sufficiency, and polarity."
+      ],
+      "after": [
+        "ContraMamba studies whether a claim-evidence verifier is not only correct at the final-label level, but also internally entitled to make that decision from the supplied evidence."
+      ],
+      "before_context": [
+        "# ContraMamba: Evidence-Entitlement Modeling for Claim-Evidence Verification",
+        "",
+        "",
+        "This is not a generic uncertainty-estimation project. A model can be confident or produce the correct label without being internally entitled to that decision by the supplied evidence. ContraMamba evaluates that distinction directly through controlled interventions and classifier-auditor routing.",
+        ""
+      ],
+      "after_context": [
+        "# ContraMamba: Evidence-Entitlement Modeling for Claim-Evidence Verification",
+        "",
+        "",
+        "The central distinction is:",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 5,
+      "before_end_exclusive": 6,
+      "after_start": 5,
+      "after_end_exclusive": 40,
+      "before": [
+        "This is not a generic uncertainty-estimation project. A model can be confident or produce the correct label without being internally entitled to that decision by the supplied evidence. ContraMamba evaluates that distinction directly through controlled interventions and classifier-auditor routing."
+      ],
+      "after": [
+        "The central distinction is:",
+        "",
+        "```text",
+        "A model can predict the correct final label",
+        "without having an internally faithful evidence-entitlement path for that label.",
+        "```",
+        "",
+        "ContraMamba therefore separates final judgment into intermediate epistemic signals: frame compatibility, predicate coverage, evidence sufficiency, entitlement, and polarity. The current system predicts:",
+        "",
+        "```text",
+        "REFUTE / NOT_ENTITLED / SUPPORT",
+        "```",
+        "",
+        "while exposing internal channel diagnostics for controlled intervention analysis.",
+        "",
+        "This is not a generic uncertainty-estimation project. Confidence, entropy, or softmax calibration are not treated as sufficient evidence of epistemic entitlement. ContraMamba directly evaluates whether the model's internal decision path respects the evidence structure.",
+        "",
+        "---",
+        "",
+        "## Current status",
+        "",
+        "The current mainline is **Stage26-H1**, a repaired v7 hierarchical model using a real Mamba backbone.",
+        "",
+        "Stage26-H1 preserves the v7 hierarchical channel architecture but replaces the unstable raw-additive final decision with a v6B-style softplus/multiplicative final-decision geometry.",
+        "",
+        "The key finding so far is:",
+        "",
+        "```text",
+        "The v7 hierarchy itself was not the main failure.",
+        "The failure came from the final-decision geometry.",
+        "Treating entitlement as an additive logit feature caused SUPPORT collapse.",
+        "Restoring entitlement as a gate over polarity energies recovered 3-way judgment behavior.",
+        "```",
+        "",
+        "---"
+      ],
+      "before_context": [
+        "",
+        "ContraMamba studies whether final-label correctness and internal evidence-entitlement faithfulness can diverge in claim-evidence verification. The current Stage 5 system predicts `REFUTE`, `NOT_ENTITLED`, or `SUPPORT` while exposing intermediate signals for frame compatibility, predicate coverage, evidence sufficiency, and polarity.",
+        "",
+        "",
+        "## Architecture",
+        ""
+      ],
+      "after_context": [
+        "",
+        "ContraMamba studies whether a claim-evidence verifier is not only correct at the final-label level, but also internally entitled to make that decision from the supplied evidence.",
+        "",
+        "",
+        "## Architecture",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 9,
+      "before_end_exclusive": 10,
+      "after_start": 43,
+      "after_end_exclusive": 44,
+      "before": [
+        "The v5 pipeline preserves token-level encoder states until the frame and predicate stages:"
+      ],
+      "after": [
+        "The current v7-H1 pipeline is:"
+      ],
+      "before_context": [
+        "",
+        "## Architecture",
+        "",
+        "",
+        "```text",
+        "claim + evidence"
+      ],
+      "after_context": [
+        "",
+        "## Architecture",
+        "",
+        "",
+        "```text",
+        "claim + evidence"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 16,
+      "before_end_exclusive": 17,
+      "after_start": 50,
+      "after_end_exclusive": 51,
+      "before": [
+        "FrameGate"
+      ],
+      "after": [
+        "Frame channel"
+      ],
+      "before_context": [
+        "      |",
+        "Mamba encoder",
+        "      |",
+        "      |",
+        "PredicateCoverageHead",
+        "      |"
+      ],
+      "after_context": [
+        "      |",
+        "Mamba encoder",
+        "      |",
+        "      |",
+        "Predicate channel",
+        "      |"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 18,
+      "before_end_exclusive": 19,
+      "after_start": 52,
+      "after_end_exclusive": 53,
+      "before": [
+        "PredicateCoverageHead"
+      ],
+      "after": [
+        "Predicate channel"
+      ],
+      "before_context": [
+        "      |",
+        "FrameGate",
+        "      |",
+        "      |",
+        "SufficiencyGate",
+        "      |"
+      ],
+      "after_context": [
+        "      |",
+        "Frame channel",
+        "      |",
+        "      |",
+        "Sufficiency / temporal channel",
+        "      |"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 20,
+      "before_end_exclusive": 21,
+      "after_start": 54,
+      "after_end_exclusive": 55,
+      "before": [
+        "SufficiencyGate"
+      ],
+      "after": [
+        "Sufficiency / temporal channel"
+      ],
+      "before_context": [
+        "      |",
+        "PredicateCoverageHead",
+        "      |",
+        "      |",
+        "PolarityEnergyHead",
+        "      |"
+      ],
+      "after_context": [
+        "      |",
+        "Predicate channel",
+        "      |",
+        "      |",
+        "Entitlement gate",
+        "      |"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 22,
+      "before_end_exclusive": 23,
+      "after_start": 56,
+      "after_end_exclusive": 57,
+      "before": [
+        "PolarityEnergyHead"
+      ],
+      "after": [
+        "Entitlement gate"
+      ],
+      "before_context": [
+        "      |",
+        "SufficiencyGate",
+        "      |",
+        "      |",
+        "FinalEntitlementDecisionHead",
+        "```"
+      ],
+      "after_context": [
+        "      |",
+        "Sufficiency / temporal channel",
+        "      |",
+        "      |",
+        "Polarity channel",
+        "      |"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 24,
+      "before_end_exclusive": 25,
+      "after_start": 58,
+      "after_end_exclusive": 63,
+      "before": [
+        "FinalEntitlementDecisionHead"
+      ],
+      "after": [
+        "Polarity channel",
+        "      |",
+        "H1 final decision geometry",
+        "      |",
+        "REFUTE / NOT_ENTITLED / SUPPORT"
+      ],
+      "before_context": [
+        "      |",
+        "PolarityEnergyHead",
+        "      |",
+        "```",
+        "",
+        "- **Mamba encoder:** produces contextual token states for the claim-evidence pair."
+      ],
+      "after_context": [
+        "      |",
+        "Entitlement gate",
+        "      |",
+        "```",
+        "",
+        "The H1 final decision uses nonnegative polarity energies and entitlement-gated final logits:"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 27,
+      "before_end_exclusive": 34,
+      "after_start": 65,
+      "after_end_exclusive": 66,
+      "before": [
+        "- **Mamba encoder:** produces contextual token states for the claim-evidence pair.",
+        "- **FrameGate:** estimates category-free pairwise frame compatibility.",
+        "- **PredicateCoverageHead:** measures whether the evidence covers the claim predicate.",
+        "- **SufficiencyGate:** estimates whether the available evidence is sufficient for an entitled decision.",
+        "- **PolarityEnergyHead:** represents support and refute polarity evidence.",
+        "- **FinalEntitlementDecisionHead:** combines entitlement and polarity into the three final labels.",
+        "- **Classifier-auditor router:** retains an entitled classifier output only when the auditor's frame, predicate, sufficiency, and entitlement gates pass; otherwise it returns `NOT_ENTITLED`."
+      ],
+      "after": [
+        "The H1 final decision uses nonnegative polarity energies and entitlement-gated final logits:"
+      ],
+      "before_context": [
+        "FinalEntitlementDecisionHead",
+        "```",
+        "",
+        "",
+        "The v5 core does not use the v4 geometric classifier, prototype memory, routing memory, FAISS, GAT, novelty, ambiguity, or RAG components.",
+        ""
+      ],
+      "after_context": [
+        "REFUTE / NOT_ENTITLED / SUPPORT",
+        "```",
+        "",
+        "",
+        "```text",
+        "positive_energy = softplus(support_polarity_logit)"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 35,
+      "before_end_exclusive": 36,
+      "after_start": 67,
+      "after_end_exclusive": 95,
+      "before": [
+        "The v5 core does not use the v4 geometric classifier, prototype memory, routing memory, FAISS, GAT, novelty, ambiguity, or RAG components."
+      ],
+      "after": [
+        "```text",
+        "positive_energy = softplus(support_polarity_logit)",
+        "negative_energy = softplus(refute_polarity_logit)",
+        "",
+        "support_score = entitlement_for_decision * positive_energy",
+        "refute_score  = entitlement_for_decision * negative_energy",
+        "ne_score      = ne_bias + alpha * (1 - entitlement_for_decision)",
+        "",
+        "final_logits = [refute_score, ne_score, support_score]",
+        "```",
+        "",
+        "This preserves the epistemic role of entitlement: SUPPORT and REFUTE should only be available when the evidence entitles a polarity decision.",
+        "",
+        "---",
+        "",
+        "## Model components",
+        "",
+        "* **Mamba encoder:** produces contextual sequence states for the claim-evidence pair.",
+        "* **Frame channel:** estimates whether the evidence and claim refer to a compatible event/entity/frame.",
+        "* **Predicate channel:** estimates whether the evidence covers the claim predicate.",
+        "* **Sufficiency channel:** estimates whether the available evidence is enough for an entitled decision.",
+        "* **Entitlement gate:** estimates whether SUPPORT/REFUTE judgment should be permitted.",
+        "* **Polarity channel:** estimates support-vs-refute polarity evidence.",
+        "* **H1 final decision head:** converts entitlement and polarity into REFUTE / NOT_ENTITLED / SUPPORT.",
+        "",
+        "Earlier versions explored classifier-auditor routing, prototype memory, geometric classifiers, and auxiliary diagnostic heads. The current mainline focuses on the v7 hierarchical architecture plus H1 final-decision repair.",
+        "",
+        "---"
+      ],
+      "before_context": [
+        "- **FinalEntitlementDecisionHead:** combines entitlement and polarity into the three final labels.",
+        "- **Classifier-auditor router:** retains an entitled classifier output only when the auditor's frame, predicate, sufficiency, and entitlement gates pass; otherwise it returns `NOT_ENTITLED`.",
+        "",
+        "",
+        "## Controlled intervention evaluation",
+        ""
+      ],
+      "after_context": [
+        "",
+        "The H1 final decision uses nonnegative polarity energies and entitlement-gated final logits:",
+        "",
+        "",
+        "## Controlled intervention evaluation",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 39,
+      "before_end_exclusive": 40,
+      "after_start": 98,
+      "after_end_exclusive": 99,
+      "before": [
+        "Stage 5 uses pair-grouped controlled examples so that an original claim-evidence pair can be compared with targeted interventions. The evaluated interventions include:"
+      ],
+      "after": [
+        "The current controlled clean dataset is:"
+      ],
+      "before_context": [
+        "",
+        "## Controlled intervention evaluation",
+        "",
+        "",
+        "- `paraphrase`",
+        "- `entity_swap`"
+      ],
+      "after_context": [
+        "",
+        "## Controlled intervention evaluation",
+        "",
+        "",
+        "```text",
+        "data/controlled_v5_v3_without_time_swap.jsonl"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 41,
+      "before_end_exclusive": 52,
+      "after_start": 100,
+      "after_end_exclusive": 103,
+      "before": [
+        "- `paraphrase`",
+        "- `entity_swap`",
+        "- `event_swap`",
+        "- `time_swap`",
+        "- `location_swap`",
+        "- `role_swap`",
+        "- `title_name_swap`",
+        "- `predicate_swap`",
+        "- `evidence_deletion`",
+        "- `evidence_truncation`",
+        "- `polarity_flip`"
+      ],
+      "after": [
+        "```text",
+        "data/controlled_v5_v3_without_time_swap.jsonl",
+        "```"
+      ],
+      "before_context": [
+        "",
+        "Stage 5 uses pair-grouped controlled examples so that an original claim-evidence pair can be compared with targeted interventions. The evaluated interventions include:",
+        "",
+        "",
+        "Splits are performed by `pair_id`, preventing an original pair and its interventions from crossing train and development partitions. Metrics cover final-label classification, output-level pairwise consistency, and internal gate faithfulness.",
+        ""
+      ],
+      "after_context": [
+        "",
+        "The current controlled clean dataset is:",
+        "",
+        "",
+        "It removes the earlier corrupted `time_swap` family and contains:",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 53,
+      "before_end_exclusive": 54,
+      "after_start": 104,
+      "after_end_exclusive": 105,
+      "before": [
+        "Splits are performed by `pair_id`, preventing an original pair and its interventions from crossing train and development partitions. Metrics cover final-label classification, output-level pairwise consistency, and internal gate faithfulness."
+      ],
+      "after": [
+        "It removes the earlier corrupted `time_swap` family and contains:"
+      ],
+      "before_context": [
+        "- `evidence_truncation`",
+        "- `polarity_flip`",
+        "",
+        "",
+        "## Stage 5C results",
+        ""
+      ],
+      "after_context": [
+        "data/controlled_v5_v3_without_time_swap.jsonl",
+        "```",
+        "",
+        "",
+        "```text",
+        "12 intervention types"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 55,
+      "before_end_exclusive": 56,
+      "after_start": 106,
+      "after_end_exclusive": 111,
+      "before": [
+        "## Stage 5C results"
+      ],
+      "after": [
+        "```text",
+        "12 intervention types",
+        "300 pair groups",
+        "3,600 examples",
+        "```"
+      ],
+      "before_context": [
+        "",
+        "Splits are performed by `pair_id`, preventing an original pair and its interventions from crossing train and development partitions. Metrics cover final-label classification, output-level pairwise consistency, and internal gate faithfulness.",
+        "",
+        "",
+        "Results are means and sample standard deviations across three seeds on the controlled v2 dataset.",
+        ""
+      ],
+      "after_context": [
+        "",
+        "It removes the earlier corrupted `time_swap` family and contains:",
+        "",
+        "",
+        "The label distribution is:",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 57,
+      "before_end_exclusive": 58,
+      "after_start": 112,
+      "after_end_exclusive": 113,
+      "before": [
+        "Results are means and sample standard deviations across three seeds on the controlled v2 dataset."
+      ],
+      "after": [
+        "The label distribution is:"
+      ],
+      "before_context": [
+        "",
+        "## Stage 5C results",
+        "",
+        "",
+        "| System | Macro-F1 | Entitled-output gate violation rate | Output/internal polarity gap |",
+        "|---|---:|---:|---:|"
+      ],
+      "after_context": [
+        "3,600 examples",
+        "```",
+        "",
+        "",
+        "```text",
+        "NOT_ENTITLED: 2700"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 59,
+      "before_end_exclusive": 63,
+      "after_start": 114,
+      "after_end_exclusive": 119,
+      "before": [
+        "| System | Macro-F1 | Entitled-output gate violation rate | Output/internal polarity gap |",
+        "|---|---:|---:|---:|",
+        "| `classifier_only` | 0.870 +/- 0.006 | 0.222 +/- 0.066 | 0.250 +/- 0.150 |",
+        "| `conservative_balanced_router` | **0.878 +/- 0.009** | **0.000 +/- 0.000** | **0.000 +/- 0.000** |"
+      ],
+      "after": [
+        "```text",
+        "NOT_ENTITLED: 2700",
+        "REFUTE:        450",
+        "SUPPORT:       450",
+        "```"
+      ],
+      "before_context": [
+        "",
+        "Results are means and sample standard deviations across three seeds on the controlled v2 dataset.",
+        "",
+        "",
+        "The conservative balanced-auditor router improves macro-F1 over the classifier-only baseline while eliminating entitled-output gate violations and closing the measured output/internal polarity-consistency gap.",
+        ""
+      ],
+      "after_context": [
+        "",
+        "The label distribution is:",
+        "",
+        "",
+        "The controlled intervention families include:",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 64,
+      "before_end_exclusive": 65,
+      "after_start": 120,
+      "after_end_exclusive": 121,
+      "before": [
+        "The conservative balanced-auditor router improves macro-F1 over the classifier-only baseline while eliminating entitled-output gate violations and closing the measured output/internal polarity-consistency gap."
+      ],
+      "after": [
+        "The controlled intervention families include:"
+      ],
+      "before_context": [
+        "| `classifier_only` | 0.870 +/- 0.006 | 0.222 +/- 0.066 | 0.250 +/- 0.150 |",
+        "| `conservative_balanced_router` | **0.878 +/- 0.009** | **0.000 +/- 0.000** | **0.000 +/- 0.000** |",
+        "",
+        "",
+        "This result supports the project's central finding: final-label accuracy and evidence-entitlement faithfulness are empirically separable under controlled interventions. Output-level correctness can conceal internal gate or polarity inconsistencies, and a conservative auditor can expose those cases without necessarily reducing aggregate classification quality.",
+        ""
+      ],
+      "after_context": [
+        "SUPPORT:       450",
+        "```",
+        "",
+        "",
+        "* `none`",
+        "* `paraphrase`"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 66,
+      "before_end_exclusive": 67,
+      "after_start": 122,
+      "after_end_exclusive": 134,
+      "before": [
+        "This result supports the project's central finding: final-label accuracy and evidence-entitlement faithfulness are empirically separable under controlled interventions. Output-level correctness can conceal internal gate or polarity inconsistencies, and a conservative auditor can expose those cases without necessarily reducing aggregate classification quality."
+      ],
+      "after": [
+        "* `none`",
+        "* `paraphrase`",
+        "* `entity_swap`",
+        "* `event_swap`",
+        "* `location_swap`",
+        "* `role_swap`",
+        "* `title_name_swap`",
+        "* `predicate_swap`",
+        "* `evidence_deletion`",
+        "* `evidence_truncation`",
+        "* `irrelevant_evidence`",
+        "* `polarity_flip`"
+      ],
+      "before_context": [
+        "",
+        "The conservative balanced-auditor router improves macro-F1 over the classifier-only baseline while eliminating entitled-output gate violations and closing the measured output/internal polarity-consistency gap.",
+        "",
+        "",
+        "For the full ablation and router analyses, see:",
+        ""
+      ],
+      "after_context": [
+        "",
+        "The controlled intervention families include:",
+        "",
+        "",
+        "Splits are performed by `pair_id`, preventing an original pair and its interventions from crossing train/development partitions.",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 68,
+      "before_end_exclusive": 69,
+      "after_start": 135,
+      "after_end_exclusive": 136,
+      "before": [
+        "For the full ablation and router analyses, see:"
+      ],
+      "after": [
+        "Splits are performed by `pair_id`, preventing an original pair and its interventions from crossing train/development partitions."
+      ],
+      "before_context": [
+        "",
+        "This result supports the project's central finding: final-label accuracy and evidence-entitlement faithfulness are empirically separable under controlled interventions. Output-level correctness can conceal internal gate or polarity inconsistencies, and a conservative auditor can expose those cases without necessarily reducing aggregate classification quality.",
+        "",
+        "",
+        "- [Stage 5/6 results narrative](docs/stage6_results_narrative.md)",
+        "- [Stage 5B ablation comparison](results/stage5b_v2_ablation_comparison.md)"
+      ],
+      "after_context": [
+        "* `irrelevant_evidence`",
+        "* `polarity_flip`",
+        "",
+        "",
+        "---",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 70,
+      "before_end_exclusive": 73,
+      "after_start": 137,
+      "after_end_exclusive": 259,
+      "before": [
+        "- [Stage 5/6 results narrative](docs/stage6_results_narrative.md)",
+        "- [Stage 5B ablation comparison](results/stage5b_v2_ablation_comparison.md)",
+        "- [Stage 5C router aggregate](results/stage5c_v2_router_aggregate.md)"
+      ],
+      "after": [
+        "---",
+        "",
+        "## Stage26-H1 results",
+        "",
+        "Stage26-H1 was evaluated with a real Mamba backbone on the clean no-time-swap controlled development set.",
+        "",
+        "```text",
+        "Stage26-H1 real Mamba, clean controlled dev, 3 seeds",
+        "",
+        "Macro-F1: 0.900 ± 0.062",
+        "Accuracy: 0.917 ± 0.067",
+        "```",
+        "",
+        "Seed-level results:",
+        "",
+        "| Seed | Best epoch | Accuracy | Macro-F1 | NOT_ENTITLED recall | REFUTE recall | SUPPORT recall | SUPPORT precision |",
+        "| ---: | ---------: | -------: | -------: | ------------------: | ------------: | -------------: | ----------------: |",
+        "|    1 |         50 |    0.840 |    0.829 |               0.787 |         1.000 |          1.000 |             0.441 |",
+        "|    2 |         41 |    0.960 |    0.938 |               0.967 |         1.000 |          0.879 |             0.860 |",
+        "|    3 |         47 |    0.951 |    0.934 |               0.939 |         1.000 |          0.978 |             0.727 |",
+        "",
+        "The main improvement is not only higher score, but removal of the prior v7 SUPPORT-collapse failure mode. Earlier v7 variants frequently collapsed to zero SUPPORT predictions. H1 restored active REFUTE / NOT_ENTITLED / SUPPORT behavior.",
+        "",
+        "---",
+        "",
+        "## Ablation summary",
+        "",
+        "Auxiliary losses were tested on top of H1.",
+        "",
+        "Seed-2 comparison:",
+        "",
+        "| Configuration                | Accuracy | Macro-F1 | NOT_ENTITLED recall | SUPPORT recall | SUPPORT precision |",
+        "| ---------------------------- | -------: | -------: | ------------------: | -------------: | ----------------: |",
+        "| H1 baseline                  |    0.960 |    0.938 |               0.967 |          0.879 |             0.860 |",
+        "| H1 + entitlement BCE 0.5     |    0.944 |    0.925 |               0.926 |          1.000 |             0.711 |",
+        "| H1 + entitlement BCE 0.3     |    0.929 |    0.909 |               0.906 |          1.000 |             0.650 |",
+        "| H1 + BCE + class-balanced CE |    0.878 |    0.861 |               0.837 |          1.000 |             0.511 |",
+        "| H1 + constrained selection   |    0.878 |    0.858 |               0.839 |          0.989 |             0.511 |",
+        "| H1 + class-balanced CE 0.3   |    0.825 |    0.816 |               0.767 |          1.000 |             0.425 |",
+        "",
+        "These results suggest that the repair is not primarily a loss-trick effect. The main improvement comes from the final-decision geometry: entitlement must function as a gate rather than as an additive feature.",
+        "",
+        "---",
+        "",
+        "## Intervention-level diagnosis",
+        "",
+        "The H1 model handles several intervention families strongly:",
+        "",
+        "```text",
+        "evidence_deletion:     SUPPORT 0 / 180",
+        "evidence_truncation:   SUPPORT 0 / 180",
+        "irrelevant_evidence:   SUPPORT 0 / 180",
+        "predicate_swap:        SUPPORT 10 / 180",
+        "entity_swap:           SUPPORT 8 / 180",
+        "event_swap:            SUPPORT 11 / 180",
+        "title_name_swap:       SUPPORT 4 / 180",
+        "```",
+        "",
+        "The main residual false-entitlement failures concentrate in controlled location/role swaps:",
+        "",
+        "```text",
+        "location_swap: SUPPORT 81 / 180",
+        "role_swap:     SUPPORT 46 / 180",
+        "```",
+        "",
+        "This does not yet establish a broad natural-language location/role reasoning weakness. It shows that, in the current controlled intervention family, false SUPPORT decisions are concentrated in semantic near-mismatch cases.",
+        "",
+        "A key diagnostic pattern is that the frame channel often detects low frame compatibility, but the learned entitlement scalar remains too weak or too constant to fully block SUPPORT. This motivates the next H2 direction: explicit compositional entitlement gates.",
+        "",
+        "---",
+        "",
+        "## H2 direction",
+        "",
+        "Post-hoc counterfactual analysis suggests that explicit channel-compositional gating is promising.",
+        "",
+        "Candidate H2 entitlement decision signals:",
+        "",
+        "```text",
+        "learned:",
+        "    entitlement_for_decision = learned_entitlement_prob",
+        "",
+        "product:",
+        "    entitlement_for_decision = frame_prob * predicate_coverage_prob * sufficiency_prob",
+        "",
+        "min:",
+        "    entitlement_for_decision = min(frame_prob, predicate_coverage_prob, sufficiency_prob)",
+        "",
+        "frame_predicate_min:",
+        "    entitlement_for_decision = min(frame_prob, predicate_coverage_prob)",
+        "",
+        "frame_predicate_product:",
+        "    entitlement_for_decision = frame_prob * predicate_coverage_prob",
+        "```",
+        "",
+        "A post-hoc `min_gate` counterfactual at threshold 0.30 achieved:",
+        "",
+        "```text",
+        "Macro-F1:           0.955 ± 0.006",
+        "Accuracy:           0.970",
+        "SUPPORT precision:  0.870",
+        "SUPPORT recall:     0.916",
+        "NOT_ENTITLED recall: 0.975",
+        "REFUTE recall:      1.000",
+        "```",
+        "",
+        "This is not yet a trained H2 model. It is a diagnostic result showing that explicit channel-compositional gating may correct residual false entitlement more effectively than the current learned entitlement scalar.",
+        "",
+        "---",
+        "",
+        "## Historical Stage7 result",
+        "",
+        "Earlier Stage7 experiments used a classifier-auditor router over the v5 pipeline.",
+        "",
+        "The main Stage7 system was ContraMamba-CAR at threshold 0.5, using `v3_no_intervention` as the classifier and `v3_no_polarity_flip` as the balanced entitlement auditor.",
+        "",
+        "|      Accuracy |      Macro-F1 | NOT_ENTITLED F1 |     REFUTE F1 |    SUPPORT F1 | Gate violation rate | Output/internal gap |",
+        "| ------------: | ------------: | --------------: | ------------: | ------------: | ------------------: | ------------------: |",
+        "| 0.929 ± 0.003 | 0.906 ± 0.005 |   0.952 ± 0.002 | 1.000 ± 0.000 | 0.765 ± 0.011 |       0.000 ± 0.000 |       0.000 ± 0.000 |",
+        "",
+        "Stage7 remains an important historical result, but the current mainline has shifted toward the v7 hierarchical architecture and H1 final-decision repair.",
+        "",
+        "---"
+      ],
+      "before_context": [
+        "",
+        "For the full ablation and router analyses, see:",
+        "",
+        "",
+        "## Repository structure",
+        ""
+      ],
+      "after_context": [
+        "",
+        "Splits are performed by `pair_id`, preventing an original pair and its interventions from crossing train/development partitions.",
+        "",
+        "",
+        "## Repository structure",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 76,
+      "before_end_exclusive": 84,
+      "after_start": 262,
+      "after_end_exclusive": 273,
+      "before": [
+        "| Path | Purpose |",
+        "|---|---|",
+        "| `src/contramamba/` | ContraMamba-v5 model, heads, labels, and losses |",
+        "| `scripts/` | Controlled-data builders, training utilities, evaluators, and report writers |",
+        "| `data/` | Controlled intervention datasets |",
+        "| `results/` | Seed-level and aggregate Stage 5 reports |",
+        "| `tests/` | Unit, data-validation, training-smoke, and reporting tests |",
+        "| `docs/` | Architecture and paper-oriented results documentation |"
+      ],
+      "after": [
+        "| Path               | Purpose                                                                      |",
+        "| ------------------ | ---------------------------------------------------------------------------- |",
+        "| `src/contramamba/` | ContraMamba models, heads, labels, and losses                                |",
+        "| `scripts/`         | Controlled-data builders, training utilities, evaluators, and report writers |",
+        "| `data/`            | Controlled intervention datasets                                             |",
+        "| `experiments/`     | Stage plans and experiment notes                                             |",
+        "| `results/`         | Seed-level and aggregate reports                                             |",
+        "| `docs/`            | Architecture and paper-oriented results documentation                        |",
+        "| `tests/`           | Unit, validation, training-smoke, and reporting tests                        |",
+        "",
+        "---"
+      ],
+      "before_context": [
+        "",
+        "## Repository structure",
+        "",
+        "",
+        "## Reproducibility",
+        ""
+      ],
+      "after_context": [
+        "",
+        "## Repository structure",
+        "",
+        "",
+        "## Reproducibility",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 87,
+      "before_end_exclusive": 88,
+      "after_start": 276,
+      "after_end_exclusive": 277,
+      "before": [
+        "Install the project and run the test suite:"
+      ],
+      "after": [
+        "Basic local validation:"
+      ],
+      "before_context": [
+        "",
+        "## Reproducibility",
+        "",
+        "",
+        "```bash",
+        "pip install -e ."
+      ],
+      "after_context": [
+        "",
+        "## Reproducibility",
+        "",
+        "",
+        "```bash",
+        "pip install -e ."
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 94,
+      "before_end_exclusive": 95,
+      "after_start": 283,
+      "after_end_exclusive": 284,
+      "before": [
+        "Regenerate the Stage 5C aggregate report from three router result CSVs:"
+      ],
+      "after": [
+        "The main current training entry point is:"
+      ],
+      "before_context": [
+        "pytest",
+        "```",
+        "",
+        "",
+        "```bash",
+        "python scripts/write_stage5c_router_aggregate.py \\"
+      ],
+      "after_context": [
+        "pytest",
+        "```",
+        "",
+        "",
+        "```text",
+        "scripts/train_controlled_v6b_minimal.py"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 96,
+      "before_end_exclusive": 103,
+      "after_start": 285,
+      "after_end_exclusive": 287,
+      "before": [
+        "```bash",
+        "python scripts/write_stage5c_router_aggregate.py \\",
+        "  --input results/stage5c_v2_router_seed1.csv \\",
+        "  --input results/stage5c_v2_router_seed2.csv \\",
+        "  --input results/stage5c_v2_router_seed3.csv \\",
+        "  --output-md results/stage5c_v2_router_aggregate.md \\",
+        "  --output-csv results/stage5c_v2_router_aggregate.csv"
+      ],
+      "after": [
+        "```text",
+        "scripts/train_controlled_v6b_minimal.py"
+      ],
+      "before_context": [
+        "",
+        "Regenerate the Stage 5C aggregate report from three router result CSVs:",
+        "",
+        "```",
+        "",
+        "## Limitations"
+      ],
+      "after_context": [
+        "",
+        "The main current training entry point is:",
+        "",
+        "```",
+        "",
+        "Current mainline configuration:"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 104,
+      "before_end_exclusive": 104,
+      "after_start": 288,
+      "after_end_exclusive": 301,
+      "before": [],
+      "after": [
+        "",
+        "Current mainline configuration:",
+        "",
+        "```text",
+        "architecture: v7_hierarchical",
+        "backbone: mamba",
+        "data: data/controlled_v5_v3_without_time_swap.jsonl",
+        "final decision: H1 v6B-style softplus/multiplicative bridge",
+        "```",
+        "",
+        "The project uses controlled clean data for Stage26-H1. OOD and broader benchmark validation remain future work.",
+        "",
+        "---"
+      ],
+      "before_context": [
+        "  --output-md results/stage5c_v2_router_aggregate.md \\",
+        "  --output-csv results/stage5c_v2_router_aggregate.csv",
+        "```",
+        "",
+        "## Limitations",
+        ""
+      ],
+      "after_context": [
+        "```text",
+        "scripts/train_controlled_v6b_minimal.py",
+        "```",
+        "",
+        "## Limitations",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 107,
+      "before_end_exclusive": 112,
+      "after_start": 304,
+      "after_end_exclusive": 310,
+      "before": [
+        "- The current evidence comes from a controlled synthetic/intervention dataset.",
+        "- Evaluation is small-scale relative to benchmark or deployment settings.",
+        "- The main Stage 5 experiments use a frozen Mamba encoder.",
+        "- ContraMamba has not yet been validated as a real-world RAG component or deployed hallucination detector.",
+        "- These results demonstrate controlled evidence-entitlement behavior; they do not establish general hallucination elimination or reduction."
+      ],
+      "after": [
+        "* Current evidence is from a controlled synthetic/intervention dataset.",
+        "* Stage26-H1 has not yet been validated as a real-world RAG component or deployed hallucination detector.",
+        "* The clean controlled dataset removes the corrupted `time_swap` family; temporal robustness still requires separate validation.",
+        "* The learned entitlement scalar is not yet sufficiently identified as a faithful semantic gate.",
+        "* Current results support controlled evidence-entitlement behavior, not broad real-world hallucination elimination.",
+        "* Post-hoc H2 gate results are diagnostic only until implemented and trained as part of the model."
+      ],
+      "before_context": [
+        "",
+        "## Limitations",
+        "",
+        "",
+        "The current contribution is therefore a controlled evaluation of whether a prediction is internally supported by the supplied evidence, not a claim of broad real-world reliability."
+      ],
+      "after_context": [
+        "",
+        "## Limitations",
+        "",
+        "",
+        "The current contribution is therefore a controlled study of evidence-entitlement structure in claim-evidence verification, not a claim of general-purpose hallucination prevention.",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 113,
+      "before_end_exclusive": 114,
+      "after_start": 311,
+      "after_end_exclusive": 327,
+      "before": [
+        "The current contribution is therefore a controlled evaluation of whether a prediction is internally supported by the supplied evidence, not a claim of broad real-world reliability."
+      ],
+      "after": [
+        "The current contribution is therefore a controlled study of evidence-entitlement structure in claim-evidence verification, not a claim of general-purpose hallucination prevention.",
+        "",
+        "---",
+        "",
+        "## Current research claim",
+        "",
+        "The strongest current claim is:",
+        "",
+        "```text",
+        "Hierarchical epistemic decomposition alone is insufficient.",
+        "The final decision geometry must preserve the role of entitlement as a gate.",
+        "When entitlement is treated as an additive logit feature, v7 collapses.",
+        "When entitlement gates polarity energies, v7 recovers stable 3-way judgment behavior.",
+        "```",
+        "",
+        "ContraMamba's current direction is to make that entitlement gate more faithful by explicitly composing frame compatibility, predicate coverage, and evidence sufficiency."
+      ],
+      "before_context": [
+        "- ContraMamba has not yet been validated as a real-world RAG component or deployed hallucination detector.",
+        "- These results demonstrate controlled evidence-entitlement behavior; they do not establish general hallucination elimination or reduction.",
+        ""
+      ],
+      "after_context": [
+        "* Current results support controlled evidence-entitlement behavior, not broad real-world hallucination elimination.",
+        "* Post-hoc H2 gate results are diagnostic only until implemented and trained as part of the model.",
+        ""
+      ]
+    }
+  ]
+}

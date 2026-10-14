@@ -1,0 +1,281 @@
+{
+  "shard_ordinal": 78,
+  "original_queue_id": "WORK-b5c9c13e78dd670c3ab6",
+  "original_source_ids": [
+    "HV001464"
+  ],
+  "original_source_identity": {
+    "commit": "d940e19d497f85315155e52818c4a78a1c1c38e0",
+    "path": "tests/test_reason_router_gen5_ainit_temporal_birth.py",
+    "blob": "d1007c16d4588c3866b68e4b889d19c7f430679f",
+    "object_type": "commit",
+    "bytes": 13161,
+    "sha256": "6a8a1968d9f7438e6fcb01ecd418810d98f52efb8ab61b948ceab83109542575"
+  },
+  "before": {
+    "commit": "f87d492d8de0e881c39b35beb3316b6226243e29",
+    "path": "tests/test_reason_router_gen5_ainit_temporal_birth.py",
+    "blob": "06ac44a120aff34f585cdf3e3a3b0eecf719b7e2",
+    "object_type": "commit",
+    "bytes": 9592,
+    "sha256": "e8ea7e4037e710114fbcef877be941c5bedd254798d84c3c2bae25959799b3dc"
+  },
+  "after": {
+    "commit": "d940e19d497f85315155e52818c4a78a1c1c38e0",
+    "path": "tests/test_reason_router_gen5_ainit_temporal_birth.py",
+    "blob": "d1007c16d4588c3866b68e4b889d19c7f430679f",
+    "object_type": "commit",
+    "bytes": 13161,
+    "sha256": "6a8a1968d9f7438e6fcb01ecd418810d98f52efb8ab61b948ceab83109542575"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0265"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "test_authority_identity_and_collection_policy_are_frozen",
+      "test_exact_endpoint_identity_is_diagnostic_not_gate",
+      "test_full_worker_authenticates_historical_trace_for_every_cell",
+      "test_historical_training_trace_is_frozen_for_full_3x3",
+      "test_operator_replay_diagnostics_match_explicit_residual",
+      "test_replay_auth_recovery_historical_trace_is_frozen",
+      "test_replay_authentication_correction_constants_are_preregistered",
+      "test_scalar_trace_authentication_accepts_observed_recovery_drift",
+      "test_scalar_trace_authentication_rejects_out_of_bound_difference",
+      "test_tensor_replay_diagnostics_keep_sha_as_diagnostic",
+      "test_tensor_replay_diagnostics_reject_out_of_bound_max_abs"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate test assertion/fixture contracts and their relationship to the historical implementation and stage authority from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 3 removed/replaced lines and 104 added/replaced lines in 4 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "341e2e59668ea9b575007ddf591424b831170577",
+      "blob": "06ac44a120aff34f585cdf3e3a3b0eecf719b7e2"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "replace",
+      "before_start": 216,
+      "before_end_exclusive": 218,
+      "after_start": 216,
+      "after_end_exclusive": 218,
+      "before": [
+        "@pytest.mark.parametrize(\"cell\", [(6201, 6201), (6201, 6202)])",
+        "def test_replay_auth_recovery_historical_trace_is_frozen(cell):"
+      ],
+      "after": [
+        "@pytest.mark.parametrize(\"cell\", mod.FULL_FACTORIAL_CELLS)",
+        "def test_historical_training_trace_is_frozen_for_full_3x3(cell):"
+      ],
+      "before_context": [
+        "    assert mod.REPLAY_AUTH_RECOVERY_CELLS == {0: (6201, 6201), 1: (6201, 6202)}",
+        "",
+        "",
+        "    trace = mod.load_historical_training_trace(*cell)",
+        "    assert len(trace[\"training_losses\"]) == mod.TOTAL_OPTIMIZER_STEPS",
+        "    assert len(trace[\"gradient_norms_before_clip\"]) == mod.TOTAL_OPTIMIZER_STEPS"
+      ],
+      "after_context": [
+        "    assert mod.REPLAY_AUTH_RECOVERY_CELLS == {0: (6201, 6201), 1: (6201, 6202)}",
+        "",
+        "",
+        "    trace = mod.load_historical_training_trace(*cell)",
+        "    assert len(trace[\"training_losses\"]) == mod.TOTAL_OPTIMIZER_STEPS",
+        "    assert len(trace[\"gradient_norms_before_clip\"]) == mod.TOTAL_OPTIMIZER_STEPS"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 221,
+      "before_end_exclusive": 222,
+      "after_start": 221,
+      "after_end_exclusive": 222,
+      "before": [
+        "    assert trace[\"file_sha256\"] == mod.RECOVERY_TRAINING_REPORT_SHA256[cell]"
+      ],
+      "after": [
+        "    assert trace[\"file_sha256\"] == mod.HISTORICAL_TRAINING_REPORT_SHA256[cell]"
+      ],
+      "before_context": [
+        "    trace = mod.load_historical_training_trace(*cell)",
+        "    assert len(trace[\"training_losses\"]) == mod.TOTAL_OPTIMIZER_STEPS",
+        "    assert len(trace[\"gradient_norms_before_clip\"]) == mod.TOTAL_OPTIMIZER_STEPS",
+        "",
+        "",
+        "def test_replay_instrumentation_occurs_after_historical_sync():"
+      ],
+      "after_context": [
+        "    trace = mod.load_historical_training_trace(*cell)",
+        "    assert len(trace[\"training_losses\"]) == mod.TOTAL_OPTIMIZER_STEPS",
+        "    assert len(trace[\"gradient_norms_before_clip\"]) == mod.TOTAL_OPTIMIZER_STEPS",
+        "",
+        "",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 223,
+      "before_end_exclusive": 223,
+      "after_start": 223,
+      "after_end_exclusive": 320,
+      "before": [],
+      "after": [
+        "",
+        "",
+        "def test_replay_authentication_correction_constants_are_preregistered():",
+        "    assert (",
+        "        mod.REPLAY_AUTHENTICATION_CORRECTION_COMMIT",
+        "        == \"341e2e59668ea9b575007ddf591424b831170577\"",
+        "    )",
+        "    assert mod.EPS32 == float(torch.finfo(torch.float32).eps)",
+        "    assert mod.SCALAR_TRACE_EPS_MULTIPLIER == 32.0",
+        "    assert mod.PARAMETER_MAX_ABS_BOUND == 1.0e-5",
+        "    assert mod.PARAMETER_RELATIVE_L2_BOUND == 1.0e-4",
+        "    assert mod.OPERATOR_RELATIVE_FROBENIUS_BOUND == 1.0e-4",
+        "",
+        "",
+        "def test_scalar_trace_authentication_accepts_observed_recovery_drift():",
+        "    diag = mod.scalar_trace_diagnostics(",
+        "        observed=1.25958251953125,",
+        "        historical=1.2595824003219604,",
+        "    )",
+        "    assert diag[\"absolute_error\"] == pytest.approx(",
+        "        1.1920928955078125e-07,",
+        "        rel=0.0,",
+        "        abs=1e-15,",
+        "    )",
+        "    assert diag[\"pass\"] is True",
+        "",
+        "",
+        "def test_scalar_trace_authentication_rejects_out_of_bound_difference():",
+        "    historical = 1.0",
+        "    observed = historical + 2.0 * mod.scalar_trace_tolerance(historical)",
+        "    diag = mod.scalar_trace_diagnostics(",
+        "        observed=observed,",
+        "        historical=historical,",
+        "    )",
+        "    assert diag[\"pass\"] is False",
+        "",
+        "",
+        "def test_tensor_replay_diagnostics_keep_sha_as_diagnostic():",
+        "    reference = torch.ones((2, 3), dtype=torch.float32)",
+        "    replay = reference.clone()",
+        "    replay[0, 0] += 1.0e-6",
+        "    diag = mod.tensor_replay_diagnostics(replay, reference)",
+        "    assert diag[\"torch_equal\"] is False",
+        "    assert diag[\"replay_sha256\"] != diag[\"historical_sha256\"]",
+        "    assert diag[\"pass\"] is True",
+        "",
+        "",
+        "def test_tensor_replay_diagnostics_reject_out_of_bound_max_abs():",
+        "    reference = torch.ones((2, 3), dtype=torch.float32)",
+        "    replay = reference.clone()",
+        "    replay[0, 0] += 2.0e-5",
+        "    diag = mod.tensor_replay_diagnostics(replay, reference)",
+        "    assert diag[\"pass\"] is False",
+        "    assert diag[\"max_abs_pass\"] is False",
+        "",
+        "",
+        "def test_operator_replay_diagnostics_match_explicit_residual():",
+        "    a_ref = torch.tensor([[1.0, 2.0], [3.0, 4.0]], dtype=torch.float32)",
+        "    b_ref = torch.tensor([[1.0, 0.0], [0.0, 1.0]], dtype=torch.float32)",
+        "    a_rep = a_ref.clone()",
+        "    b_rep = b_ref.clone()",
+        "    b_rep[0, 0] += 1.0e-6",
+        "    diag = mod.operator_replay_diagnostics(",
+        "        replay_a=a_rep,",
+        "        replay_b=b_rep,",
+        "        historical_a=a_ref,",
+        "        historical_b=b_ref,",
+        "    )",
+        "    w_ref = b_ref.to(torch.float64) @ a_ref.to(torch.float64)",
+        "    w_rep = b_rep.to(torch.float64) @ a_rep.to(torch.float64)",
+        "    expected = float(",
+        "        torch.linalg.vector_norm(w_rep - w_ref).item()",
+        "        / torch.linalg.vector_norm(w_ref).item()",
+        "    )",
+        "    assert diag[\"relative_frobenius_residual\"] == pytest.approx(",
+        "        expected, rel=1e-12, abs=1e-12",
+        "    )",
+        "",
+        "",
+        "def test_full_worker_authenticates_historical_trace_for_every_cell():",
+        "    source = inspect.getsource(mod.run_replay_worker)",
+        "    assert (",
+        "        \"historical_trace = load_historical_training_trace(a_seed, r_seed)\"",
+        "        in source",
+        "    )",
+        "    assert \"historical_trace=historical_trace\" in source",
+        "",
+        "",
+        "def test_exact_endpoint_identity_is_diagnostic_not_gate():",
+        "    source = inspect.getsource(mod._run_replay_cell)",
+        "    assert \"FINAL_A_REPLAY_MISMATCH\" not in source",
+        "    assert \"FINAL_B_REPLAY_MISMATCH\" not in source",
+        "    assert \"FINAL_A_SHA_MISMATCH\" not in source",
+        "    assert \"FINAL_B_SHA_MISMATCH\" not in source",
+        "    assert \"TEMPORAL_REPLAY_SCALAR_AUTHENTICATION_FAILED\" in source",
+        "    assert \"TEMPORAL_REPLAY_PARAMETER_AUTHENTICATION_FAILED\" in source",
+        "    assert \"TEMPORAL_REPLAY_OPERATOR_AUTHENTICATION_FAILED\" in source"
+      ],
+      "before_context": [
+        "    assert len(trace[\"gradient_norms_before_clip\"]) == mod.TOTAL_OPTIMIZER_STEPS",
+        "    assert trace[\"file_sha256\"] == mod.RECOVERY_TRAINING_REPORT_SHA256[cell]",
+        "",
+        "",
+        "def test_replay_instrumentation_occurs_after_historical_sync():",
+        "    source = inspect.getsource(mod._run_replay_cell)"
+      ],
+      "after_context": [
+        "    assert len(trace[\"gradient_norms_before_clip\"]) == mod.TOTAL_OPTIMIZER_STEPS",
+        "    assert trace[\"file_sha256\"] == mod.HISTORICAL_TRAINING_REPORT_SHA256[cell]",
+        "",
+        "",
+        "def test_replay_instrumentation_occurs_after_historical_sync():",
+        "    source = inspect.getsource(mod._run_replay_cell)"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 263,
+      "before_end_exclusive": 263,
+      "after_start": 360,
+      "after_end_exclusive": 364,
+      "before": [],
+      "after": [
+        "    assert (",
+        "        mod.REPLAY_AUTHENTICATION_CORRECTION_COMMIT",
+        "        == \"341e2e59668ea9b575007ddf591424b831170577\"",
+        "    )"
+      ],
+      "before_context": [
+        "",
+        "def test_authority_identity_and_collection_policy_are_frozen():",
+        "    assert mod.AUTHORITY_COMMIT == \"20ae761dbff10ad70853b10910cbe12e51e0666a\"",
+        "    assert mod.GPU_TOPOLOGY == \"TWO_INDEPENDENT_SINGLE_GPU_WORKERS_NO_DDP\"",
+        "    authority_text = (",
+        "        mod.ROOT / mod.AUTHORITY_PATH"
+      ],
+      "after_context": [
+        "",
+        "def test_authority_identity_and_collection_policy_are_frozen():",
+        "    assert mod.AUTHORITY_COMMIT == \"20ae761dbff10ad70853b10910cbe12e51e0666a\"",
+        "    assert mod.GPU_TOPOLOGY == \"TWO_INDEPENDENT_SINGLE_GPU_WORKERS_NO_DDP\"",
+        "    authority_text = (",
+        "        mod.ROOT / mod.AUTHORITY_PATH"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "shard_ordinal": 106,
+  "original_queue_id": "WORK-fa31fcc4d4cd1ef39ea1",
+  "original_source_ids": [
+    "HV000103"
+  ],
+  "original_source_identity": {
+    "commit": "048fb78258bbe0dac29f0dfbe0310b9023ecc672",
+    "path": "paper/iclr2027/figures/fig1_study_overview.png",
+    "blob": "10c2634af720d0013c99612a4bc017af8960be09",
+    "object_type": "commit",
+    "bytes": 210574,
+    "sha256": "a8871bf5664b3ac5c9cbb4f9b2760351e3bb6b4a04f98c6a5039a92465e4fcfc"
+  },
+  "before": {
+    "commit": "ef1806bef9e4a7f55e1f7e77f7a0f08592fb4abe",
+    "path": "paper/iclr2027/figures/fig1_study_overview.png",
+    "blob": "9b8dc0dd1226ed5e61f9470f36ecf4bd25cd5608",
+    "object_type": "commit",
+    "bytes": 209880,
+    "sha256": "a6db5d8e4d76539835490604a92da4406a128f940548a3c7f5ce0ab7800e392d"
+  },
+  "after": {
+    "commit": "048fb78258bbe0dac29f0dfbe0310b9023ecc672",
+    "path": "paper/iclr2027/figures/fig1_study_overview.png",
+    "blob": "10c2634af720d0013c99612a4bc017af8960be09",
+    "object_type": "commit",
+    "bytes": 210574,
+    "sha256": "a8871bf5664b3ac5c9cbb4f9b2760351e3bb6b4a04f98c6a5039a92465e4fcfc"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "versions_shard_0/semantic_revision_records.jsonl",
+      "jsonl_line": 19,
+      "record": {
+        "after_commit": "048fb78258bbe0dac29f0dfbe0310b9023ecc672",
+        "before_commit": "ef1806bef9e4a7f55e1f7e77f7a0f08592fb4abe",
+        "categories": [],
+        "evidence": [
+          {
+            "byte_sha256_after": "a8871bf5664b3ac5c9cbb4f9b2760351e3bb6b4a04f98c6a5039a92465e4fcfc",
+            "byte_sha256_before": "a6db5d8e4d76539835490604a92da4406a128f940548a3c7f5ce0ab7800e392d"
+          }
+        ],
+        "from_blob": "9b8dc0dd1226ed5e61f9470f36ecf4bd25cd5608",
+        "from_kind": "BINARY",
+        "from_size_bytes": 209880,
+        "id": "SR000019",
+        "interpretation": "UNRESOLVED_BINARY_CONTENT",
+        "path": "paper/iclr2027/figures/fig1_study_overview.png",
+        "relationship": "ANCESTRAL_PATH_EVENT_TRANSITION",
+        "selected_target_ids": [
+          "HV000103"
+        ],
+        "to_blob": "10c2634af720d0013c99612a4bc017af8960be09",
+        "to_kind": "BINARY",
+        "to_size_bytes": 210574
+      }
+    }
+  ],
+  "prior_interpretation": null,
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "8423ef9d1325c007ecd31849a668131197e2214d",
+      "blob": "9b8dc0dd1226ed5e61f9470f36ecf4bd25cd5608"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "image",
+  "changes": []
+}

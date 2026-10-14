@@ -1,0 +1,253 @@
+{
+  "shard_ordinal": 97,
+  "original_queue_id": "WORK-e6c1a333ee2a818005b1",
+  "original_source_ids": [
+    "HV001483"
+  ],
+  "original_source_identity": {
+    "commit": "a437ebd8b5e9bbf12f36e8267846442853f0271c",
+    "path": "tests/test_reason_router_p2_contract.py",
+    "blob": "c4873845b3df4f325bcfc9c40f92d3ddabbd0569",
+    "object_type": "commit",
+    "bytes": 65352,
+    "sha256": "d632e3f9adf23a834404fff14ccec28b428e4aefd9317b76af1100921a147ea3"
+  },
+  "before": {
+    "commit": "657c07a9491e0b07ce6e5d839d717ed0ef834c5f",
+    "path": "tests/test_reason_router_p2_contract.py",
+    "blob": "dfae3618fb0ca030edcd11a871f1d1a8c762fa9e",
+    "object_type": "commit",
+    "bytes": 61057,
+    "sha256": "7f55608ff6cad8f0dd2952d517831018e8e07bf0253dd8f4099be84d57731122"
+  },
+  "after": {
+    "commit": "a437ebd8b5e9bbf12f36e8267846442853f0271c",
+    "path": "tests/test_reason_router_p2_contract.py",
+    "blob": "c4873845b3df4f325bcfc9c40f92d3ddabbd0569",
+    "object_type": "commit",
+    "bytes": 65352,
+    "sha256": "d632e3f9adf23a834404fff14ccec28b428e4aefd9317b76af1100921a147ea3"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0275"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "Args",
+      "__getattr__",
+      "cell",
+      "test_d1_report_path_uses_neutral_loss_export_when_no_p2_epoch_snapshot"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate test assertion/fixture contracts and their relationship to the historical implementation and stage authority from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 0 removed/replaced lines and 90 added/replaced lines in 4 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "657c07a9491e0b07ce6e5d839d717ed0ef834c5f",
+      "blob": "dfae3618fb0ca030edcd11a871f1d1a8c762fa9e"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 3,
+      "before_end_exclusive": 3,
+      "after_start": 3,
+      "after_end_exclusive": 4,
+      "before": [],
+      "after": [
+        "import ast"
+      ],
+      "before_context": [
+        "from __future__ import annotations",
+        "",
+        "import copy",
+        "from pathlib import Path",
+        "from types import SimpleNamespace"
+      ],
+      "after_context": [
+        "from __future__ import annotations",
+        "",
+        "import copy",
+        "import inspect",
+        "from pathlib import Path"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 4,
+      "before_end_exclusive": 4,
+      "after_start": 5,
+      "after_end_exclusive": 6,
+      "before": [],
+      "after": [
+        "import inspect"
+      ],
+      "before_context": [
+        "from __future__ import annotations",
+        "",
+        "import copy",
+        "from pathlib import Path",
+        "from types import SimpleNamespace",
+        ""
+      ],
+      "after_context": [
+        "",
+        "import ast",
+        "import copy",
+        "from pathlib import Path",
+        "from types import SimpleNamespace",
+        "import types"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 6,
+      "before_end_exclusive": 6,
+      "after_start": 8,
+      "after_end_exclusive": 9,
+      "before": [],
+      "after": [
+        "import types"
+      ],
+      "before_context": [
+        "import copy",
+        "from pathlib import Path",
+        "from types import SimpleNamespace",
+        "",
+        "import pytest",
+        "import torch"
+      ],
+      "after_context": [
+        "import inspect",
+        "from pathlib import Path",
+        "from types import SimpleNamespace",
+        "",
+        "import pytest",
+        "import torch"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 574,
+      "before_end_exclusive": 574,
+      "after_start": 577,
+      "after_end_exclusive": 664,
+      "before": [],
+      "after": [
+        "",
+        "",
+        "def test_d1_report_path_uses_neutral_loss_export_when_no_p2_epoch_snapshot(monkeypatch) -> None:",
+        "    \"\"\"Execute the nested D1 report path after its A0-A3-only snapshot branch.\"\"\"",
+        "    source_tree = ast.parse(inspect.getsource(trainer.main))",
+        "    nested = next(",
+        "        node for node in ast.walk(source_tree)",
+        "        if isinstance(node, ast.FunctionDef) and node.name == \"run_training_v6b\"",
+        "    )",
+        "    code = next(",
+        "        constant for constant in trainer.main.__code__.co_consts",
+        "        if isinstance(constant, types.CodeType) and constant.co_name == \"run_training_v6b\"",
+        "    )",
+        "    defaults = tuple(",
+        "        eval(compile(ast.Expression(default), \"<d1-report-default>\", \"eval\"), trainer.__dict__)",
+        "        for default in nested.args.defaults",
+        "    )",
+        "",
+        "    def cell(value):",
+        "        return (lambda: value).__closure__[0]",
+        "",
+        "    class Args(SimpleNamespace):",
+        "        def __getattr__(self, _name):",
+        "            return False",
+        "",
+        "    args = Args(",
+        "        architecture=\"v6b_minimal\",",
+        "        reason_router_arm=\"D1\",",
+        "        resolved_reason_loss_weight=0.0,",
+        "        frame_downstream_gradient_mode=\"joint\",",
+        "        seed=180,",
+        "        stage196b2b6p8_enable_full_trainable_path_replay_api=False,",
+        "    )",
+        "    closure_values = {",
+        "        \"_combined_bridge_info\": {}, \"_frame_gradient_contract\": {},",
+        "        \"_p2_contract\": {\"enabled\": True}, \"_p2_epoch_loss_history\": [],",
+        "        \"_p2_reason_metadata_audit\": {}, \"_p2_reason_supervision_audit\": {},",
+        "        \"_pc_frame_type_counts\": {}, \"_pc_pres_type_counts\": {},",
+        "        \"_slot_mismatch_dev_counts\": {",
+        "            \"slot_mismatch_target_positive_count\": 0,",
+        "            \"slot_mismatch_target_negative_count\": 0,",
+        "            \"slot_mismatch_target_ignored_count\": 0,",
+        "        },",
+        "        \"_slot_mismatch_train_counts\": {",
+        "            \"slot_mismatch_target_positive_count\": 0,",
+        "            \"slot_mismatch_target_negative_count\": 0,",
+        "            \"slot_mismatch_target_ignored_count\": 0,",
+        "        },",
+        "        \"_stage174a_run_dir\": Path(\".\"), \"_stage187_sidecar_audit\": {},",
+        "        \"_stage191_arm\": None, \"_stage191_runtime_context\": None,",
+        "        \"_stage195_parameter_swa_enabled\": False, \"_stage60_bridge_info\": {},",
+        "        \"_stage66_bridge_info\": {}, \"_stage75_bridge_info\": {},",
+        "        \"_stage80a_bridge_info\": {}, \"_trajectory_observability_enabled\": False,",
+        "        \"_trajectory_observability_mode\": \"none\", \"args\": args,",
+        "        \"dev_predicate_flags\": None, \"dev_temporal_flags\": None,",
+        "        \"device\": torch.device(\"cpu\"), \"resolved_split_seed\": 180,",
+        "        \"train_predicate_flags\": None, \"train_temporal_flags\": None,",
+        "    }",
+        "    run_training = types.FunctionType(",
+        "        code, trainer.__dict__, closure=tuple(cell(closure_values[name]) for name in code.co_freevars)",
+        "    )",
+        "    run_training.__defaults__ = defaults",
+        "    run_training.__kwdefaults__ = {",
+        "        arg.arg: eval(compile(ast.Expression(default), \"<d1-report-default>\", \"eval\"), trainer.__dict__)",
+        "        for arg, default in zip(nested.args.kwonlyargs, nested.args.kw_defaults)",
+        "        if default is not None",
+        "    }",
+        "",
+        "    model = torch.nn.Linear(1, 1)",
+        "    monkeypatch.setattr(trainer.v5, \"build_optimizer\", lambda *unused: torch.optim.SGD(model.parameters(), lr=0.1))",
+        "    monkeypatch.setattr(trainer, \"build_teacher_observer\", lambda **unused: None)",
+        "    monkeypatch.setattr(trainer, \"build_trainer_resume_identity\", lambda *unused, **unused_kw: {})",
+        "    monkeypatch.setattr(trainer, \"build_trainer_resume_config\", lambda *unused, **unused_kw: SimpleNamespace(enabled=False))",
+        "    monkeypatch.setattr(",
+        "        trainer, \"initialize_trainer_resume_state\",",
+        "        lambda **unused: SimpleNamespace(next_epoch=2, global_optimizer_step=0, config=SimpleNamespace(enabled=False)),",
+        "    )",
+        "",
+        "    inputs = {\"input_ids\": torch.zeros(1, 1, dtype=torch.long), \"final_labels\": torch.zeros(1, dtype=torch.long)}",
+        "    report = run_training(",
+        "        model, inputs, inputs, [], [], {\"pair_ids\": [\"pair\"], \"intervention_types\": [\"none\"]},",
+        "        epochs=1, lr=0.1, head_lr=0.1, encoder_lr=0.1,",
+        "        weighted_label_loss=False, balanced_sampler=False, use_intervention_loss=False,",
+        "        ranking_weight=0.0, loss_config={}, seed=180, run_name=\"d1-report-regression\",",
+        "    )",
+        "    assert report[\"reason_router_p2\"][\"final_epoch_loss_summary\"] == {}",
+        "    assert report[\"reason_router_p2\"][\"epoch_loss_history\"] == []"
+      ],
+      "before_context": [
+        "    second = _p2_args_for_checkpoint(\"D1\", \"explicit_product\", \"partial\")",
+        "    second.resolved_gradient_ownership_lambda = 1.0",
+        "    assert trainer._p2_checkpoint_metadata_from_args(first) != trainer._p2_checkpoint_metadata_from_args(second)",
+        "",
+        "def test_a1_a3_primary_reason_ce_production_gradients() -> None:",
+        "    targets = torch.tensor([0, 1, 2, 3])"
+      ],
+      "after_context": [
+        "    second = _p2_args_for_checkpoint(\"D1\", \"explicit_product\", \"partial\")",
+        "    second.resolved_gradient_ownership_lambda = 1.0",
+        "    assert trainer._p2_checkpoint_metadata_from_args(first) != trainer._p2_checkpoint_metadata_from_args(second)",
+        "",
+        "def test_a1_a3_primary_reason_ce_production_gradients() -> None:",
+        "    targets = torch.tensor([0, 1, 2, 3])"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1031 @@
+{
+  "shard_ordinal": 19,
+  "original_queue_id": "WORK-2f3e2a2c3be9f71370fe",
+  "original_source_ids": [
+    "HV001114"
+  ],
+  "original_source_identity": {
+    "commit": "10376c088b9008c6a62664f695d8b269d9ffee18",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "5a686cb5843296fafa1d9d964392e8b4cc1091a3",
+    "object_type": "commit",
+    "bytes": 441759,
+    "sha256": "b38d88856f2c45e660f852babce0e60d011732102da3153b07d913f2b86efd76"
+  },
+  "before": {
+    "commit": "fffaeccd0e9fb15c8372ca8381618606fc3e0e1d",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "d321dfafa677d84a9bd8c6067ad8ef570b437b43",
+    "object_type": "commit",
+    "bytes": 439747,
+    "sha256": "7b367bd082a9b015c9cbb6478526a43c3785ad0305c21c5d85108770f14ece89"
+  },
+  "after": {
+    "commit": "10376c088b9008c6a62664f695d8b269d9ffee18",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "5a686cb5843296fafa1d9d964392e8b4cc1091a3",
+    "object_type": "commit",
+    "bytes": 441759,
+    "sha256": "b38d88856f2c45e660f852babce0e60d011732102da3153b07d913f2b86efd76"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0196"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "Stage31CCoverageEntailmentHead",
+      "__init__",
+      "_stage31c_macro_f1",
+      "add_stage31c_coverage_entailment_outputs",
+      "build_parser",
+      "compute_stage31c_coverage_entailment_metrics",
+      "encode_stage31c_coverage_entailment_labels",
+      "install_stage31c_coverage_entailment_head",
+      "main",
+      "parse_stage31c_class_weights"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate trainer objectives, gradient ownership, data/evaluation selection, ablation defaults and historical authority from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 19 removed/replaced lines and 70 added/replaced lines in 33 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "4caca72f578164f95fc500b9932a47171126a591",
+      "blob": "d321dfafa677d84a9bd8c6067ad8ef570b437b43"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "insert",
+      "before_start": 48,
+      "before_end_exclusive": 48,
+      "after_start": 48,
+      "after_end_exclusive": 49,
+      "before": [],
+      "after": [
+        "STAGE31C_DEFAULT_NUM_CLASSES = 3"
+      ],
+      "before_context": [
+        "STAGE31C_COVERAGE_LABEL_TO_ID = {",
+        "    label: idx for idx, label in enumerate(STAGE31C_COVERAGE_LABELS)",
+        "}",
+        "",
+        "",
+        "class Stage31CCoverageEntailmentHead(nn.Module):"
+      ],
+      "after_context": [
+        "STAGE31C_COVERAGE_LABEL_TO_ID = {",
+        "    label: idx for idx, label in enumerate(STAGE31C_COVERAGE_LABELS)",
+        "}",
+        "",
+        "",
+        "class Stage31CCoverageEntailmentHead(nn.Module):"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 51,
+      "before_end_exclusive": 52,
+      "after_start": 52,
+      "after_end_exclusive": 53,
+      "before": [
+        "    \"\"\"Readout-only 4-way directional Coverage/Entailment diagnostic head.\"\"\""
+      ],
+      "after": [
+        "    \"\"\"Readout-only directional Coverage/Entailment diagnostic head.\"\"\""
+      ],
+      "before_context": [
+        "",
+        "",
+        "class Stage31CCoverageEntailmentHead(nn.Module):",
+        "",
+        "    def __init__(",
+        "        self,"
+      ],
+      "after_context": [
+        "",
+        "",
+        "class Stage31CCoverageEntailmentHead(nn.Module):",
+        "",
+        "    def __init__(",
+        "        self,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 58,
+      "before_end_exclusive": 58,
+      "after_start": 59,
+      "after_end_exclusive": 60,
+      "before": [],
+      "after": [
+        "        num_classes: int = STAGE31C_DEFAULT_NUM_CLASSES,"
+      ],
+      "before_context": [
+        "        frame_size: int,",
+        "        predicate_size: int,",
+        "        sufficiency_size: int,",
+        "        detach_input: bool = False,",
+        "    ) -> None:",
+        "        super().__init__()"
+      ],
+      "after_context": [
+        "        frame_size: int,",
+        "        predicate_size: int,",
+        "        sufficiency_size: int,",
+        "        detach_input: bool = False,",
+        "    ) -> None:",
+        "        super().__init__()"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 61,
+      "before_end_exclusive": 61,
+      "after_start": 63,
+      "after_end_exclusive": 65,
+      "before": [],
+      "after": [
+        "        if num_classes not in (3, 4):",
+        "            raise ValueError(f\"Stage31-C coverage entailment num_classes must be 3 or 4, got {num_classes}\")"
+      ],
+      "before_context": [
+        "        detach_input: bool = False,",
+        "    ) -> None:",
+        "        super().__init__()",
+        "        input_size = frame_size + predicate_size + sufficiency_size",
+        "        hidden = max(input_size // 2, 16)",
+        "        self.detach_input = detach_input"
+      ],
+      "after_context": [
+        "        detach_input: bool = False,",
+        "    ) -> None:",
+        "        super().__init__()",
+        "        input_size = frame_size + predicate_size + sufficiency_size",
+        "        hidden = max(input_size // 2, 16)",
+        "        self.num_classes = num_classes"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 63,
+      "before_end_exclusive": 63,
+      "after_start": 67,
+      "after_end_exclusive": 68,
+      "before": [],
+      "after": [
+        "        self.num_classes = num_classes"
+      ],
+      "before_context": [
+        "        super().__init__()",
+        "        input_size = frame_size + predicate_size + sufficiency_size",
+        "        hidden = max(input_size // 2, 16)",
+        "        self.detach_input = detach_input",
+        "        self.mlp = nn.Sequential(",
+        "            nn.Linear(input_size, hidden),"
+      ],
+      "after_context": [
+        "            raise ValueError(f\"Stage31-C coverage entailment num_classes must be 3 or 4, got {num_classes}\")",
+        "        input_size = frame_size + predicate_size + sufficiency_size",
+        "        hidden = max(input_size // 2, 16)",
+        "        self.detach_input = detach_input",
+        "        self.mlp = nn.Sequential(",
+        "            nn.Linear(input_size, hidden),"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 68,
+      "before_end_exclusive": 69,
+      "after_start": 73,
+      "after_end_exclusive": 74,
+      "before": [
+        "            nn.Linear(hidden, len(STAGE31C_COVERAGE_LABELS)),"
+      ],
+      "after": [
+        "            nn.Linear(hidden, num_classes),"
+      ],
+      "before_context": [
+        "            nn.Linear(input_size, hidden),",
+        "            nn.GELU(),",
+        "            nn.Dropout(0.1),",
+        "        )",
+        "",
+        "    def forward("
+      ],
+      "after_context": [
+        "            nn.Linear(input_size, hidden),",
+        "            nn.GELU(),",
+        "            nn.Dropout(0.1),",
+        "        )",
+        "",
+        "    def forward("
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 94,
+      "before_end_exclusive": 94,
+      "after_start": 99,
+      "after_end_exclusive": 100,
+      "before": [],
+      "after": [
+        "    num_classes: int = STAGE31C_DEFAULT_NUM_CLASSES,"
+      ],
+      "before_context": [
+        "def install_stage31c_coverage_entailment_head(",
+        "    model: nn.Module,",
+        "    *,",
+        "    detach_input: bool,",
+        ") -> None:",
+        "    \"\"\"Register and wrap a diagnostic head without changing final logits.\"\"\""
+      ],
+      "after_context": [
+        "def install_stage31c_coverage_entailment_head(",
+        "    model: nn.Module,",
+        "    *,",
+        "    detach_input: bool,",
+        ") -> None:",
+        "    \"\"\"Register and wrap a diagnostic head without changing final logits.\"\"\""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 108,
+      "before_end_exclusive": 108,
+      "after_start": 114,
+      "after_end_exclusive": 115,
+      "before": [],
+      "after": [
+        "        num_classes=num_classes,"
+      ],
+      "before_context": [
+        "        frame_size=frame_size,",
+        "        predicate_size=predicate_size,",
+        "        sufficiency_size=sufficiency_size,",
+        "        detach_input=detach_input,",
+        "    )",
+        "    original_forward = model.forward"
+      ],
+      "after_context": [
+        "        frame_size=frame_size,",
+        "        predicate_size=predicate_size,",
+        "        sufficiency_size=sufficiency_size,",
+        "        detach_input=detach_input,",
+        "    )",
+        "    original_forward = model.forward"
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 141,
+      "before_end_exclusive": 142,
+      "after_start": 148,
+      "after_end_exclusive": 148,
+      "before": [
+        "    output[\"coverage_other_residual_logit\"] = logits[:, 3]"
+      ],
+      "after": [],
+      "before_context": [
+        "    output[\"coverage_entails_support_logit\"] = logits[:, 0]",
+        "    output[\"coverage_overclaim_ne_logit\"] = logits[:, 1]",
+        "    output[\"coverage_contradicts_refute_logit\"] = logits[:, 2]",
+        "    output[\"coverage_entails_support_prob\"] = probs[:, 0]",
+        "    output[\"coverage_overclaim_ne_prob\"] = probs[:, 1]",
+        "    output[\"coverage_contradicts_refute_prob\"] = probs[:, 2]"
+      ],
+      "after_context": [
+        "    output[\"coverage_entails_support_logit\"] = logits[:, 0]",
+        "    output[\"coverage_overclaim_ne_logit\"] = logits[:, 1]",
+        "    output[\"coverage_contradicts_refute_logit\"] = logits[:, 2]",
+        "    output[\"coverage_entails_support_prob\"] = probs[:, 0]",
+        "    output[\"coverage_overclaim_ne_prob\"] = probs[:, 1]",
+        "    output[\"coverage_contradicts_refute_prob\"] = probs[:, 2]"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 145,
+      "before_end_exclusive": 146,
+      "after_start": 151,
+      "after_end_exclusive": 154,
+      "before": [
+        "    output[\"coverage_other_residual_prob\"] = probs[:, 3]"
+      ],
+      "after": [
+        "    if logits.shape[-1] > 3:",
+        "        output[\"coverage_other_residual_logit\"] = logits[:, 3]",
+        "        output[\"coverage_other_residual_prob\"] = probs[:, 3]"
+      ],
+      "before_context": [
+        "    output[\"coverage_entails_support_prob\"] = probs[:, 0]",
+        "    output[\"coverage_overclaim_ne_prob\"] = probs[:, 1]",
+        "    output[\"coverage_contradicts_refute_prob\"] = probs[:, 2]",
+        "    output[\"coverage_entailment_pred_id\"] = pred_id",
+        "    output[\"coverage_entailment_pred_label\"] = [",
+        "        STAGE31C_COVERAGE_LABELS[int(i)] for i in pred_id.detach().cpu().tolist()"
+      ],
+      "after_context": [
+        "    output[\"coverage_entails_support_prob\"] = probs[:, 0]",
+        "    output[\"coverage_overclaim_ne_prob\"] = probs[:, 1]",
+        "    output[\"coverage_contradicts_refute_prob\"] = probs[:, 2]",
+        "    output[\"coverage_entailment_pred_id\"] = pred_id",
+        "    labels = STAGE31C_COVERAGE_LABELS[: int(logits.shape[-1])]",
+        "    output[\"coverage_entailment_pred_label\"] = ["
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 147,
+      "before_end_exclusive": 147,
+      "after_start": 155,
+      "after_end_exclusive": 156,
+      "before": [],
+      "after": [
+        "    labels = STAGE31C_COVERAGE_LABELS[: int(logits.shape[-1])]"
+      ],
+      "before_context": [
+        "    output[\"coverage_contradicts_refute_prob\"] = probs[:, 2]",
+        "    output[\"coverage_other_residual_prob\"] = probs[:, 3]",
+        "    output[\"coverage_entailment_pred_id\"] = pred_id",
+        "    output[\"coverage_entailment_pred_label\"] = [",
+        "        STAGE31C_COVERAGE_LABELS[int(i)] for i in pred_id.detach().cpu().tolist()",
+        "    ]"
+      ],
+      "after_context": [
+        "        output[\"coverage_other_residual_logit\"] = logits[:, 3]",
+        "        output[\"coverage_other_residual_prob\"] = probs[:, 3]",
+        "    output[\"coverage_entailment_pred_id\"] = pred_id",
+        "    output[\"coverage_entailment_pred_label\"] = [",
+        "        labels[int(i)] for i in pred_id.detach().cpu().tolist()",
+        "    ]"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 148,
+      "before_end_exclusive": 149,
+      "after_start": 157,
+      "after_end_exclusive": 158,
+      "before": [
+        "        STAGE31C_COVERAGE_LABELS[int(i)] for i in pred_id.detach().cpu().tolist()"
+      ],
+      "after": [
+        "        labels[int(i)] for i in pred_id.detach().cpu().tolist()"
+      ],
+      "before_context": [
+        "    output[\"coverage_other_residual_prob\"] = probs[:, 3]",
+        "    output[\"coverage_entailment_pred_id\"] = pred_id",
+        "    output[\"coverage_entailment_pred_label\"] = [",
+        "    ]",
+        "    output[\"coverage_entailment_confidence\"] = confidence",
+        "    return output"
+      ],
+      "after_context": [
+        "    output[\"coverage_entailment_pred_id\"] = pred_id",
+        "    labels = STAGE31C_COVERAGE_LABELS[: int(logits.shape[-1])]",
+        "    output[\"coverage_entailment_pred_label\"] = [",
+        "    ]",
+        "    output[\"coverage_entailment_confidence\"] = confidence",
+        "    return output"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 188,
+      "before_end_exclusive": 188,
+      "after_start": 197,
+      "after_end_exclusive": 198,
+      "before": [],
+      "after": [
+        "    num_classes: int = STAGE31C_DEFAULT_NUM_CLASSES,"
+      ],
+      "before_context": [
+        "def encode_stage31c_coverage_entailment_labels(",
+        "    records: list[dict],",
+        "    device: torch.device,",
+        ") -> torch.Tensor:",
+        "    return torch.tensor(",
+        "        [int(r[\"coverage_direction_id\"]) for r in records],"
+      ],
+      "after_context": [
+        "def encode_stage31c_coverage_entailment_labels(",
+        "    records: list[dict],",
+        "    device: torch.device,",
+        ") -> torch.Tensor:",
+        "    labels = [int(r[\"coverage_direction_id\"]) for r in records]",
+        "    invalid = [label for label in labels if label < 0 or label >= num_classes]"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 189,
+      "before_end_exclusive": 189,
+      "after_start": 199,
+      "after_end_exclusive": 206,
+      "before": [],
+      "after": [
+        "    labels = [int(r[\"coverage_direction_id\"]) for r in records]",
+        "    invalid = [label for label in labels if label < 0 or label >= num_classes]",
+        "    if invalid:",
+        "        raise ValueError(",
+        "            f\"[stage31c] coverage_direction_id values {sorted(set(invalid))} \"",
+        "            f\"are invalid for --v7-coverage-entailment-num-classes {num_classes}.\"",
+        "        )"
+      ],
+      "before_context": [
+        "    records: list[dict],",
+        "    device: torch.device,",
+        ") -> torch.Tensor:",
+        "    return torch.tensor(",
+        "        [int(r[\"coverage_direction_id\"]) for r in records],",
+        "        dtype=torch.long,"
+      ],
+      "after_context": [
+        "    device: torch.device,",
+        "    num_classes: int = STAGE31C_DEFAULT_NUM_CLASSES,",
+        ") -> torch.Tensor:",
+        "    return torch.tensor(",
+        "        labels,",
+        "        dtype=torch.long,"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 190,
+      "before_end_exclusive": 191,
+      "after_start": 207,
+      "after_end_exclusive": 208,
+      "before": [
+        "        [int(r[\"coverage_direction_id\"]) for r in records],"
+      ],
+      "after": [
+        "        labels,"
+      ],
+      "before_context": [
+        "    device: torch.device,",
+        ") -> torch.Tensor:",
+        "    return torch.tensor(",
+        "        dtype=torch.long,",
+        "        device=device,",
+        "    )"
+      ],
+      "after_context": [
+        "            f\"are invalid for --v7-coverage-entailment-num-classes {num_classes}.\"",
+        "        )",
+        "    return torch.tensor(",
+        "        dtype=torch.long,",
+        "        device=device,",
+        "    )"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 196,
+      "before_end_exclusive": 197,
+      "after_start": 213,
+      "after_end_exclusive": 218,
+      "before": [
+        "def _stage31c_macro_f1(labels: list[int], preds: list[int]) -> tuple[float, dict[str, Any]]:"
+      ],
+      "after": [
+        "def _stage31c_macro_f1(",
+        "    labels: list[int],",
+        "    preds: list[int],",
+        "    num_classes: int,",
+        ") -> tuple[float, dict[str, Any]]:"
+      ],
+      "before_context": [
+        "    )",
+        "",
+        "",
+        "    per_class: dict[str, Any] = {}",
+        "    f1s: list[float] = []",
+        "    for idx, name in enumerate(STAGE31C_COVERAGE_LABELS):"
+      ],
+      "after_context": [
+        "    )",
+        "",
+        "",
+        "    per_class: dict[str, Any] = {}",
+        "    f1s: list[float] = []",
+        "    active_labels = STAGE31C_COVERAGE_LABELS[:num_classes]"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 199,
+      "before_end_exclusive": 200,
+      "after_start": 220,
+      "after_end_exclusive": 222,
+      "before": [
+        "    for idx, name in enumerate(STAGE31C_COVERAGE_LABELS):"
+      ],
+      "after": [
+        "    active_labels = STAGE31C_COVERAGE_LABELS[:num_classes]",
+        "    for idx, name in enumerate(active_labels):"
+      ],
+      "before_context": [
+        "def _stage31c_macro_f1(labels: list[int], preds: list[int]) -> tuple[float, dict[str, Any]]:",
+        "    per_class: dict[str, Any] = {}",
+        "    f1s: list[float] = []",
+        "        tp = sum(g == idx and p == idx for g, p in zip(labels, preds))",
+        "        fp = sum(g != idx and p == idx for g, p in zip(labels, preds))",
+        "        fn = sum(g == idx and p != idx for g, p in zip(labels, preds))"
+      ],
+      "after_context": [
+        ") -> tuple[float, dict[str, Any]]:",
+        "    per_class: dict[str, Any] = {}",
+        "    f1s: list[float] = []",
+        "        tp = sum(g == idx and p == idx for g, p in zip(labels, preds))",
+        "        fp = sum(g != idx and p == idx for g, p in zip(labels, preds))",
+        "        fn = sum(g == idx and p != idx for g, p in zip(labels, preds))"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 231,
+      "before_end_exclusive": 232,
+      "after_start": 253,
+      "after_end_exclusive": 256,
+      "before": [
+        "    macro, per_class = _stage31c_macro_f1(labels_l, preds_l)"
+      ],
+      "after": [
+        "    num_classes = int(logits.shape[-1])",
+        "    active_labels = STAGE31C_COVERAGE_LABELS[:num_classes]",
+        "    macro, per_class = _stage31c_macro_f1(labels_l, preds_l, num_classes)"
+      ],
+      "before_context": [
+        "    labels_l = [int(x) for x in labels_t.tolist()]",
+        "    preds_l = [int(x) for x in preds_t.tolist()]",
+        "    accuracy = sum(g == p for g, p in zip(labels_l, preds_l)) / len(labels_l)",
+        "    confusion = {",
+        "        gold: {pred: 0 for pred in STAGE31C_COVERAGE_LABELS}",
+        "        for gold in STAGE31C_COVERAGE_LABELS"
+      ],
+      "after_context": [
+        "    labels_l = [int(x) for x in labels_t.tolist()]",
+        "    preds_l = [int(x) for x in preds_t.tolist()]",
+        "    accuracy = sum(g == p for g, p in zip(labels_l, preds_l)) / len(labels_l)",
+        "    confusion = {",
+        "        gold: {pred: 0 for pred in active_labels}",
+        "        for gold in active_labels"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 233,
+      "before_end_exclusive": 235,
+      "after_start": 257,
+      "after_end_exclusive": 259,
+      "before": [
+        "        gold: {pred: 0 for pred in STAGE31C_COVERAGE_LABELS}",
+        "        for gold in STAGE31C_COVERAGE_LABELS"
+      ],
+      "after": [
+        "        gold: {pred: 0 for pred in active_labels}",
+        "        for gold in active_labels"
+      ],
+      "before_context": [
+        "    accuracy = sum(g == p for g, p in zip(labels_l, preds_l)) / len(labels_l)",
+        "    macro, per_class = _stage31c_macro_f1(labels_l, preds_l)",
+        "    confusion = {",
+        "    }",
+        "    for gold, pred in zip(labels_l, preds_l):",
+        "        confusion[STAGE31C_COVERAGE_LABELS[gold]][STAGE31C_COVERAGE_LABELS[pred]] += 1"
+      ],
+      "after_context": [
+        "    active_labels = STAGE31C_COVERAGE_LABELS[:num_classes]",
+        "    macro, per_class = _stage31c_macro_f1(labels_l, preds_l, num_classes)",
+        "    confusion = {",
+        "    }",
+        "    for gold, pred in zip(labels_l, preds_l):",
+        "        confusion[STAGE31C_COVERAGE_LABELS[gold]][STAGE31C_COVERAGE_LABELS[pred]] += 1"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 246,
+      "before_end_exclusive": 247,
+      "after_start": 270,
+      "after_end_exclusive": 275,
+      "before": [
+        "def parse_stage31c_class_weights(raw: str | None, device: torch.device) -> \"torch.Tensor | None\":"
+      ],
+      "after": [
+        "def parse_stage31c_class_weights(",
+        "    raw: str | None,",
+        "    device: torch.device,",
+        "    num_classes: int = STAGE31C_DEFAULT_NUM_CLASSES,",
+        ") -> \"torch.Tensor | None\":"
+      ],
+      "before_context": [
+        "    }",
+        "",
+        "",
+        "    if raw is None:",
+        "        return None",
+        "    values = [float(part.strip()) for part in raw.split(\",\") if part.strip()]"
+      ],
+      "after_context": [
+        "    }",
+        "",
+        "",
+        "    if raw is None:",
+        "        return None",
+        "    values = [float(part.strip()) for part in raw.split(\",\") if part.strip()]"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 250,
+      "before_end_exclusive": 251,
+      "after_start": 278,
+      "after_end_exclusive": 279,
+      "before": [
+        "    if len(values) != len(STAGE31C_COVERAGE_LABELS):"
+      ],
+      "after": [
+        "    if len(values) != num_classes:"
+      ],
+      "before_context": [
+        "    if raw is None:",
+        "        return None",
+        "    values = [float(part.strip()) for part in raw.split(\",\") if part.strip()]",
+        "        raise ValueError(",
+        "            \"--v7-coverage-entailment-loss-class-weights must contain exactly \"",
+        "            f\"{len(STAGE31C_COVERAGE_LABELS)} comma-separated values.\""
+      ],
+      "after_context": [
+        "    if raw is None:",
+        "        return None",
+        "    values = [float(part.strip()) for part in raw.split(\",\") if part.strip()]",
+        "        raise ValueError(",
+        "            \"--v7-coverage-entailment-loss-class-weights must contain exactly \"",
+        "            f\"{num_classes} comma-separated values.\""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 253,
+      "before_end_exclusive": 254,
+      "after_start": 281,
+      "after_end_exclusive": 282,
+      "before": [
+        "            f\"{len(STAGE31C_COVERAGE_LABELS)} comma-separated values.\""
+      ],
+      "after": [
+        "            f\"{num_classes} comma-separated values.\""
+      ],
+      "before_context": [
+        "    if len(values) != len(STAGE31C_COVERAGE_LABELS):",
+        "        raise ValueError(",
+        "            \"--v7-coverage-entailment-loss-class-weights must contain exactly \"",
+        "        )",
+        "    return torch.tensor(values, dtype=torch.float32, device=device)",
+        ""
+      ],
+      "after_context": [
+        "    if len(values) != num_classes:",
+        "        raise ValueError(",
+        "            \"--v7-coverage-entailment-loss-class-weights must contain exactly \"",
+        "        )",
+        "    return torch.tensor(values, dtype=torch.float32, device=device)",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3364,
+      "before_end_exclusive": 3365,
+      "after_start": 3392,
+      "after_end_exclusive": 3393,
+      "before": [
+        "            \"Stage31-C: Enable a readout-only 4-way directional Coverage/Entailment \""
+      ],
+      "after": [
+        "            \"Stage31-C: Enable a readout-only directional Coverage/Entailment \""
+      ],
+      "before_context": [
+        "        action=\"store_true\",",
+        "        default=False,",
+        "        help=(",
+        "            \"diagnostic head over concat([frame_pair_repr, predicate_pair_repr, \"",
+        "            \"sufficiency_repr]). Exports diagnostic probabilities. Does not modify \"",
+        "            \"output['logits'], entitlement, H1 composer, caps, or final predictions.\""
+      ],
+      "after_context": [
+        "        action=\"store_true\",",
+        "        default=False,",
+        "        help=(",
+        "            \"diagnostic head over concat([frame_pair_repr, predicate_pair_repr, \"",
+        "            \"sufficiency_repr]). Exports diagnostic probabilities. Does not modify \"",
+        "            \"output['logits'], entitlement, H1 composer, caps, or final predictions.\""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 3368,
+      "before_end_exclusive": 3368,
+      "after_start": 3396,
+      "after_end_exclusive": 3407,
+      "before": [],
+      "after": [
+        "        ),",
+        "    )",
+        "    parser.add_argument(",
+        "        \"--v7-coverage-entailment-num-classes\",",
+        "        type=int,",
+        "        choices=(3, 4),",
+        "        default=3,",
+        "        help=(",
+        "            \"Stage31-C2: output dimension for the diagnostic coverage-entailment \"",
+        "            \"head. Default 3 for ENTAILS_SUPPORT, OVERCLAIM_NOT_ENTITLED, \"",
+        "            \"CONTRADICTS_REFUTE. Use 4 only for legacy OTHER_RESIDUAL exports.\""
+      ],
+      "before_context": [
+        "            \"diagnostic head over concat([frame_pair_repr, predicate_pair_repr, \"",
+        "            \"sufficiency_repr]). Exports diagnostic probabilities. Does not modify \"",
+        "            \"output['logits'], entitlement, H1 composer, caps, or final predictions.\"",
+        "        ),",
+        "    )",
+        "    parser.add_argument("
+      ],
+      "after_context": [
+        "            \"diagnostic head over concat([frame_pair_repr, predicate_pair_repr, \"",
+        "            \"sufficiency_repr]). Exports diagnostic probabilities. Does not modify \"",
+        "            \"output['logits'], entitlement, H1 composer, caps, or final predictions.\"",
+        "        ),",
+        "    )",
+        "    parser.add_argument("
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3385,
+      "before_end_exclusive": 3386,
+      "after_start": 3424,
+      "after_end_exclusive": 3425,
+      "before": [
+        "        help=\"Stage31-C: Weight for auxiliary 4-way coverage-entailment CE loss.\","
+      ],
+      "after": [
+        "        help=\"Stage31-C: Weight for auxiliary coverage-entailment CE loss.\","
+      ],
+      "before_context": [
+        "        \"--v7-coverage-entailment-loss-weight\",",
+        "        type=float,",
+        "        default=0.0,",
+        "    )",
+        "    parser.add_argument(",
+        "        \"--v7-coverage-entailment-data\","
+      ],
+      "after_context": [
+        "        \"--v7-coverage-entailment-loss-weight\",",
+        "        type=float,",
+        "        default=0.0,",
+        "    )",
+        "    parser.add_argument(",
+        "        \"--v7-coverage-entailment-data\","
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 3404,
+      "before_end_exclusive": 3405,
+      "after_start": 3443,
+      "after_end_exclusive": 3445,
+      "before": [
+        "            \"ENTAILS_SUPPORT,OVERCLAIM_NOT_ENTITLED,CONTRADICTS_REFUTE,OTHER_RESIDUAL.\""
+      ],
+      "after": [
+        "            \"the active coverage-entailment classes. Default mode expects \"",
+        "            \"ENTAILS_SUPPORT,OVERCLAIM_NOT_ENTITLED,CONTRADICTS_REFUTE.\""
+      ],
+      "before_context": [
+        "        default=None,",
+        "        help=(",
+        "            \"Stage31-C: optional comma-separated CE class weights for \"",
+        "        ),",
+        "    )",
+        "    parser.add_argument("
+      ],
+      "after_context": [
+        "        default=None,",
+        "        help=(",
+        "            \"Stage31-C: optional comma-separated CE class weights for \"",
+        "        ),",
+        "    )",
+        "    parser.add_argument("
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 4026,
+      "before_end_exclusive": 4026,
+      "after_start": 4066,
+      "after_end_exclusive": 4067,
+      "before": [],
+      "after": [
+        "    \"v7_coverage_entailment_num_classes\","
+      ],
+      "before_context": [
+        "    \"v7_entitled_class_balanced_ce_weight\",",
+        "    \"v7_initial_ne_bias\",",
+        "    \"v7_use_coverage_entailment_head\",",
+        "    \"v7_use_coverage_entailment_loss\",",
+        "    \"v7_coverage_entailment_loss_weight\",",
+        "    \"v7_coverage_entailment_data\","
+      ],
+      "after_context": [
+        "    \"v7_entitled_class_balanced_ce_weight\",",
+        "    \"v7_initial_ne_bias\",",
+        "    \"v7_use_coverage_entailment_head\",",
+        "    \"v7_use_coverage_entailment_loss\",",
+        "    \"v7_coverage_entailment_loss_weight\",",
+        "    \"v7_coverage_entailment_data\","
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 4453,
+      "before_end_exclusive": 4453,
+      "after_start": 4494,
+      "after_end_exclusive": 4495,
+      "before": [],
+      "after": [
+        "            num_classes=getattr(args, \"v7_coverage_entailment_num_classes\", 3),"
+      ],
+      "before_context": [
+        "            )",
+        "        install_stage31c_coverage_entailment_head(",
+        "            model,",
+        "            detach_input=getattr(args, \"v7_coverage_entailment_detach_input\", False),",
+        "        )",
+        ""
+      ],
+      "after_context": [
+        "            )",
+        "        install_stage31c_coverage_entailment_head(",
+        "            model,",
+        "            detach_input=getattr(args, \"v7_coverage_entailment_detach_input\", False),",
+        "        )",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 4941,
+      "before_end_exclusive": 4942,
+      "after_start": 4983,
+      "after_end_exclusive": 4986,
+      "before": [
+        "            _covent_train_records, device"
+      ],
+      "after": [
+        "            _covent_train_records,",
+        "            device,",
+        "            getattr(args, \"v7_coverage_entailment_num_classes\", 3),"
+      ],
+      "before_context": [
+        "            raise ValueError(\"[stage31c] no dev records found in coverage-entailment aux file.\")",
+        "",
+        "        _covent_train_labels = encode_stage31c_coverage_entailment_labels(",
+        "        )",
+        "        _covent_dev_labels = encode_stage31c_coverage_entailment_labels(",
+        "            _covent_dev_records, device"
+      ],
+      "after_context": [
+        "            raise ValueError(\"[stage31c] no dev records found in coverage-entailment aux file.\")",
+        "",
+        "        _covent_train_labels = encode_stage31c_coverage_entailment_labels(",
+        "        )",
+        "        _covent_dev_labels = encode_stage31c_coverage_entailment_labels(",
+        "            _covent_dev_records,"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 4944,
+      "before_end_exclusive": 4945,
+      "after_start": 4988,
+      "after_end_exclusive": 4991,
+      "before": [
+        "            _covent_dev_records, device"
+      ],
+      "after": [
+        "            _covent_dev_records,",
+        "            device,",
+        "            getattr(args, \"v7_coverage_entailment_num_classes\", 3),"
+      ],
+      "before_context": [
+        "            _covent_train_records, device",
+        "        )",
+        "        _covent_dev_labels = encode_stage31c_coverage_entailment_labels(",
+        "        )",
+        "        _covent_class_weights = parse_stage31c_class_weights(",
+        "            getattr(args, \"v7_coverage_entailment_loss_class_weights\", None),"
+      ],
+      "after_context": [
+        "            getattr(args, \"v7_coverage_entailment_num_classes\", 3),",
+        "        )",
+        "        _covent_dev_labels = encode_stage31c_coverage_entailment_labels(",
+        "        )",
+        "        _covent_class_weights = parse_stage31c_class_weights(",
+        "            getattr(args, \"v7_coverage_entailment_loss_class_weights\", None),"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 4949,
+      "before_end_exclusive": 4949,
+      "after_start": 4995,
+      "after_end_exclusive": 4996,
+      "before": [],
+      "after": [
+        "            getattr(args, \"v7_coverage_entailment_num_classes\", 3),"
+      ],
+      "before_context": [
+        "        _covent_class_weights = parse_stage31c_class_weights(",
+        "            getattr(args, \"v7_coverage_entailment_loss_class_weights\", None),",
+        "            device,",
+        "        )",
+        "",
+        "        if args.backbone == \"dummy\":"
+      ],
+      "after_context": [
+        "        _covent_class_weights = parse_stage31c_class_weights(",
+        "            getattr(args, \"v7_coverage_entailment_loss_class_weights\", None),",
+        "            device,",
+        "        )",
+        "",
+        "        if args.backbone == \"dummy\":"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 4981,
+      "before_end_exclusive": 4981,
+      "after_start": 5028,
+      "after_end_exclusive": 5029,
+      "before": [],
+      "after": [
+        "            f\" num_classes={getattr(args, 'v7_coverage_entailment_num_classes', 3)}\""
+      ],
+      "before_context": [
+        "            f\" loaded={_covent_meta_records_loaded}\"",
+        "            f\" train={_covent_meta_train_records}\"",
+        "            f\" dev={_covent_meta_dev_records}\"",
+        "            f\" detach_input={getattr(args, 'v7_coverage_entailment_detach_input', False)}\"",
+        "        )",
+        ""
+      ],
+      "after_context": [
+        "            f\" loaded={_covent_meta_records_loaded}\"",
+        "            f\" train={_covent_meta_train_records}\"",
+        "            f\" dev={_covent_meta_dev_records}\"",
+        "            f\" detach_input={getattr(args, 'v7_coverage_entailment_detach_input', False)}\"",
+        "        )",
+        ""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 7818,
+      "before_end_exclusive": 7818,
+      "after_start": 7866,
+      "after_end_exclusive": 7869,
+      "before": [],
+      "after": [
+        "            \"v7_coverage_entailment_num_classes\": getattr(",
+        "                args, \"v7_coverage_entailment_num_classes\", 3",
+        "            ),"
+      ],
+      "before_context": [
+        "            \"v7_use_coverage_entailment_loss\": getattr(",
+        "                args, \"v7_use_coverage_entailment_loss\", False",
+        "            ),",
+        "            \"v7_coverage_entailment_loss_weight\": getattr(",
+        "                args, \"v7_coverage_entailment_loss_weight\", 0.0",
+        "            ),"
+      ],
+      "after_context": [
+        "            \"v7_use_coverage_entailment_loss\": getattr(",
+        "                args, \"v7_use_coverage_entailment_loss\", False",
+        "            ),",
+        "            \"v7_coverage_entailment_loss_weight\": getattr(",
+        "                args, \"v7_coverage_entailment_loss_weight\", 0.0",
+        "            ),"
+      ]
+    }
+  ]
+}

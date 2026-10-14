@@ -1,0 +1,1929 @@
+{
+  "shard_ordinal": 48,
+  "original_queue_id": "WORK-7d8da0256ad88db640fe",
+  "original_source_ids": [
+    "HV000139"
+  ],
+  "original_source_identity": {
+    "commit": "048fb78258bbe0dac29f0dfbe0310b9023ecc672",
+    "path": "paper/iclr2027/main.pdf",
+    "blob": "5e452eda98dc5441234d68574c9164958ce047ae",
+    "object_type": "commit",
+    "bytes": 656463,
+    "sha256": "83cd056ff21128101e1c64e60dd56d403f689d5795e1927b8265c11818e8a3d6"
+  },
+  "before": {
+    "commit": "ef1806bef9e4a7f55e1f7e77f7a0f08592fb4abe",
+    "path": "paper/iclr2027/main.pdf",
+    "blob": "503c8d60b03c8660b5fd06b1dbec27cf4e632448",
+    "object_type": "commit",
+    "bytes": 671978,
+    "sha256": "da6316a009096ec1672753d74b7752dc07c5319a5c1c3d3204febc208dc6d7ba"
+  },
+  "after": {
+    "commit": "048fb78258bbe0dac29f0dfbe0310b9023ecc672",
+    "path": "paper/iclr2027/main.pdf",
+    "blob": "5e452eda98dc5441234d68574c9164958ce047ae",
+    "object_type": "commit",
+    "bytes": 656463,
+    "sha256": "83cd056ff21128101e1c64e60dd56d403f689d5795e1927b8265c11818e8a3d6"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "versions_shard_0/semantic_revision_records.jsonl",
+      "jsonl_line": 31,
+      "record": {
+        "after_commit": "048fb78258bbe0dac29f0dfbe0310b9023ecc672",
+        "before_commit": "ef1806bef9e4a7f55e1f7e77f7a0f08592fb4abe",
+        "categories": [],
+        "evidence": [
+          {
+            "byte_sha256_after": "83cd056ff21128101e1c64e60dd56d403f689d5795e1927b8265c11818e8a3d6",
+            "byte_sha256_before": "da6316a009096ec1672753d74b7752dc07c5319a5c1c3d3204febc208dc6d7ba"
+          }
+        ],
+        "from_blob": "503c8d60b03c8660b5fd06b1dbec27cf4e632448",
+        "from_kind": "BINARY",
+        "from_size_bytes": 671978,
+        "id": "SR000031",
+        "interpretation": "UNRESOLVED_BINARY_CONTENT",
+        "path": "paper/iclr2027/main.pdf",
+        "relationship": "ANCESTRAL_PATH_EVENT_TRANSITION",
+        "selected_target_ids": [
+          "HV000139"
+        ],
+        "to_blob": "5e452eda98dc5441234d68574c9164958ce047ae",
+        "to_kind": "BINARY",
+        "to_size_bytes": 656463
+      }
+    }
+  ],
+  "prior_interpretation": null,
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "8423ef9d1325c007ecd31849a668131197e2214d",
+      "blob": "503c8d60b03c8660b5fd06b1dbec27cf4e632448"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "extracted_pdf_text",
+  "changes": [
+    {
+      "operation": "replace",
+      "before_start": 77,
+      "before_end_exclusive": 82,
+      "after_start": 77,
+      "after_end_exclusive": 81,
+      "before": [
+        "The downstream structured task objective reads these scale-local components with",
+        "aggregate signs+,+,+,−,−. Holding each native contrast fixed and replacing",
+        "that objective with Mamba’s pretrained next-token objective yields−,−,−,+,+",
+        "across the complete descriptive set; pair-level behavior rules out a simple rowwise",
+        "sign inversion."
+      ],
+      "after": [
+        "The downstream structured task objective has point-estimate aggregate signs",
+        "+,+,+,−,−, whereas the pretrained next-token objective has−,−,−,+,+",
+        "across the complete descriptive set. Pair-resampling uncertainty is concentrated",
+        "in the smallest-magnitude cells."
+      ],
+      "before_context": [
+        "lations shows only partial cross-scale conservation: every off-diagonal centered",
+        "linear CKA entry is below one, and frozen cosine-RSM comparisons give the",
+        "same qualitative picture.",
+        "Together, the results show thatcausal-role recurrence does not imply geometric",
+        "invariance, and neither implies objective-independent functional meaning.",
+        "Mechanistic comparisons across scale should distinguish what a representation"
+      ],
+      "after_context": [
+        "lations shows only partial cross-scale conservation: every off-diagonal centered",
+        "linear CKA entry is below one, and frozen cosine-RSM comparisons give the",
+        "same qualitative picture.",
+        "Together, the results show thatcausal-role recurrence does not imply geometric",
+        "invariance, and neither implies objective-independent functional meaning.",
+        "Mechanistic comparisons across scale should distinguish what a representation"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 102,
+      "before_end_exclusive": 103,
+      "after_start": 101,
+      "after_end_exclusive": 102,
+      "before": [
+        "jective, the selected-versus-control readout has aggregate signs+,+,+,−,−across scale. When"
+      ],
+      "after": [
+        "jective, the selected-versus-control readout has point-estimate aggregate signs+,+,+,−,−across"
+      ],
+      "before_context": [
+        "preservation. The secondary cosine-RSM comparison agrees. Thus the recurrence claim is about an",
+        "interventional role, not a fixed direction, plane number, or globally preserved sample geometry.",
+        "The second result concerns functional use. Under a separately trained structured downstream ob-",
+        "1",
+        "PAGE 2",
+        "054"
+      ],
+      "after_context": [
+        "preservation. The secondary cosine-RSM comparison agrees. Thus the recurrence claim is about an",
+        "interventional role, not a fixed direction, plane number, or globally preserved sample geometry.",
+        "The second result concerns functional use. Under a separately trained structured downstream ob-",
+        "1",
+        "PAGE 2",
+        "054"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 177,
+      "before_end_exclusive": 178,
+      "after_start": 176,
+      "after_end_exclusive": 177,
+      "before": [
+        "Five-scale extension: causal role recurs; geometry reorganizes"
+      ],
+      "after": [
+        "Five scales: causal role recurs; geometry is only partially conserved"
+      ],
+      "before_context": [
+        "Native susceptibility mechanism",
+        "Task-functional bridge",
+        "B",
+        "130M",
+        "P3 / P5",
+        "370M"
+      ],
+      "after_context": [
+        "Native susceptibility mechanism",
+        "Task-functional bridge",
+        "B",
+        "130M",
+        "P3 / P5",
+        "370M"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 200,
+      "before_end_exclusive": 203,
+      "after_start": 199,
+      "after_end_exclusive": 201,
+      "before": [
+        "we keep each native contrast fixed and replace the readout objective with the pretrained next-token",
+        "language-model objective, the descriptive signs become−,−,−,+,+. Pair-level associations show",
+        "that this aggregate opposition is not a simple inversion of individual examples."
+      ],
+      "after": [
+        "scale. When we keep each native contrast fixed and replace the readout objective with the pretrained",
+        "next-token language-model objective, the point-estimate aggregate signs become−,−,−,+,+."
+      ],
+      "before_context": [
+        "Figure 1: Study design. Native geometry and a selected causal component are reconstructed inde-",
+        "pendently within each scale. The same scale-local contrast is read under downstream and pretrained",
+        "objectives. Arrows indicate study order, not a continuous scaling law or shared plane identity.",
+        "These findings motivate two contributions:",
+        "1.Causal-role recurrence without geometric invariance.A scale-local recurrent-state role",
+        "recurs across all five Mamba-1 sizes, while coordinate-insensitive response-blind alignment"
+      ],
+      "after_context": [
+        "Figure 1: Study design. Native geometry and a selected causal component are reconstructed inde-",
+        "pendently within each scale. The same scale-local contrast is read under downstream and pretrained",
+        "objectives. Arrows indicate study order, not a continuous scaling law or shared plane identity.",
+        "These findings motivate two contributions:",
+        "1.Causal-role recurrence without geometric invariance.A scale-local recurrent-state role",
+        "recurs across all five Mamba-1 sizes, while coordinate-insensitive response-blind alignment"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 210,
+      "before_end_exclusive": 213,
+      "after_start": 208,
+      "after_end_exclusive": 210,
+      "before": [
+        "Behavioral and external-transfer experiments bound these claims. The intervention reaches con-",
+        "tinuous task and natural-language decision margins, but the evidence does not establish uniform",
+        "prediction correction, benchmark superiority, a continuous scaling law, or architectural universality."
+      ],
+      "after": [
+        "Behavioral and external-transfer experiments bound how far these mechanistic findings extend be-",
+        "yond the local state."
+      ],
+      "before_context": [
+        "2.Objective-conditioned functionalization.The same scale-specific native substrate can",
+        "receive systematically different aggregate functional orientations under downstream and",
+        "pretrained objectives.",
+        "2 RELATEDWORK",
+        "Mechanistic interpretability of Mamba and state-space models.Mamba replaces attention with",
+        "input-dependent selective state-space dynamics, making recurrent state a natural object for mecha-"
+      ],
+      "after_context": [
+        "2.Objective-conditioned functionalization.The same scale-specific native substrate can",
+        "receive systematically different aggregate functional orientations under downstream and",
+        "pretrained objectives.",
+        "2 RELATEDWORK",
+        "Mechanistic interpretability of Mamba and state-space models.Mamba replaces attention",
+        "with input-dependent selective state-space dynamics, making recurrent state a natural object for"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 214,
+      "before_end_exclusive": 224,
+      "after_start": 211,
+      "after_end_exclusive": 223,
+      "before": [
+        "Mechanistic interpretability of Mamba and state-space models.Mamba replaces attention with",
+        "input-dependent selective state-space dynamics, making recurrent state a natural object for mecha-",
+        "nistic analysis (Gu & Dao, 2024). Ensign and Garriga-Alonso partially reverse-engineer the indirect-",
+        "object-identification circuit in Mamba, identifying a key bottleneck, convolution-mediated token",
+        "shifting, and linear storage of name information in the SSM state (Ensign & Garriga-Alonso, 2024).",
+        "Wang et al. compare Transformers and Mambas using sparse autoencoders and circuit analysis,",
+        "finding substantial feature similarity and structurally analogous induction mechanisms while also",
+        "identifying Mamba-specific differences (Wang et al., 2025). More recent work identifies activation-",
+        "subspace bottlenecks across several state-space models and tests their causal relevance through in-",
+        "terventions and steering (Mohan et al., 2026)."
+      ],
+      "after": [
+        "Mechanistic interpretability of Mamba and state-space models.Mamba replaces attention",
+        "with input-dependent selective state-space dynamics, making recurrent state a natural object for",
+        "mechanistic analysis (?). Ensign and Garriga-Alonso partially reverse-engineer the indirect-object-",
+        "identification circuit in Mamba, identifying a key bottleneck, convolution-mediated token shifting,",
+        "and linear storage of name information in the SSM state (?). Wang et al. compare Transformers and",
+        "Mambas using sparse autoencoders and circuit analysis, finding substantial feature similarity and",
+        "structurally analogous induction mechanisms while also identifying Mamba-specific differences (?).",
+        "More recent work identifies activation-subspace bottlenecks across several state-space models and",
+        "tests their causal relevance through interventions and steering (?).",
+        "Our question is complementary. Rather than asking whether Mamba contains an interpretable fea-",
+        "ture or circuit for a particular benchmark, or whether two architectures implement analogous al-",
+        "gorithms, we ask whether acausal role identified inside one Mamba scale recurs after native"
+      ],
+      "before_context": [
+        "tinuous task and natural-language decision margins, but the evidence does not establish uniform",
+        "prediction correction, benchmark superiority, a continuous scaling law, or architectural universality.",
+        "2 RELATEDWORK",
+        "2",
+        "PAGE 3",
+        "108"
+      ],
+      "after_context": [
+        "Behavioral and external-transfer experiments bound how far these mechanistic findings extend be-",
+        "yond the local state.",
+        "2 RELATEDWORK",
+        "2",
+        "PAGE 3",
+        "108"
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 281,
+      "before_end_exclusive": 284,
+      "after_start": 280,
+      "after_end_exclusive": 280,
+      "before": [
+        "Our question is complementary. Rather than asking whether Mamba contains an interpretable fea-",
+        "ture or circuit for a particular benchmark, or whether two architectures implement analogous al-",
+        "gorithms, we ask whether acausal role identified inside one Mamba scale recurs after native"
+      ],
+      "after": [],
+      "before_context": [
+        "160",
+        "161",
+        "Under review as a conference paper at ICLR 2027",
+        "geometry is independently reconstructed at larger scales. We then separate that recurrence from",
+        "both geometric invariance and downstream functional interpretation.",
+        "Representation similarity and cross-model recurrence.Representational-similarity methods"
+      ],
+      "after_context": [
+        "160",
+        "161",
+        "Under review as a conference paper at ICLR 2027",
+        "geometry is independently reconstructed at larger scales. We then separate that recurrence from",
+        "both geometric invariance and downstream functional interpretation.",
+        "Representation similarity and cross-model recurrence.Representational-similarity methods"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 287,
+      "before_end_exclusive": 294,
+      "after_start": 283,
+      "after_end_exclusive": 289,
+      "before": [
+        "such as centered kernel alignment provide coordinate-insensitive tools for comparing neural rep-",
+        "resentations (Kornblith et al., 2019). The Platonic Representation Hypothesis further argues that",
+        "representations may become increasingly aligned across models and modalities as capability grows",
+        "(Huh et al., 2024). At the same time, recent work shows that representational-similarity conclusions",
+        "can depend strongly on objectives and evaluation datasets (Ciernik et al., 2025), and formal work on",
+        "linear representations emphasizes that geometric interpretation itself depends on the structure used",
+        "to compare representational spaces (Park et al., 2024)."
+      ],
+      "after": [
+        "such as centered kernel alignment provide coordinate-insensitive tools for comparing neural repre-",
+        "sentations (?). The Platonic Representation Hypothesis further argues that representations may be-",
+        "come increasingly aligned across models and modalities as capability grows (?). At the same time,",
+        "recent work shows that representational-similarity conclusions can depend strongly on objectives",
+        "and evaluation datasets (?), and formal work on linear representations emphasizes that geometric",
+        "interpretation itself depends on the structure used to compare representational spaces (?)."
+      ],
+      "before_context": [
+        "geometry is independently reconstructed at larger scales. We then separate that recurrence from",
+        "both geometric invariance and downstream functional interpretation.",
+        "Representation similarity and cross-model recurrence.Representational-similarity methods",
+        "These results motivate a stricter notion of recurrence for mechanistic analysis. We do not require two",
+        "models to share a direction, a principal-plane rank, or a globally aligned coordinate system. Instead,",
+        "we ask whether independently reconstructed components satisfy comparableinterventional roles."
+      ],
+      "after_context": [
+        "geometry is independently reconstructed at larger scales. We then separate that recurrence from",
+        "both geometric invariance and downstream functional interpretation.",
+        "Representation similarity and cross-model recurrence.Representational-similarity methods",
+        "These results motivate a stricter notion of recurrence for mechanistic analysis. We do not require two",
+        "models to share a direction, a principal-plane rank, or a globally aligned coordinate system. Instead,",
+        "we ask whether independently reconstructed components satisfy comparableinterventional roles."
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 300,
+      "before_end_exclusive": 305,
+      "after_start": 295,
+      "after_end_exclusive": 300,
+      "before": [
+        "claims using causal abstractions (Dai et al., 2022; Meng et al., 2022; Geiger et al., 2023). Our pro-",
+        "tocol follows the same general principle that localization alone is insufficient, but places additional",
+        "emphasis on prospective matched controls. At 130M, a localized component must transport to fresh",
+        "data, outperform a response-independent geometric control, show selective necessity, and recover",
+        "the response under matched restoration before serving as the basis for cross-scale comparison."
+      ],
+      "after": [
+        "claims using causal abstractions (???). Our protocol follows the same general principle that local-",
+        "ization alone is insufficient, but places additional emphasis on prospective matched controls. At",
+        "130M, a localized component must transport to fresh data, outperform a response-independent geo-",
+        "metric control, show selective necessity, and recover the response under matched restoration before",
+        "serving as the basis for cross-scale comparison."
+      ],
+      "before_context": [
+        "Causal interventions and functional interpretation.Mechanistic interpretability increasingly",
+        "distinguishes correlational localization from causal evidence. Prior work has used interventions and",
+        "causal tracing to localize model computations, edit factual associations, and formalize mechanistic",
+        "Finally, representation and causal role do not uniquely determine how a state is used by a particular",
+        "objective. Our setting permits a controlled comparison: within each Mamba scale, the native contrast",
+        "and source population are held fixed while its local functional readout is evaluated under either the"
+      ],
+      "after_context": [
+        "Causal interventions and functional interpretation.Mechanistic interpretability increasingly",
+        "distinguishes correlational localization from causal evidence. Prior work has used interventions and",
+        "causal tracing to localize model computations, edit factual associations, and formalize mechanistic",
+        "Finally, representation and causal role do not uniquely determine how a state is used by a particular",
+        "objective. Our setting permits a controlled comparison: within each Mamba scale, the native contrast",
+        "and source population are held fixed while its local functional readout is evaluated under either the"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 312,
+      "before_end_exclusive": 312,
+      "after_start": 307,
+      "after_end_exclusive": 314,
+      "before": [],
+      "after": [
+        "Notation at a glance",
+        "Notation Meaning",
+        "XG1 Controlled causal-response and behavioral holdout family.",
+        "XG2/XG4 Response-blind geometry generator families.",
+        "Pk,PP k Within-model principal-plane rank; labels are model-local.",
+        "QInternal recurrent-state causal endpoint.",
+        "∆LLocal downstream task-margin readout."
+      ],
+      "before_context": [
+        "distinguishobjective-conditioned functional meaningfrom both native geometry and causal-role",
+        "recurrence.",
+        "3 RESULTS",
+        "3.1 DEEP CAUSAL ESTABLISHMENT ATMAMBA-130M",
+        "We first establish the local recurrent-state mechanism in Mamba-130M before asking whether any",
+        "part of it recurs at larger scales. Here, acausal rolemeans that manipulating a scale-local native-"
+      ],
+      "after_context": [
+        "distinguishobjective-conditioned functional meaningfrom both native geometry and causal-role",
+        "recurrence.",
+        "3 RESULTS",
+        "3.1 DEEP CAUSAL ESTABLISHMENT ATMAMBA-130M",
+        "We first establish the local recurrent-state mechanism in Mamba-130M before asking whether any",
+        "part of it recurs at larger scales. Here, acausal rolemeans that manipulating a scale-local native-"
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 326,
+      "before_end_exclusive": 331,
+      "after_start": 328,
+      "after_end_exclusive": 328,
+      "before": [
+        "strongly than an equal-norm PP5 replacement. All four pre-specified tests supported their respective",
+        "hypotheses. Exact test statistics are reported in Appendix A.",
+        "The same mechanism also reached the downstream task computation. Restoring PP3 instead of the",
+        "matched PP5 replacement increased the downstream task margin by0.00833on average over 300",
+        "paired items (Fig. 2B). This was a continuous margin effect rather than an accuracy gain; discrete"
+      ],
+      "after": [],
+      "before_context": [
+        "and showed that PP3 retained the stronger effect. Subsequent matched interventions established",
+        "both necessity and restoration sufficiency: neutralizing PP3 attenuated the endpoint more strongly",
+        "than the control intervention, while restoring the exact PP3 component recovered the endpoint more",
+        "3",
+        "PAGE 4",
+        "162"
+      ],
+      "after_context": [
+        "and showed that PP3 retained the stronger effect. Subsequent matched interventions established",
+        "both necessity and restoration sufficiency: neutralizing PP3 attenuated the endpoint more strongly",
+        "than the control intervention, while restoring the exact PP3 component recovered the endpoint more",
+        "3",
+        "PAGE 4",
+        "162"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 429,
+      "before_end_exclusive": 429,
+      "after_start": 426,
+      "after_end_exclusive": 431,
+      "before": [],
+      "after": [
+        "strongly than an equal-norm PP5 replacement. All four pre-specified tests supported their respective",
+        "hypotheses. Exact test statistics are reported in Appendix A.",
+        "The same mechanism also reached the downstream task computation. Restoring PP3 instead of the",
+        "matched PP5 replacement increased the downstream task margin by0.00833on average over 300",
+        "paired items (Fig. 2B). This was a continuous margin effect rather than an accuracy gain; discrete"
+      ],
+      "before_context": [
+        "blind specificity, matched necessity, and restoration; their distinct endpoints are not comparable as",
+        "raw magnitudes. (B) Restoration reaches a continuous task margin, without an accuracy claim. (C)",
+        "Local readout and behavioral effects covary descriptively.",
+        "prediction changes were negligible. Across source pairs, the local task-functional readout tracked",
+        "the behavioral restoration effect with Pearsonr= 0.618, Spearmanρ= 0.832, and 82.3% sign",
+        "agreement (Fig. 2C). These associations are descriptive and were not used to select the mechanism."
+      ],
+      "after_context": [
+        "blind specificity, matched necessity, and restoration; their distinct endpoints are not comparable as",
+        "raw magnitudes. (B) Restoration reaches a continuous task margin, without an accuracy claim. (C)",
+        "Local readout and behavioral effects covary descriptively.",
+        "prediction changes were negligible. Across source pairs, the local task-functional readout tracked",
+        "the behavioral restoration effect with Pearsonr= 0.618, Spearmanρ= 0.832, and 82.3% sign",
+        "agreement (Fig. 2C). These associations are descriptive and were not used to select the mechanism."
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 435,
+      "before_end_exclusive": 436,
+      "after_start": 437,
+      "after_end_exclusive": 439,
+      "before": [
+        "3.2 ASCALE-LOCAL CAUSAL ROLE RECURS WHILE NATIVE GEOMETRY REORGANIZES"
+      ],
+      "after": [
+        "3.2 ASCALE-LOCAL CAUSAL ROLE RECURS WHILE NATIVE GEOMETRY IS ONLY PARTIALLY",
+        "CONSERVED"
+      ],
+      "before_context": [
+        "The object carried into the scale study is therefore not “PP3” as a fixed semantic plane. It is the",
+        "recurrence, under a fixed scientific procedure, of a scale-local recurrent-state component with a",
+        "matched causal role.",
+        "We next ask two questions:does the causal role recur at larger scales, and does the geometry that",
+        "realizes it remain invariant?The answers differ.",
+        "The selected/control pairs are P3/P5 at 130M, P3/P5 at 370M, P2/P5 at 790M, P5/P4 at 1.4B, and"
+      ],
+      "after_context": [
+        "The object carried into the scale study is therefore not “PP3” as a fixed semantic plane. It is the",
+        "recurrence, under a fixed scientific procedure, of a scale-local recurrent-state component with a",
+        "matched causal role.",
+        "We next ask two questions:does the causal role recur at larger scales, and does the geometry that",
+        "realizes it remain invariant?The answers differ.",
+        "The selected/control pairs are P3/P5 at 130M, P3/P5 at 370M, P2/P5 at 790M, P5/P4 at 1.4B, and"
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 444,
+      "before_end_exclusive": 451,
+      "after_start": 447,
+      "after_end_exclusive": 447,
+      "before": [
+        "We then test geometric invariance directly. For each scale and each response-blind family (XG2 and",
+        "XG4), the frozen geometry preparation provides 300alignment_delta_hvectors on the same",
+        "ordered source-pair population. We row-normalize these vectors, form their sample Gram matrix,",
+        "center it, and compare scales with linear centered kernel alignment (CKA). An exact orthogonal",
+        "rotation of feature coordinates would preserve this sample geometry and yield CKA equal to one.",
+        "That is not what we observe. Every off-diagonal entry in both five-scale CKA matrices lies below",
+        "one (Fig. 3B–C), with substantial heterogeneity across scale pairs rather than a monotonic progres-"
+      ],
+      "after": [],
+      "before_context": [
+        "control under the common contrastQ selected restored −Q matched control. The historical endpoint",
+        "labels and inferential families differ; their exact chronology, including the separate failed 370M",
+        "residual criterion, is retained in Appendix A.4 rather than used as the narrative spine here.",
+        "4",
+        "PAGE 5",
+        "216"
+      ],
+      "after_context": [
+        "control under the common contrastQ selected restored −Q matched control. The historical endpoint",
+        "labels and inferential families differ; their exact chronology, including the separate failed 370M",
+        "residual criterion, is retained in Appendix A.4 rather than used as the narrative spine here.",
+        "4",
+        "PAGE 5",
+        "216"
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 510,
+      "before_end_exclusive": 511,
+      "after_start": 506,
+      "after_end_exclusive": 506,
+      "before": [
+        "Selected/control ranks are local identities; equal rank numbers do not imply semantic homology."
+      ],
+      "after": [],
+      "before_context": [
+        "Under review as a conference paper at ICLR 2027",
+        "A",
+        "The causal role recurs across all five Mamba-1 scales",
+        "130M",
+        "370M",
+        "790M"
+      ],
+      "after_context": [
+        "Under review as a conference paper at ICLR 2027",
+        "A",
+        "The causal role recurs across all five Mamba-1 scales",
+        "130M",
+        "370M",
+        "790M"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 606,
+      "before_end_exclusive": 615,
+      "after_start": 601,
+      "after_end_exclusive": 617,
+      "before": [
+        "Figure 3: Causal-role recurrence with coordinate-insensitive geometric reorganization. (A) The",
+        "selected/control identity is reconstructed independently within each scale, but the common scale-",
+        "local causal contrast is supported at all five sizes. (B–C) Centered linear CKA compares the frozen",
+        "response-blind XG2 and XG4 alignment geometry on the same 300 source pairs per family. Off-",
+        "diagonal values below one show that recurrence of causal role does not require invariant sample",
+        "geometry. Historical protocol details and secondary cosine-RSM values are reported in the appendix.",
+        "sion with parameter count. A separately frozen cosine-RSM comparison of the same rows gives the",
+        "same qualitative conclusion (Appendix A.2). The geometry is thereforepartially conserved but",
+        "not invariantacross the sampled scales."
+      ],
+      "after": [
+        "Figure 3: Causal-role recurrence with only partial geometric conservation. (A) The selected/control",
+        "identity is reconstructed independently within each scale, but the common scale-local causal contrast",
+        "is supported at all five sizes. (B–C) Centered linear CKA compares the frozen response-blind XG2",
+        "and XG4 alignment geometry on the same 300 source pairs per family. Off-diagonal values below",
+        "one show that recurrence of causal role does not require invariant sample geometry. Historical",
+        "protocol details and secondary cosine-RSM values are reported in the appendix.",
+        "We then test geometric invariance directly. For each scale and each response-blind family (XG2 and",
+        "XG4), the frozen geometry preparation provides 300alignment_delta_hvectors on the same",
+        "ordered source-pair population. We row-normalize these vectors, form their sample Gram matrix,",
+        "center it, and compare scales with linear centered kernel alignment (CKA). An exact orthogonal",
+        "rotation of feature coordinates would preserve this sample geometry and yield CKA equal to one.",
+        "Both five-scale CKA matrices have off-diagonal entries below one (Fig. 3B–C), with scale-pair het-",
+        "erogeneity rather than a monotonic size trend. Frozen cosine-RSM agrees (Appendix A.2); geometry",
+        "ispartially conserved but not invariant. Joint source-pair resampling preserves the qualitative in-",
+        "termediate CKA structure, while repeated split halves show stronger fine-grained ordering stability",
+        "for XG2 than XG4 (Appendix A.7)."
+      ],
+      "before_context": [
+        "1.00",
+        "Same 300 response-blind pairs per family. CKA = 1 denotes identical centered sample geometry;",
+        "off-diagonal values show partial, not invariant, cross-scale geometry. Cosine-RSM: Appendix A.2.",
+        "This conclusion is deliberately local. The analysis concerns the response-blind alignment geometry",
+        "that generates the native principal-geometry object used in this study. Linear CKA is insensitive to",
+        "orthogonal feature rotations and isotropic scaling, but it does not establish non-equivalence under"
+      ],
+      "after_context": [
+        "1.00",
+        "Same 300 response-blind pairs per family. CKA = 1 denotes identical centered sample geometry;",
+        "off-diagonal values show partial, not invariant, cross-scale geometry. Cosine-RSM: Appendix A.2.",
+        "This conclusion is deliberately local. The analysis concerns the response-blind alignment geometry",
+        "that generates the native principal-geometry object used in this study. Linear CKA is insensitive to",
+        "orthogonal feature rotations and isotropic scaling, but it does not establish non-equivalence under"
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 624,
+      "before_end_exclusive": 629,
+      "after_start": 626,
+      "after_end_exclusive": 626,
+      "before": [
+        "We treat this+,+,+,−,−sequence as a descriptive five-scale pattern, not as a parameter threshold",
+        "or monotonic scaling law.",
+        "For pairi, the local readout is",
+        "∆Li =g ⊤",
+        "i (csel,i −c ctrl,i),"
+      ],
+      "after": [],
+      "before_context": [
+        "the same aggregate way at every scale. The mean forward-equivalent readout is positive at 130M,",
+        "370M, and 790M and negative at 1.4B and 2.8B:",
+        "(+0.00224,+0.00102,+0.00455,−0.00239,−0.00015).",
+        "5",
+        "PAGE 6",
+        "270"
+      ],
+      "after_context": [
+        "the same aggregate way at every scale. The mean forward-equivalent readout is positive at 130M,",
+        "370M, and 790M and negative at 1.4B and 2.8B:",
+        "(+0.00224,+0.00102,+0.00455,−0.00239,−0.00015).",
+        "5",
+        "PAGE 6",
+        "270"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 686,
+      "before_end_exclusive": 686,
+      "after_start": 683,
+      "after_end_exclusive": 688,
+      "before": [],
+      "after": [
+        "We treat these point-estimate aggregate signs+,+,+,−,−as a descriptive five-scale pattern, not",
+        "as a parameter threshold or monotonic scaling law.",
+        "For pairi, the local readout is",
+        "∆Li =g ⊤",
+        "i (csel,i −c ctrl,i),"
+      ],
+      "before_context": [
+        "322",
+        "323",
+        "Under review as a conference paper at ICLR 2027",
+        "whereg i is the gradient of the downstream task margin with respect to the frozen local recurrent-",
+        "state value. This makes∆Lexplicitly objective-conditioned rather than an intrinsic property of the",
+        "pretrained state."
+      ],
+      "after_context": [
+        "322",
+        "323",
+        "Under review as a conference paper at ICLR 2027",
+        "whereg i is the gradient of the downstream task margin with respect to the frozen local recurrent-",
+        "state value. This makes∆Lexplicitly objective-conditioned rather than an intrinsic property of the",
+        "pretrained state."
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 700,
+      "before_end_exclusive": 710,
+      "after_start": 702,
+      "after_end_exclusive": 713,
+      "before": [
+        "The aggregate contrast changes systematically. Across the complete descriptive five-scale set, the",
+        "task objective gives+,+,+,−,−, whereas the pretrained next-token objective gives−,−,−,+,+",
+        "(Fig. 4). The original prospective LM-control family covered the four larger scales; the 130M value",
+        "was added later under a separately frozen completeness extension and is not retroactively pooled",
+        "into that family (Appendix A.6).",
+        "Opposite aggregate signs do not imply rowwise inversion. Pair-level Pearson and Spearman associ-",
+        "ations vary in sign across scales, and pairwise sign agreement remains near the middle of its range.",
+        "At 130M, for example, the pair-level correlation is positive despite opposite aggregate means. We",
+        "therefore interpret the result asobjective-conditioned functionalization: the same scale-specific",
+        "recurrent substrate can be organized differently by different objectives."
+      ],
+      "after": [
+        "Across the complete descriptive five-scale set, point-estimate aggregate signs are+,+,+,−,−for",
+        "the task objective and−,−,−,+,+for the pretrained next-token objective (Fig. 4). Pair-resampling",
+        "intervals cross zero for the 370M pretrained-LM and 2.8B task readouts, so these cells lack individ-",
+        "ual sign stability under this analysis (Appendix A.7). The prospective LM-control family covered",
+        "the four larger scales; the later 130M completeness extension is not retroactively pooled into it",
+        "(Appendix A.6).",
+        "The opposed point-estimate aggregate signs do not imply rowwise inversion. Pair-level Pearson",
+        "and Spearman associations vary in sign across scales, and pairwise sign agreement remains near",
+        "the middle of its range. At 130M, for example, the pair-level correlation is positive despite opposed",
+        "point means. We therefore interpret the result asobjective-conditioned functionalization: the same",
+        "scale-specific recurrent substrate can be organized differently by different objectives."
+      ],
+      "before_context": [
+        "pretrained objective. We test that alternative by keeping each scale’s source population, target site,",
+        "selected component, and matched control fixed while replacing the downstream task margin with",
+        "the pretrained next-token log-probability objective.",
+        "3.5 FUNCTIONAL CONSEQUENCES EXTEND BEYOND THE LOCAL READOUT,BUT REMAIN",
+        "BOUNDED",
+        "We finally ask how far the local mechanism propagates beyond the controlled recurrent-state analy-"
+      ],
+      "after_context": [
+        "pretrained objective. We test that alternative by keeping each scale’s source population, target site,",
+        "selected component, and matched control fixed while replacing the downstream task margin with",
+        "the pretrained next-token log-probability objective.",
+        "3.5 FUNCTIONAL CONSEQUENCES EXTEND BEYOND THE LOCAL READOUT,BUT REMAIN",
+        "BOUNDED",
+        "We finally ask how far the local mechanism propagates beyond the controlled recurrent-state analy-"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 718,
+      "before_end_exclusive": 723,
+      "after_start": 721,
+      "after_end_exclusive": 726,
+      "before": [
+        "We additionally evaluate external transfer on the official A VeriTeC development set (Schlichtkrull",
+        "et al., 2023) using a common 462-example three-label gold-evidence cohort. This experiment is",
+        "available at 130M, 370M, and 1.4B only. The selected-versus-control intervention produces small",
+        "positive correct-class margin shifts at 130M (2.31×10 −4,d z = 0.120) and 370M (4.56×10 −5,",
+        "dz = 0.106); both positive-transfer hypotheses are supported under their frozen prospective family."
+      ],
+      "after": [
+        "We additionally evaluate external transfer on the official A VeriTeC development set (?) using a com-",
+        "mon 462-example three-label gold-evidence cohort. This experiment is available at 130M, 370M,",
+        "and 1.4B only. The selected-versus-control intervention produces small positive correct-class margin",
+        "shifts at 130M (2.31×10 −4,d z = 0.120) and 370M (4.56×10 −5,d z = 0.106); both positive-",
+        "transfer hypotheses are supported under their frozen prospective family."
+      ],
+      "before_context": [
+        "PP5 replacement shifts the downstream task margin and tracks the local functional readout across",
+        "pairs, as established in Sec. 3.1. The effect is primarily margin-level rather than a discrete prediction",
+        "improvement.",
+        "At 1.4B, the point estimate changes sign to−7.85×10 −5, but the pre-specified one-sided negative",
+        "test does not pass the alpha gate (p= 0.0757). We therefore do not claim an established external",
+        "sign reversal. The 1.4B intervention also changes no argmax predictions among the 462 examples,"
+      ],
+      "after_context": [
+        "PP5 replacement shifts the downstream task margin and tracks the local functional readout across",
+        "pairs, as established in Sec. 3.1. The effect is primarily margin-level rather than a discrete prediction",
+        "improvement.",
+        "At 1.4B, the point estimate changes sign to−7.85×10 −5, but the pre-specified one-sided negative",
+        "test does not pass the alpha gate (p= 0.0757). We therefore do not claim an established external",
+        "sign reversal. The 1.4B intervention also changes no argmax predictions among the 462 examples,"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 730,
+      "before_end_exclusive": 733,
+      "after_start": 733,
+      "after_end_exclusive": 734,
+      "before": [
+        "correction. The most stable finding remains mechanistic:causal-role recurrence persists more",
+        "reliably across scale than either its geometric realization or its objective-conditioned functional",
+        "consequences."
+      ],
+      "after": [
+        "correction."
+      ],
+      "before_context": [
+        "The external evidence therefore supports a bounded conclusion. The native-state intervention can",
+        "propagate to continuous task and natural-language decision margins, but the available evidence does",
+        "not establish uniform behavioral improvement, scale-invariant external transfer, or benchmark-level",
+        "6",
+        "PAGE 7",
+        "324"
+      ],
+      "after_context": [
+        "The external evidence therefore supports a bounded conclusion. The native-state intervention can",
+        "propagate to continuous task and natural-language decision margins, but the available evidence does",
+        "not establish uniform behavioral improvement, scale-invariant external transfer, or benchmark-level",
+        "6",
+        "PAGE 7",
+        "324"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 800,
+      "before_end_exclusive": 800,
+      "after_start": 801,
+      "after_end_exclusive": 802,
+      "before": [],
+      "after": [
+        "0.006"
+      ],
+      "before_context": [
+        "0.000",
+        "0.002",
+        "0.004",
+        "130M",
+        "370M",
+        "790M"
+      ],
+      "after_context": [
+        "0.000",
+        "0.002",
+        "0.004",
+        "130M",
+        "370M",
+        "790M"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 825,
+      "before_end_exclusive": 826,
+      "after_start": 827,
+      "after_end_exclusive": 828,
+      "before": [
+        "Separate y-scales preserve raw units. Bars are frozen means; signs are shown explicitly."
+      ],
+      "after": [
+        "Separate y-scales; bars and signs are point means, whiskers are percentile 95% pair intervals."
+      ],
+      "before_context": [
+        "-",
+        "+",
+        "+",
+        "C",
+        "Opposite aggregate signs do not imply rowwise inversion",
+        "130M"
+      ],
+      "after_context": [
+        "-",
+        "+",
+        "+",
+        "C",
+        "Pair-level associations remain mixed",
+        "130M"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 827,
+      "before_end_exclusive": 828,
+      "after_start": 829,
+      "after_end_exclusive": 830,
+      "before": [
+        "Opposite aggregate signs do not imply rowwise inversion"
+      ],
+      "after": [
+        "Pair-level associations remain mixed"
+      ],
+      "before_context": [
+        "+",
+        "Separate y-scales preserve raw units. Bars are frozen means; signs are shown explicitly.",
+        "C",
+        "130M",
+        "370M",
+        "790M"
+      ],
+      "after_context": [
+        "+",
+        "Separate y-scales; bars and signs are point means, whiskers are percentile 95% pair intervals.",
+        "C",
+        "130M",
+        "370M",
+        "790M"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 852,
+      "before_end_exclusive": 856,
+      "after_start": 854,
+      "after_end_exclusive": 859,
+      "before": [
+        "Figure 4: Objective-conditioned readouts of fixed scale-local contrasts. The structured downstream",
+        "objective and pretrained next-token objective have opposite aggregate signs at every sampled scale,",
+        "but pair-level associations show that this is not a simple rowwise inversion. The complete five-scale",
+        "display is descriptive; prospective chronology is reported in Appendix A.6."
+      ],
+      "after": [
+        "Figure 4: Objective-conditioned readouts of fixed scale-local contrasts. Bars are frozen point means;",
+        "whiskers are percentile 95% pair-resampling intervals. Point-estimate aggregate orientations differ",
+        "across objectives at all five scales, but the two smallest-magnitude cells lack individual sign stability.",
+        "Pair-level associations exclude simple rowwise inversion. This five-scale display is descriptive;",
+        "chronology is in Appendix A.6."
+      ],
+      "before_context": [
+        "0.4567",
+        "0.5733",
+        "All five scales are shown descriptively; the 130M LM cell is the later completeness extension (Appendix A.6).",
+        "4 METHODS",
+        "Design and native geometry.We analyze fixed pretrained Mamba-1 backbones at 130M, 370M,",
+        "790M, 1.4B, and 2.8B parameters. Native principal planes and selected/control components are"
+      ],
+      "after_context": [
+        "0.4567",
+        "0.5733",
+        "All five scales are shown descriptively; the 130M LM cell is the later completeness extension (Appendix A.6).",
+        "4 METHODS",
+        "Design and native geometry.We analyze fixed pretrained Mamba-1 backbones from 130M to",
+        "2.8B. Principal planes and selected/control components are reconstructed within each scale, so plane"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 857,
+      "before_end_exclusive": 878,
+      "after_start": 860,
+      "after_end_exclusive": 879,
+      "before": [
+        "Design and native geometry.We analyze fixed pretrained Mamba-1 backbones at 130M, 370M,",
+        "790M, 1.4B, and 2.8B parameters. Native principal planes and selected/control components are",
+        "reconstructed independently within each scale, so plane numbers have only local identity. Geometry",
+        "and control selection use native Mamba activations without downstream task responses, logits, or",
+        "gradients from the held-out intervention population.",
+        "For the coordinate-insensitive comparison, each scale contributes the frozen 300-row",
+        "alignment_delta_hmatrix for XG2 and XG4. Rows are normalized to unit norm, givingU s;",
+        "the sample Gram isK s =U sU ⊤",
+        "s . We center each Gram and compute linear CKA as the normalized",
+        "Frobenius inner product between two centered Grams. The strict upper triangles of the uncentered",
+        "cosine Grams provide the secondary cosine-RSM Pearson comparison. All values were computed",
+        "in the separately frozen static analysis and are only transcribed into the paper; no statistic is re-",
+        "computed by the figure builder. Exact provenance and the historical scalar geometry measurements",
+        "appear in Appendix A.2.",
+        "Causal establishment and recurrence.The 130M component was established on successive dis-",
+        "joint 300-pair XG1 holdouts through transport, response-independent specificity, matched neces-",
+        "sity, and restoration sufficiency. Later scales use independently reconstructed geometry and fresh",
+        "confirmation populations. All five causal tests share the scale-local contrastQ selected restored −",
+        "Qmatched control, while retaining their original inferential families. Exact endpoints, populations,",
+        "and the 370M historical residual caveat appear in Appendix A.3–A.4; no cross-scale inferential",
+        "family or magnitude scaling is asserted."
+      ],
+      "after": [
+        "Design and native geometry.We analyze fixed pretrained Mamba-1 backbones from 130M to",
+        "2.8B. Principal planes and selected/control components are reconstructed within each scale, so plane",
+        "numbers have only local identity. Geometry and control selection use native activations without",
+        "downstream task responses, logits, or gradients from the held-out intervention population.",
+        "Each scale supplies frozen 300-row XG2/XG4alignment_delta_hmatrices. Row-normalized",
+        "vectors give sample GramsK s =U sU ⊤",
+        "s ; normalized Frobenius products of centered Grams give",
+        "linear CKA, while Pearson correlation of the strict upper cosine-Gram triangles gives secondary",
+        "cosine-RSM. These frozen static values are transcribed without figure-builder recomputation; prove-",
+        "nance and scalar measurements are in Appendix A.2.",
+        "Causal establishment and recurrence.The 130M component was established on disjoint 300-",
+        "pair XG1 holdouts through transport, response-independent specificity, matched necessity, and",
+        "restoration. Later scales use independent geometry and fresh confirmations. All five retain their orig-",
+        "inal inferential families under the common scale-local contrastQ selected restored −Q matched control;",
+        "Appendix A.3–A.4 gives endpoints, populations, and the 370M residual caveat. No cross-scale",
+        "inferential family or magnitude scaling is asserted.",
+        "Task-functional readout.The separately trained structured downstream model supplies a correct-",
+        "class task margin. At each frozen native state, its local gradient defines∆L i =g ⊤",
+        "i (csel,i −c ctrl,i)."
+      ],
+      "before_context": [
+        "but pair-level associations show that this is not a simple rowwise inversion. The complete five-scale",
+        "display is descriptive; prospective chronology is reported in Appendix A.6.",
+        "4 METHODS",
+        "7",
+        "PAGE 8",
+        "378"
+      ],
+      "after_context": [
+        "Pair-level associations exclude simple rowwise inversion. This five-scale display is descriptive;",
+        "chronology is in Appendix A.6.",
+        "4 METHODS",
+        "7",
+        "PAGE 8",
+        "378"
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 935,
+      "before_end_exclusive": 938,
+      "after_start": 936,
+      "after_end_exclusive": 936,
+      "before": [
+        "Task-functional readout.The separately trained structured downstream model supplies a correct-",
+        "class task margin. At each frozen native state, its local gradient defines∆L i =g ⊤",
+        "i (csel,i −c ctrl,i)."
+      ],
+      "after": [],
+      "before_context": [
+        "430",
+        "431",
+        "Under review as a conference paper at ICLR 2027",
+        "Selected and control components have numerically equal norms. The frozen branch-ownership con-",
+        "vention gives∆L forward = 2∆Lowned, preserving signs and correlations. The exact algebraic de-",
+        "composition is reported in Appendix A.5."
+      ],
+      "after_context": [
+        "430",
+        "431",
+        "Under review as a conference paper at ICLR 2027",
+        "Selected and control components have numerically equal norms. The frozen branch-ownership con-",
+        "vention gives∆L forward = 2∆Lowned, preserving signs and correlations. The exact algebraic de-",
+        "composition is reported in Appendix A.5."
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 946,
+      "before_end_exclusive": 952,
+      "after_start": 944,
+      "after_end_exclusive": 949,
+      "before": [
+        "Behavior, external transfer, and inference.At 130M, restoration and control are compared on",
+        "a continuous downstream task margin. External transfer uses the fixed compatible three-label",
+        "A VeriTeC development subset (N= 462) at 130M, 370M, and 1.4B. The 130M/370M positive",
+        "tests form one frozen family; the later 1.4B negative-sign test is separate. We do not pool them into",
+        "a new inferential family or estimate a cross-scale zero crossing. Full serialization, tokenizer, and",
+        "inferential details appear in Appendix A.7."
+      ],
+      "after": [
+        "Behavior, external transfer, and inference.At 130M, restoration and control are compared on a",
+        "continuous task margin. External transfer uses the fixed three-label A VeriTeC subset (N= 462) at",
+        "130M, 370M, and 1.4B. The 130M/370M positive tests form one frozen family; the later 1.4B neg-",
+        "ative test is separate. We neither pool them nor estimate a cross-scale zero crossing (Appendix A.8",
+        "gives serialization, tokenizer, and inference details)."
+      ],
+      "before_context": [
+        "prospective control covers 370M–2.8B; the already-studied 130M cell was completed later under",
+        "a separate frozen extension. The five-scale display and pair-level associations are descriptive (Ap-",
+        "pendix A.6).",
+        "5 DISCUSSION",
+        "The main result is a separation between recurrence of causal role and recurrence of geometry. A",
+        "matched scale-local selected-restored versus control effect is supported at all five Mamba-1 sizes,"
+      ],
+      "after_context": [
+        "prospective control covers 370M–2.8B; the already-studied 130M cell was completed later under",
+        "a separate frozen extension. The five-scale display and pair-level associations are descriptive (Ap-",
+        "pendix A.6).",
+        "5 DISCUSSION",
+        "The matched scale-local causal role recurs at all five Mamba-1 sizes, while response-blind alignment",
+        "geometry is only partially conserved under centered linear CKA; secondary cosine-RSM agrees. The"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 953,
+      "before_end_exclusive": 964,
+      "after_start": 950,
+      "after_end_exclusive": 959,
+      "before": [
+        "The main result is a separation between recurrence of causal role and recurrence of geometry. A",
+        "matched scale-local selected-restored versus control effect is supported at all five Mamba-1 sizes,",
+        "but the response-blind alignment geometry is only partially conserved under centered linear CKA.",
+        "The secondary cosine-RSM comparison agrees. Thus the recurrent object is an interventional role",
+        "reconstructed within each model, not a universal direction, plane number, or invariant sample geom-",
+        "etry.",
+        "Functional use separates again. The downstream task readout changes aggregate sign across the",
+        "sampled scales, and reading the same native contrasts under the pretrained next-token objective",
+        "produces the opposite aggregate orientation at every size in the complete descriptive set. Mixed",
+        "pair-level associations rule out interpreting this as a trivial rowwise sign flip. We call this objective-",
+        "conditioned functionalization."
+      ],
+      "after": [
+        "The matched scale-local causal role recurs at all five Mamba-1 sizes, while response-blind alignment",
+        "geometry is only partially conserved under centered linear CKA; secondary cosine-RSM agrees. The",
+        "recurrent object is thus a model-local interventional role, not a universal direction, plane number, or",
+        "invariant sample geometry.",
+        "The task readout changes point-estimate aggregate sign across scales. Under the pretrained next-",
+        "token objective, the same native contrasts have a different point-estimate aggregate orientation at all",
+        "five sizes, while pair-resampling intervals cross zero for the two smallest-magnitude cells. Mixed",
+        "pair-level associations rule out simple rowwise inversion. We call this objective-conditioned func-",
+        "tionalization."
+      ],
+      "before_context": [
+        "a new inferential family or estimate a cross-scale zero crossing. Full serialization, tokenizer, and",
+        "inferential details appear in Appendix A.7.",
+        "5 DISCUSSION",
+        "The intervention also propagates beyond the local readout: restoration at 130M reaches a continuous",
+        "task margin, and positive external margin transfer is supported at 130M and 370M. The 1.4B external",
+        "point estimate is negative but misses its prospective inferential gate. These experiments therefore"
+      ],
+      "after_context": [
+        "ative test is separate. We neither pool them nor estimate a cross-scale zero crossing (Appendix A.8",
+        "gives serialization, tokenizer, and inference details).",
+        "5 DISCUSSION",
+        "The intervention also propagates beyond the local readout: restoration at 130M reaches a continuous",
+        "task margin, and positive external margin transfer is supported at 130M and 370M. The 1.4B external",
+        "point estimate is negative but misses its prospective inferential gate. These experiments therefore"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 968,
+      "before_end_exclusive": 975,
+      "after_start": 963,
+      "after_end_exclusive": 969,
+      "before": [
+        "Several limits remain important. Five fixed checkpoints do not establish a continuous scaling",
+        "law. The coordinate-free analysis characterizes the frozen response-blind alignment geometry, not",
+        "arbitrary-linear equivalence of complete hidden representations. The 130M geometry reconstruc-",
+        "tion predates the homogeneous larger-scale bridge, the pretrained-LM 130M cell is a later com-",
+        "pleteness extension, and external transfer covers only three sizes. Within these bounds,causal-role",
+        "recurrence does not imply geometric invariance, and neither implies objective-independent",
+        "functional meaning."
+      ],
+      "after": [
+        "Five fixed checkpoints do not establish a continuous scaling law, and the coordinate-free result con-",
+        "cerns frozen response-blind alignment geometry rather than arbitrary-linear equivalence of complete",
+        "hidden states. The 130M geometry predates the homogeneous larger-scale bridge; its pretrained-LM",
+        "cell is a later completeness extension, and external transfer covers three sizes. Within these bounds,",
+        "causal-role recurrence does not imply geometric invariance, and neither implies objective-",
+        "independent functional meaning."
+      ],
+      "before_context": [
+        "task margin, and positive external margin transfer is supported at 130M and 370M. The 1.4B external",
+        "point estimate is negative but misses its prospective inferential gate. These experiments therefore",
+        "bound, rather than broaden, the mechanistic claim.",
+        "REPRODUCIBILITY STATEMENT",
+        "Frozen revisions, populations, sites, statistics, and figure sources are specified in the appendix.",
+        "AIUSE STATEMENT"
+      ],
+      "after_context": [
+        "task margin, and positive external margin transfer is supported at 130M and 370M. The 1.4B external",
+        "point estimate is negative but misses its prospective inferential gate. These experiments therefore",
+        "bound, rather than broaden, the mechanistic claim.",
+        "REPRODUCIBILITY STATEMENT",
+        "Frozen revisions, populations, sites, statistics, and figure sources are specified in the appendix.",
+        "AIUSE STATEMENT"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 978,
+      "before_end_exclusive": 982,
+      "after_start": 972,
+      "after_end_exclusive": 975,
+      "before": [
+        "Generative AI assisted research workflow orchestration, coding and debugging, artifact inspection,",
+        "figure and manuscript implementation, and drafting and editing. Human authors retained responsi-",
+        "bility for the scientific questions, experimental design, result verification, citations, and final inter-",
+        "pretation."
+      ],
+      "after": [
+        "Generative AI tools assisted experimental planning, code development and debugging, artifact verifi-",
+        "cation, figure preparation, and manuscript drafting and editing. The authors reviewed all AI-assisted",
+        "outputs and take responsibility for the final methods, results, citations, and claims."
+      ],
+      "before_context": [
+        "REPRODUCIBILITY STATEMENT",
+        "Frozen revisions, populations, sites, statistics, and figure sources are specified in the appendix.",
+        "AIUSE STATEMENT",
+        "8",
+        "PAGE 9",
+        "432"
+      ],
+      "after_context": [
+        "REPRODUCIBILITY STATEMENT",
+        "Frozen revisions, populations, sites, statistics, and figure sources are specified in the appendix.",
+        "AIUSE STATEMENT",
+        "8",
+        "PAGE 9",
+        "432"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 1039,
+      "before_end_exclusive": 1086,
+      "after_start": 1032,
+      "after_end_exclusive": 1082,
+      "before": [
+        "REFERENCES",
+        "Laure Ciernik, Lorenz Linhardt, Marco Morik, Jonas Dippel, Simon Kornblith, and Lukas Mutten-",
+        "thaler. Objective drives the consistency of representational similarity across datasets. InProceed-",
+        "ings of the 42nd International Conference on Machine Learning, volume 267 ofProceedings of",
+        "Machine Learning Research, pp. 10920–10948, 2025. URLhttps://proceedings.mlr.",
+        "press/v267/ciernik25a.html.",
+        "Damai Dai, Li Dong, Yaru Hao, Zhifang Sui, Baobao Chang, and Furu Wei. Knowledge neurons",
+        "in pretrained transformers. InProceedings of the 60th Annual Meeting of the Association for",
+        "Computational Linguistics, pp. 8493–8502, 2022. doi: 10.18653/v1/2022.acl-long.581. URL",
+        "https://aclanthology.org/2022.acl-long.581/.",
+        "Danielle Ensign and Adrià Garriga-Alonso. Investigating the indirect object identification circuit in",
+        "Mamba, 2024. URLhttps://arxiv.org/abs/2407.14008.",
+        "Atticus Geiger, Duligur Ibeling, Amir Zur, Maheep Chaudhary, Sonakshi Chauhan, Jing Huang,",
+        "Aryaman Arora, Zhengxuan Wu, Noah Goodman, Christopher Potts, and Thomas Icard. Causal",
+        "abstraction: A theoretical foundation for mechanistic interpretability, 2023. URLhttps://ar",
+        "xiv.org/abs/2301.04709.",
+        "Albert Gu and Tri Dao. Mamba: Linear-time sequence modeling with selective state spaces. In",
+        "Proceedings of the First Conference on Language Modeling, 2024. URLhttps://openrevi",
+        "ew.net/forum?id=tEYskw1VY2.",
+        "Minyoung Huh, Brian Cheung, Tongzhou Wang, and Phillip Isola. Position: The platonic repre-",
+        "sentation hypothesis. InProceedings of the 41st International Conference on Machine Learn-",
+        "ing, volume 235 ofProceedings of Machine Learning Research, pp. 20617–20642, 2024. URL",
+        "https://proceedings.mlr.press/v235/huh24a.html.",
+        "Simon Kornblith, Mohammad Norouzi, Honglak Lee, and Geoffrey Hinton. Similarity of neural",
+        "network representations revisited. InProceedings of the 36th International Conference on Ma-",
+        "chine Learning, volume 97 ofProceedings of Machine Learning Research, pp. 3519–3529, 2019.",
+        "URLhttps://proceedings.mlr.press/v97/kornblith19a.html.",
+        "Kevin Meng, David Bau, Alex Andonian, and Yonatan Belinkov. Locating and editing factual",
+        "associations in GPT. InAdvances in Neural Information Processing Systems, 2022. URLhttp",
+        "s://proceedings.neurips.cc/paper_files/paper/2022/hash/6f1d43d5a",
+        "82a37e89b0665b33bf3a182-Abstract-Conference.html.",
+        "Vamshi Sunku Mohan, Kaustubh Gupta, Aneesha Das, and Chandan Singh. Interpreting and steering",
+        "state-space models via activation subspace bottlenecks. InInternational Conference on Machine",
+        "Learning, 2026. URLhttps://arxiv.org/abs/2602.22719.",
+        "Kiho Park, Yo Joong Choe, and Victor Veitch. The linear representation hypothesis and the geom-",
+        "etry of large language models. InProceedings of the 41st International Conference on Machine",
+        "Learning, volume 235 ofProceedings of Machine Learning Research, pp. 39643–39666, 2024.",
+        "URLhttps://proceedings.mlr.press/v235/park24c.html.",
+        "Michael Schlichtkrull, Zhijiang Guo, and Andreas Vlachos. A VeriTeC: A dataset for real-world",
+        "claim verification with evidence from the web. InAdvances in Neural Information Processing",
+        "Systems: Datasets and Benchmarks Track, 2023. URLhttps://proceedings.neurip",
+        "s.cc/paper_files/paper/2023/hash/cd86a30526cd1aff61d6f89f107634e",
+        "4-Abstract-Datasets_and_Benchmarks.html.",
+        "Junxuan Wang, Xuyang Ge, Wentao Shu, Qiong Tang, Yunhua Zhou, Zhengfu He, and Xipeng Qiu.",
+        "Towards universality: Studying mechanistic similarity across language model architectures. In",
+        "International Conference on Learning Representations, 2025. URLhttps://openreview",
+        ".net/forum?id=2J18i8T0oI."
+      ],
+      "after": [
+        "A REPRODUCIBILITY DETAILS",
+        "This appendix records the frozen experimental results and static robustness analyses. Figure source",
+        "classes are mapped in Appendix A.9. No additional model execution is involved; Appendix A.7",
+        "reports CPU-only resampling analyses of already frozen artifacts.",
+        "A.1 MODEL IDENTITIES,SITES,AND POPULATIONS",
+        "The five pretrained backbones are from thestate-spaces/Hugging Face repositories shown in",
+        "Table 1. Full revisions in scale order are40e5d2bd7452abb3ca8fadbafe9131ee0e2c",
+        "2f37,589179554943157be31701edd8b4558889276674,9822dd4b76af2bd909",
+        "9b6ce2f19efd8329189a7e,6e46eae61c27280517feef46f536d16b91076f08,",
+        "and96c48e0292b63f5346b6d30061af2551f7101e26. The broader study covered five",
+        "scales before the pretrained-LM control. Its initial prospective plan instantiated 370M–2.8B; the",
+        "already-studied 130M cell was later frozen and completed as a separate extension. The five-scale",
+        "LM vector is descriptive, not one prospective inferential family.",
+        "Table 1: Frozen backbone identities and functional-readout cohorts. Each cohort has 300 pairs with",
+        "two cells per pair. The layer is the mixer intervention layer.",
+        "Scale Repository suffix Revision prefix Layer XG1 pairs",
+        "130M mamba-130m-hf 40e5d2bd7452 17 2701–3000",
+        "370M mamba-370m-hf 589179554943 35 4801–5100",
+        "790M mamba-790m-hf 9822dd4b76af 35 7501–7800",
+        "1.4B mamba-1.4b-hf 6e46eae61c27 35 4801–5100",
+        "2.8B mamba-2.8b-hf 96c48e0292b6 47 6601–6900",
+        "The larger-scale source-block, target-residual, and intervention-layer triplets are(33,34,35)for",
+        "370M–1.4B and(45,46,47)for 2.8B. At 130M the intervention is at layer 17. The frozen target",
+        "position is the absolute event anchor plus offset 2, withA_IDENTITYat 130M. The pretrained-LM",
+        "measurement reuses each task-readout row, its tokenization, and its target index; both token posi-",
+        "tionstandt+1must be active. The frozen protocol fails closed rather than dropping a token-invalid",
+        "row. At the mixerin_proj, the native content branch is replaced by an equal-valued differentiable",
+        "leaf while the gate branch is preserved.",
+        "The structured downstream task model is a separately trained three-way evidence-entitlement model",
+        "used for the local correct-class margin. The 130M downstream model is the seed-181, selected-",
+        "epoch-19 checkpoint. Each larger scale uses its corresponding frozen downstream checkpoint. The",
+        "frozen 130M, 790M, 1.4B, and 2.8B training reports identify the frozen Mamba encoder, seed 181,",
+        "pair-group split seed 8192, 2,880 expected clean training rows, clean-development checkpoint se-",
+        "lection, and no external data used for training. Their selected epochs are 19, 20, 20, and 20 re-",
+        "spectively. The 370M checkpoint is identified separately by its compact checkpoint manifest; these",
+        "training-report details are not inferred for it. Under the frozen branch-ownership convention the",
+        "owned local derivative is one half of the forward-equivalent derivative:∆L forward = 2∆L owned.",
+        "This conversion preserves sign, rank, and correlation. The pretrained-LM control loads the pinned",
+        "causal LM directly, without a downstream task checkpoint, router, or task head.",
+        "A.2 NATIVE GEOMETRY AND INTERVENTION",
+        "XG2/XG4 response-free directions define independent native geometry within each model’s strong-",
+        "channel mask. Geometry preparation uses Mamba-side activations without XG1 response access,",
+        "downstream task logits or gradients, or backward passes. The inputs belong to the controlled re-",
+        "search families and therefore do not characterize all natural language.",
+        "The historical scalar geometry measurements remain useful supporting evidence. Fork j =",
+        "conv_weight[j,0,lag0],µ k2 = mean j k2",
+        "j andstrong ={j:k 2",
+        "j > µ k2 }. At 130M,",
+        "µk2 = 0.027899337798707836, 395 of 1536 channels are strong, and the response-blind projec-",
+        "tor reconstruction has leading positive eigenvalueλ 1 = 0.8706181418918275. The later matched"
+      ],
+      "before_context": [
+        "484",
+        "485",
+        "Under review as a conference paper at ICLR 2027",
+        "9",
+        "PAGE 10",
+        "486"
+      ],
+      "after_context": [
+        "484",
+        "485",
+        "Under review as a conference paper at ICLR 2027",
+        "9",
+        "PAGE 10",
+        "486"
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 1143,
+      "before_end_exclusive": 1192,
+      "after_start": 1139,
+      "after_end_exclusive": 1139,
+      "before": [
+        "A REPRODUCIBILITY DETAILS",
+        "This appendix transcribes the frozen experimental records. Figure source classes are mapped in",
+        "Appendix A.8. No new model execution or statistical tests are involved.",
+        "A.1 MODEL IDENTITIES,SITES,AND POPULATIONS",
+        "The five pretrained backbones are from thestate-spaces/Hugging Face repositories shown in",
+        "Table 1. Full revisions in scale order are40e5d2bd7452abb3ca8fadbafe9131ee0e2c",
+        "2f37,589179554943157be31701edd8b4558889276674,9822dd4b76af2bd909",
+        "9b6ce2f19efd8329189a7e,6e46eae61c27280517feef46f536d16b91076f08,",
+        "and96c48e0292b63f5346b6d30061af2551f7101e26. The broader study covered five",
+        "scales before the pretrained-LM control. Its initial prospective plan instantiated 370M–2.8B; the",
+        "already-studied 130M cell was later frozen and completed as a separate extension. The five-scale",
+        "LM vector is descriptive, not one prospective inferential family.",
+        "Table 1: Frozen backbone identities and functional-readout cohorts. Each cohort has 300 pairs with",
+        "two cells per pair. The layer is the mixer intervention layer.",
+        "Scale Repository suffix Revision prefix Layer XG1 pairs",
+        "130M mamba-130m-hf 40e5d2bd7452 17 2701–3000",
+        "370M mamba-370m-hf 589179554943 35 4801–5100",
+        "790M mamba-790m-hf 9822dd4b76af 35 7501–7800",
+        "1.4B mamba-1.4b-hf 6e46eae61c27 35 4801–5100",
+        "2.8B mamba-2.8b-hf 96c48e0292b6 47 6601–6900",
+        "The larger-scale source-block, target-residual, and intervention-layer triplets are(33,34,35)for",
+        "370M–1.4B and(45,46,47)for 2.8B. At 130M the intervention is at layer 17. The frozen target",
+        "position is the absolute event anchor plus offset 2, withA_IDENTITYat 130M. The pretrained-LM",
+        "measurement reuses each task-readout row, its tokenization, and its target index; both token posi-",
+        "tionstandt+1must be active. The frozen protocol fails closed rather than dropping a token-invalid",
+        "row. At the mixerin_proj, the native content branch is replaced by an equal-valued differentiable",
+        "leaf while the gate branch is preserved.",
+        "The structured downstream task model is a separately trained three-way evidence-entitlement model",
+        "used for the local correct-class margin. The 130M downstream model is the seed-181, selected-",
+        "epoch-19 checkpoint. Each larger scale uses its corresponding frozen downstream checkpoint. The",
+        "frozen 130M, 790M, 1.4B, and 2.8B training reports identify the frozen Mamba encoder, seed 181,",
+        "pair-group split seed 8192, 2,880 expected clean training rows, clean-development checkpoint se-",
+        "lection, and no external data used for training. Their selected epochs are 19, 20, 20, and 20 re-",
+        "spectively. The 370M checkpoint is identified separately by its compact checkpoint manifest; these",
+        "training-report details are not inferred for it. Under the frozen branch-ownership convention the",
+        "owned local derivative is one half of the forward-equivalent derivative:∆L forward = 2∆L owned.",
+        "This conversion preserves sign, rank, and correlation. The pretrained-LM control loads the pinned",
+        "causal LM directly, without a downstream task checkpoint, router, or task head.",
+        "A.2 NATIVE GEOMETRY AND INTERVENTION",
+        "XG2/XG4 response-free directions define independent native geometry within each model’s strong-",
+        "channel mask. Geometry preparation uses Mamba-side activations without XG1 response access,",
+        "downstream task logits or gradients, or backward passes. The inputs belong to the controlled re-",
+        "search families and therefore do not characterize all natural language.",
+        "The historical scalar geometry measurements remain useful supporting evidence. Fork j =",
+        "conv_weight[j,0,lag0],µ k2 = mean j k2",
+        "j andstrong ={j:k 2",
+        "j > µ k2 }. At 130M,",
+        "µk2 = 0.027899337798707836, 395 of 1536 channels are strong, and the response-blind projec-",
+        "tor reconstruction has leading positive eigenvalueλ 1 = 0.8706181418918275. The later matched"
+      ],
+      "after": [],
+      "before_context": [
+        "538",
+        "539",
+        "Under review as a conference paper at ICLR 2027",
+        "370M–2.8B scalar series is reported in Appendix A.4. These measurements are no longer the main",
+        "evidence for cross-scale geometric non-invariance.",
+        "10"
+      ],
+      "after_context": [
+        "538",
+        "539",
+        "Under review as a conference paper at ICLR 2027",
+        "370M–2.8B scalar series is reported in Appendix A.4. These measurements are no longer the main",
+        "evidence for cross-scale geometric non-invariance.",
+        "The primary coordinate-insensitive comparison uses the already frozenalignment_delta_h"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 1194,
+      "before_end_exclusive": 1194,
+      "after_start": 1141,
+      "after_end_exclusive": 1190,
+      "before": [],
+      "after": [
+        "The primary coordinate-insensitive comparison uses the already frozenalignment_delta_h",
+        "matrices. For each scalesand family, letD s ∈R 300×ds contain the 300 ordered pair vectors and",
+        "row-normalize it toU s. Define",
+        "Ks =U sU ⊤",
+        "s , H=I− 1",
+        "300 11⊤, eKs =HK sH.",
+        "For scaless, t, centered linear CKA is",
+        "CKA(s, t) = ⟨ eKs, eKt⟩F",
+        "∥ eKs∥F ∥ eKt∥F",
+        ".",
+        "XG2 and XG4 are analyzed independently. Every scale uses the same ordered source-pair IDs 301–",
+        "600 within its family. The 130M matrices have historical provenance; 370M–2.8B come from the",
+        "later homogeneous geometry-preparation series. No model forward, tokenizer, training, evaluation,",
+        "backward pass, permutation test, threshold, or scaling-law fit is involved in this static comparison.",
+        "Table 2: Frozen coordinate-insensitive pairwise geometry. CKA is the primary centered-linear",
+        "comparison. RSM is the secondary Pearson correlation between strict upper triangles of the row-",
+        "normalized cosine Gram matrices. Values are descriptive.",
+        "Scale pair XG2 CKA XG4 CKA XG2 RSM XG4 RSM",
+        "130M–370M .742546 .542295 .716312 .509857",
+        "130M–790M .435747 .451862 .398941 .431574",
+        "130M–1.4B .342510 .481304 .295730 .452640",
+        "130M–2.8B .555414 .544277 .522254 .511619",
+        "370M–790M .564059 .558569 .541258 .533989",
+        "370M–1.4B .504483 .436834 .474489 .403381",
+        "370M–2.8B .649344 .590983 .634246 .545762",
+        "790M–1.4B .663678 .444332 .640851 .412623",
+        "790M–2.8B .639963 .392717 .620152 .337620",
+        "1.4B–2.8B .532185 .455698 .504037 .382808",
+        "Linear CKA is insensitive to orthogonal feature rotations and isotropic scaling, but not to arbitrary",
+        "invertible transformations. The result therefore establishes non-invariance of this response-blind",
+        "alignment geometry under the stated comparison, not global non-equivalence of complete hidden-",
+        "state representations.",
+        "For a unit directionw, local susceptibility is",
+        "Ji(w) = Fi(+ϵ;w)−F i(−ϵ;w)",
+        "2ϵ , ϵ= 0.025.(1)",
+        "At 130M, the projector-contrast contribution of planekisC k(i) =s k[Ji(Pk+)2 −J i(Pk−)2]/5.",
+        "The broader XG2-versus-XG4 endpoint isQ i(c) =E XG2(i, c)−E XG4(i, c), where eachEis the",
+        "mean squared susceptibility over its five frozen directions under conditionc. XG1 outcomes do not",
+        "refit the basis.",
+        "A.3 PROSPECTIVE130MCAUSAL CHAIN",
+        "Static XG2/XG4 localization selected P3 before XG1 response inspection. P5 was frozen indepen-",
+        "dently as the maximum-projector-separation geometric control. Four disjoint 300-pair XG1 holdouts",
+        "tested the distinct endpoints in Table 3. Every directional hypothesis was frozen before its population",
+        "was opened.",
+        "For restoration, from native statehand P3 componentc 3,B=h−c 3,R 3 =B+c 3 =h, andR 5 =",
+        "B+c 5. The P5 replacement uses the same P3-derived coefficients, so additions are norm matched.",
+        "The result is local restoration relative to the control, not global behavioral sufficiency. Later P3-",
+        "excluded residual-template transport and residual necessity/restoration studies are documented in",
+        "the frozen causal synthesis and did not redefine P3. The historical restoration-sufficiency endpoint"
+      ],
+      "before_context": [
+        "tor reconstruction has leading positive eigenvalueλ 1 = 0.8706181418918275. The later matched",
+        "370M–2.8B scalar series is reported in Appendix A.4. These measurements are no longer the main",
+        "evidence for cross-scale geometric non-invariance.",
+        "10",
+        "PAGE 11",
+        "540"
+      ],
+      "after_context": [
+        "Under review as a conference paper at ICLR 2027",
+        "370M–2.8B scalar series is reported in Appendix A.4. These measurements are no longer the main",
+        "evidence for cross-scale geometric non-invariance.",
+        "10",
+        "PAGE 11",
+        "540"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 1251,
+      "before_end_exclusive": 1300,
+      "after_start": 1247,
+      "after_end_exclusive": 1253,
+      "before": [
+        "The primary coordinate-insensitive comparison uses the already frozenalignment_delta_h",
+        "matrices. For each scalesand family, letD s ∈R 300×ds contain the 300 ordered pair vectors and",
+        "row-normalize it toU s. Define",
+        "Ks =U sU ⊤",
+        "s , H=I− 1",
+        "300 11⊤, eKs =HK sH.",
+        "For scaless, t, centered linear CKA is",
+        "CKA(s, t) = ⟨ eKs, eKt⟩F",
+        "∥ eKs∥F ∥ eKt∥F",
+        ".",
+        "XG2 and XG4 are analyzed independently. Every scale uses the same ordered source-pair IDs 301–",
+        "600 within its family. The 130M matrices have historical provenance; 370M–2.8B come from the",
+        "later homogeneous geometry-preparation series. No model forward, tokenizer, training, evaluation,",
+        "backward pass, permutation test, threshold, or scaling-law fit is involved in this static comparison.",
+        "Table 2: Frozen coordinate-insensitive pairwise geometry. CKA is the primary centered-linear",
+        "comparison. RSM is the secondary Pearson correlation between strict upper triangles of the row-",
+        "normalized cosine Gram matrices. Values are descriptive.",
+        "Scale pair XG2 CKA XG4 CKA XG2 RSM XG4 RSM",
+        "130M–370M .742546 .542295 .716312 .509857",
+        "130M–790M .435747 .451862 .398941 .431574",
+        "130M–1.4B .342510 .481304 .295730 .452640",
+        "130M–2.8B .555414 .544277 .522254 .511619",
+        "370M–790M .564059 .558569 .541258 .533989",
+        "370M–1.4B .504483 .436834 .474489 .403381",
+        "370M–2.8B .649344 .590983 .634246 .545762",
+        "790M–1.4B .663678 .444332 .640851 .412623",
+        "790M–2.8B .639963 .392717 .620152 .337620",
+        "1.4B–2.8B .532185 .455698 .504037 .382808",
+        "Linear CKA is insensitive to orthogonal feature rotations and isotropic scaling, but not to arbitrary",
+        "invertible transformations. The result therefore establishes non-invariance of this response-blind",
+        "alignment geometry under the stated comparison, not global non-equivalence of complete hidden-",
+        "state representations.",
+        "For a unit directionw, local susceptibility is",
+        "Ji(w) = Fi(+ϵ;w)−F i(−ϵ;w)",
+        "2ϵ , ϵ= 0.025.(1)",
+        "At 130M, the projector-contrast contribution of planekisC k(i) =s k[Ji(Pk+)2 −J i(Pk−)2]/5.",
+        "The broader XG2-versus-XG4 endpoint isQ i(c) =E XG2(i, c)−E XG4(i, c), where eachEis the",
+        "mean squared susceptibility over its five frozen directions under conditionc. XG1 outcomes do not",
+        "refit the basis.",
+        "A.3 PROSPECTIVE130MCAUSAL CHAIN",
+        "Static XG2/XG4 localization selected P3 before XG1 response inspection. P5 was frozen indepen-",
+        "dently as the maximum-projector-separation geometric control. Four disjoint 300-pair XG1 holdouts",
+        "tested the distinct endpoints in Table 3. Every directional hypothesis was frozen before its population",
+        "was opened.",
+        "For restoration, from native statehand P3 componentc 3,B=h−c 3,R 3 =B+c 3 =h, andR 5 =",
+        "B+c 5. The P5 replacement uses the same P3-derived coefficients, so additions are norm matched.",
+        "The result is local restoration relative to the control, not global behavioral sufficiency. Later P3-",
+        "excluded residual-template transport and residual necessity/restoration studies are documented in",
+        "the frozen causal synthesis and did not redefine P3. The historical restoration-sufficiency endpoint"
+      ],
+      "after": [
+        "Table 3: Frozen 130M paired-item tests. Endpoint magnitudes are not interchangeable effect sizes.",
+        "Test XG1 pair range Meant(299)One-sidedp",
+        "TransportC P3 001–3007.12028×10 −8 18.9741.52×10 −53",
+        "SpecificityC P3 −C P5 301–6002.30407×10 −8 7.6561.34×10 −13",
+        "NecessityQ P5 −Q P3 601–9004.74144×10 −8 23.9846.22×10 −72",
+        "RestorationQ R 3 −Q R 5 901–12004.07887×10 −8 20.1059.01×10 −58"
+      ],
+      "before_context": [
+        "592",
+        "593",
+        "Under review as a conference paper at ICLR 2027",
+        "reduces exactly to the common selected-restored versus matched-control contrast:",
+        "DSUF = (QR3 −Q B)−(Q R5 −Q B)",
+        "=Q R3 −Q R5"
+      ],
+      "after_context": [
+        "592",
+        "593",
+        "Under review as a conference paper at ICLR 2027",
+        "reduces exactly to the common selected-restored versus matched-control contrast:",
+        "DSUF = (QR3 −Q B)−(Q R5 −Q B)",
+        "=Q R3 −Q R5"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 1305,
+      "before_end_exclusive": 1305,
+      "after_start": 1258,
+      "after_end_exclusive": 1291,
+      "before": [],
+      "after": [
+        "On the separate seed-181 behavioral/readout cohortxg1_fact_2701..3000, the mean task-",
+        "margin restoration effect is0.008332191656033197. Descriptive pair-level readout–behavior as-",
+        "sociation is Pearson0.617548086733788, Spearman0.8324696941077123, and sign agreement",
+        "0.8233333333333334.",
+        "A.4 CROSS-SCALE CAUSAL CONFIRMATION AND NATIVE GEOMETRY",
+        "Selected/control ranks in ascending scale order are P3/P5, P3/P5, P2/P5, P5/P4, and P3/P5. The",
+        "historical 130MD SUF and 370MD DOM endpoints preceded the later standardizedD CORE =",
+        "Qrestored −Q control confirmations. By Eq. 2, all five share the mathematical contrast",
+        "Qselected restored −Q matched control and the sameQ=E XG2 −E XG4 semantics; selected-state",
+        "coefficients are transferred to the orthonormal control plane, matching component norms. The five",
+        "experiments share a common scale-local causal contrast while retaining distinct historical confirma-",
+        "tion protocols. Table 4 reports their own frozen values. Heterogeneous raw magnitudes do not form",
+        "a scaling series.",
+        "Table 4: Scale-local causal-role tests. Each row has a positive frozen endpoint, but the historical",
+        "370M joint residual criterion remains failed.",
+        "Scale Pair Endpoint XG1 pairs Meant(299)One-sidedp",
+        "130M P3/P5D SUF 901–12004.07887×10 −8 20.1059.01×10 −58",
+        "370M P3/P5D DOM 3301–36003.97429×10 −8 26.0563.19×10 −79",
+        "790M P2/P5D CORE 7201–75007.19308×10 −8 29.5674.65×10 −91",
+        "1.4B P5/P4D CORE 4201–45009.28285×10 −9 16.2532.62×10 −43",
+        "2.8B P3/P5D CORE 6301–66004.11599×10 −8 24.9562.22×10 −75",
+        "The 370M raw dominant-componentpwas3.19293×10 −79 and its historical Holm-adjusted value",
+        "was6.38586×10 −79. Its separate positive aggregate-residual hypothesis failed, so the pre-registered",
+        "joint qualitative-recurrence criterion remained not established. Later core confirmations do not",
+        "retroactively rescue it. The 1.4B discovery and confirmation populations were XG1 3901–4200",
+        "and 4201–4500, with residual characterization on 4501–4800.",
+        "The later matched response-blind series, ordered 370M, 790M, 1.4B, 2.8B, has",
+        "µk2 = (0.0246235,0.0238427,0.0148388,0.00985711), leading spectral concentra-",
+        "tionλ 1 = (0.967180,0.892961,0.889041,0.893226), and strong-channel fractions",
+        "(0.317383,0.317383,0.202393,0.195898). The historically reconstructed 130M values for",
+        "these two plotted quantities are given in Appendix A.2. Their mathematical definitions match, but",
+        "their provenance precedes the later bridge. There is no fitted scale law or same-numbered-plane",
+        "homology."
+      ],
+      "before_context": [
+        "=Q R3 −Q R5",
+        "=Q selected restored −Q matched control.",
+        "(2)",
+        "11",
+        "PAGE 12",
+        "594"
+      ],
+      "after_context": [
+        "=Q R3 −Q R5",
+        "=Q selected restored −Q matched control.",
+        "(2)",
+        "11",
+        "PAGE 12",
+        "594"
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 1362,
+      "before_end_exclusive": 1401,
+      "after_start": 1348,
+      "after_end_exclusive": 1348,
+      "before": [
+        "Table 3: Frozen 130M paired-item tests. Endpoint magnitudes are not interchangeable effect sizes.",
+        "Test XG1 pair range Meant(299)One-sidedp",
+        "TransportC P3 001–3007.12028×10 −8 18.9741.52×10 −53",
+        "SpecificityC P3 −C P5 301–6002.30407×10 −8 7.6561.34×10 −13",
+        "NecessityQ P5 −Q P3 601–9004.74144×10 −8 23.9846.22×10 −72",
+        "RestorationQ R 3 −Q R 5 901–12004.07887×10 −8 20.1059.01×10 −58",
+        "On the separate seed-181 behavioral/readout cohortxg1_fact_2701..3000, the mean task-",
+        "margin restoration effect is0.008332191656033197. Descriptive pair-level readout–behavior as-",
+        "sociation is Pearson0.617548086733788, Spearman0.8324696941077123, and sign agreement",
+        "0.8233333333333334.",
+        "A.4 CROSS-SCALE CAUSAL CONFIRMATION AND NATIVE GEOMETRY",
+        "Selected/control ranks in ascending scale order are P3/P5, P3/P5, P2/P5, P5/P4, and P3/P5. The",
+        "historical 130MD SUF and 370MD DOM endpoints preceded the later standardizedD CORE =",
+        "Qrestored −Q control confirmations. By Eq. 2, all five share the mathematical contrast",
+        "Qselected restored −Q matched control and the sameQ=E XG2 −E XG4 semantics; selected-state",
+        "coefficients are transferred to the orthonormal control plane, matching component norms. The five",
+        "experiments share a common scale-local causal contrast while retaining distinct historical confirma-",
+        "tion protocols. Table 4 reports their own frozen values. Heterogeneous raw magnitudes do not form",
+        "a scaling series.",
+        "Table 4: Scale-local causal-role tests. Each row has a positive frozen endpoint, but the historical",
+        "370M joint residual criterion remains failed.",
+        "Scale Pair Endpoint XG1 pairs Meant(299)One-sidedp",
+        "130M P3/P5D SUF 901–12004.07887×10 −8 20.1059.01×10 −58",
+        "370M P3/P5D DOM 3301–36003.97429×10 −8 26.0563.19×10 −79",
+        "790M P2/P5D CORE 7201–75007.19308×10 −8 29.5674.65×10 −91",
+        "1.4B P5/P4D CORE 4201–45009.28285×10 −9 16.2532.62×10 −43",
+        "2.8B P3/P5D CORE 6301–66004.11599×10 −8 24.9562.22×10 −75",
+        "The 370M raw dominant-componentpwas3.19293×10 −79 and its historical Holm-adjusted value",
+        "was6.38586×10 −79. Its separate positive aggregate-residual hypothesis failed, so the pre-registered",
+        "joint qualitative-recurrence criterion remained not established. Later core confirmations do not",
+        "retroactively rescue it. The 1.4B discovery and confirmation populations were XG1 3901–4200",
+        "and 4201–4500, with residual characterization on 4501–4800.",
+        "The later matched response-blind series, ordered 370M, 790M, 1.4B, 2.8B, has",
+        "µk2 = (0.0246235,0.0238427,0.0148388,0.00985711), leading spectral concentra-",
+        "tionλ 1 = (0.967180,0.892961,0.889041,0.893226), and strong-channel fractions",
+        "(0.317383,0.317383,0.202393,0.195898). The historically reconstructed 130M values for",
+        "these two plotted quantities are given in Appendix A.2. Their mathematical definitions match, but",
+        "their provenance precedes the later bridge. There is no fitted scale law or same-numbered-plane",
+        "homology."
+      ],
+      "after": [],
+      "before_context": [
+        "646",
+        "647",
+        "Under review as a conference paper at ICLR 2027",
+        "A.5 FULL TASK-READOUT DECOMPOSITION",
+        "The selected and control components have equal norm to numerical precision; the maximum relative",
+        "mismatch across frozen rows is about10 −15. Putu i =∥g i∥,n i =∥c i∥, andh i = cos(gi, csel,i)−"
+      ],
+      "after_context": [
+        "646",
+        "647",
+        "Under review as a conference paper at ICLR 2027",
+        "A.5 FULL TASK-READOUT DECOMPOSITION",
+        "The selected and control components have equal norm to numerical precision; the maximum relative",
+        "mismatch across frozen rows is about10 −15. Putu i =∥g i∥,n i =∥c i∥, andh i = cos(gi, csel,i)−"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 1404,
+      "before_end_exclusive": 1404,
+      "after_start": 1351,
+      "after_end_exclusive": 1393,
+      "before": [],
+      "after": [
+        "cos(gi, cctrl,i). Then∆L i =u inihi exactly, and",
+        "E[unh] =µ uµnµh +µ u Cov(n, h) +µ n Cov(u, h)",
+        "+µ h Cov(u, n) +E[(u−µ u)(n−µ n)(h−µ h)].(3)",
+        "Table 5 transcribes the frozen owned-unit components. Forward-equivalent readouts are twice these",
+        "values.",
+        "Table 5: Frozen mean angular gapµ h, mean-product baseB, and norm–gap covariance contribution",
+        "N, in owned readout units.",
+        "Scaleµ h B N",
+        "130M .008881965010493697 .001278782557357266 .000133190457109135",
+        "370M -.000802156327488121 -.000094095358107031 .000042452455047036",
+        "790M .007793196921091330 .001040616136353141 -.000068706620106335",
+        "1.4B -.009643894952004040 -.000877367363000991 -.000176563578561815",
+        "2.8B .004473173637057720 .000329550929066379 -.000171543926043767",
+        "Table 6: Remaining exact terms: gradient–gap covarianceG, gradient–norm covarianceU, centered",
+        "three-way termT, and owned mean readout. Together with Table 5, these give the full decomposi-",
+        "tion of Eq. 3.",
+        "ScaleG U T ∆L",
+        "130M -.000519576976183540 -.000012825062806655 .000240795061055922 .001120366036532126",
+        "370M .000402747883547661 -.000001430912906175 .000159282284303926 .000508956351885417",
+        "790M .001426961516464109 -.000040009026410042 -.000082150556444377 .002276711449856494",
+        "1.4B -.000101775327135446 -.000010052654126476 -.000029688583061496 -.001195447505886224",
+        "2.8B -.000162660052525846 -.000009378023827281 -.000060143880171834 -.000074174953502349",
+        "At 370M favorable dependence outweighs a negative mean alignment gap. At 1.4B negative align-",
+        "ment dominates. At 2.8B adverse dependence overcomes a positive mean gap; 55.3% of pairs remain",
+        "positive. This is an algebraic decomposition, without fitted parameters or new tests.",
+        "A.6 PRETRAINED-LMCONTROL AND SENSITIVITY",
+        "At frozen targett, with observed next tokeny=x t+1, the control usesJ LM = logp θ(y|x ≤t)",
+        "andg LM =∇ hJLM at the equal-valued local leaf. Table 7 records the frozen objective comparison.",
+        "Means have distinct units; pair-level associations are descriptive.",
+        "Table 7: Task-matched frozen contrasts under the downstream task and pretrained next-token objec-",
+        "tives. The pre-existing 130M scale was completed under a separately frozen LM-control extension",
+        "and joins the four original rows descriptively.",
+        "Scale Task forward LM mean Pearson Spearman Sign agree",
+        "130M .00224073 -.05641685 .3208 .2044 .5567",
+        "370M .00101791 -.00197532 -.4593 .0346 .6033",
+        "790M .00455342 -.01596436 .1862 -.0379 .4433",
+        "1.4B -.00239090 .00783318 -.3664 -.1827 .4567",
+        "2.8B -.00014835 .01644840 .1330 .0966 .5733",
+        "The common-P3/P5 sensitivity means are−0.00197532(370M),−0.00443947(790M),",
+        "−0.00990855(1.4B), and+0.01644840(2.8B). The 1.4B sign differs from its primary task-matched",
+        "P5/P4 result. This contrast sensitivity does not reselect the primary comparison. Opposed aggregate",
+        "signs are not a rowwise inversion."
+      ],
+      "before_context": [
+        "A.5 FULL TASK-READOUT DECOMPOSITION",
+        "The selected and control components have equal norm to numerical precision; the maximum relative",
+        "mismatch across frozen rows is about10 −15. Putu i =∥g i∥,n i =∥c i∥, andh i = cos(gi, csel,i)−",
+        "12",
+        "PAGE 13",
+        "648"
+      ],
+      "after_context": [
+        "A.5 FULL TASK-READOUT DECOMPOSITION",
+        "The selected and control components have equal norm to numerical precision; the maximum relative",
+        "mismatch across frozen rows is about10 −15. Putu i =∥g i∥,n i =∥c i∥, andh i = cos(gi, csel,i)−",
+        "12",
+        "PAGE 13",
+        "648"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 1461,
+      "before_end_exclusive": 1504,
+      "after_start": 1450,
+      "after_end_exclusive": 1470,
+      "before": [
+        "cos(gi, cctrl,i). Then∆L i =u inihi exactly, and",
+        "E[unh] =µ uµnµh +µ u Cov(n, h) +µ n Cov(u, h)",
+        "+µ h Cov(u, n) +E[(u−µ u)(n−µ n)(h−µ h)].(3)",
+        "Table 5 transcribes the frozen owned-unit components. Forward-equivalent readouts are twice these",
+        "values.",
+        "Table 5: Frozen mean angular gapµ h, mean-product baseB, and norm–gap covariance contribution",
+        "N, in owned readout units.",
+        "Scaleµ h B N",
+        "130M .008881965010493697 .001278782557357266 .000133190457109135",
+        "370M -.000802156327488121 -.000094095358107031 .000042452455047036",
+        "790M .007793196921091330 .001040616136353141 -.000068706620106335",
+        "1.4B -.009643894952004040 -.000877367363000991 -.000176563578561815",
+        "2.8B .004473173637057720 .000329550929066379 -.000171543926043767",
+        "Table 6: Remaining exact terms: gradient–gap covarianceG, gradient–norm covarianceU, centered",
+        "three-way termT, and owned mean readout. Together with Table 5, these give the full decomposi-",
+        "tion of Eq. 3.",
+        "ScaleG U T ∆L",
+        "130M -.000519576976183540 -.000012825062806655 .000240795061055922 .001120366036532126",
+        "370M .000402747883547661 -.000001430912906175 .000159282284303926 .000508956351885417",
+        "790M .001426961516464109 -.000040009026410042 -.000082150556444377 .002276711449856494",
+        "1.4B -.000101775327135446 -.000010052654126476 -.000029688583061496 -.001195447505886224",
+        "2.8B -.000162660052525846 -.000009378023827281 -.000060143880171834 -.000074174953502349",
+        "At 370M favorable dependence outweighs a negative mean alignment gap. At 1.4B negative align-",
+        "ment dominates. At 2.8B adverse dependence overcomes a positive mean gap; 55.3% of pairs remain",
+        "positive. This is an algebraic decomposition, without fitted parameters or new tests.",
+        "A.6 PRETRAINED-LMCONTROL AND SENSITIVITY",
+        "At frozen targett, with observed next tokeny=x t+1, the control usesJ LM = logp θ(y|x ≤t)",
+        "andg LM =∇ hJLM at the equal-valued local leaf. Table 7 records the frozen objective comparison.",
+        "Means have distinct units; pair-level associations are descriptive.",
+        "Table 7: Task-matched frozen contrasts under the downstream task and pretrained next-token objec-",
+        "tives. The pre-existing 130M scale was completed under a separately frozen LM-control extension",
+        "and joins the four original rows descriptively.",
+        "Scale Task forward LM mean Pearson Spearman Sign agree",
+        "130M .00224073 -.05641685 .3208 .2044 .5567",
+        "370M .00101791 -.00197532 -.4593 .0346 .6033",
+        "790M .00455342 -.01596436 .1862 -.0379 .4433",
+        "1.4B -.00239090 .00783318 -.3664 -.1827 .4567",
+        "2.8B -.00014835 .01644840 .1330 .0966 .5733",
+        "The common-P3/P5 sensitivity means are−0.00197532(370M),−0.00443947(790M),",
+        "−0.00990855(1.4B), and+0.01644840(2.8B). The 1.4B sign differs from its primary task-matched",
+        "P5/P4 result. This contrast sensitivity does not reselect the primary comparison. Opposed aggregate",
+        "signs are not a rowwise inversion.",
+        "A.7 AVERITECEXTERNAL-TRANSFER INFERENCE"
+      ],
+      "after": [
+        "A.7 PAIR-RESAMPLING ROBUSTNESS OF OBJECTIVES AND GEOMETRY",
+        "The frozen CPU-onlysource_pair_idbootstrap usesB= 10,000replicates and per-",
+        "centile 95% intervals. Zero lies within the intervals for 370M pretrained LM (−0.00197532;",
+        "[−0.00655147,0.00253593]) and 2.8B task (−0.00014835;[−0.00048602,0.00018915]). These",
+        "point signs lack individual pair-resampling stability; the five-scale vectors remain descriptive, with-",
+        "out a new prospective inferential family.",
+        "Geometry shares bootstrap multiplicities across five scales within each family; XG2 and XG4 are",
+        "separate. All 20 off-diagonal CKA entries retain their qualitative intermediate range. In1,000",
+        "balanced 150/150 split halves, Pearson, Spearman, mean absolute difference (MAD), and root mean",
+        "square error (RMSE) compare ten off-diagonal CKA values. Frozen medians in Table 8 show stable",
+        "overall structure on the controlled pairs, with weaker fine-grained ordering for XG4.",
+        "Table 8: Frozen median correlations and differences between the ten off-diagonal CKA values across",
+        "1,000 balanced split halves.",
+        "Family Pearson Spearman MAD RMSE",
+        "XG2 .875577 .878788 .057331 .068640",
+        "XG4 .652928 .672727 .056955 .068166",
+        "These summaries describe sampling robustness on frozen cohorts, not a noise ceiling, model uncer-",
+        "tainty, or independent replication. Analysis, CSVs, and protocol are pinned to8423ef9d1325c0",
+        "07ecd31849a668131197e2214d.",
+        "A.8 AVERITECEXTERNAL-TRANSFER INFERENCE"
+      ],
+      "before_context": [
+        "700",
+        "701",
+        "Under review as a conference paper at ICLR 2027",
+        "The authenticated official A VeriTeC development source isMichSchli/AVeriTeC, commit",
+        "7c62d1ec8df3fb560d6efe2b85fa191135636f81, pathdata/dev.json, Git blob",
+        "40974243267f395dc583d805d10f043812419249. Of 500 development examples,"
+      ],
+      "after_context": [
+        "700",
+        "701",
+        "Under review as a conference paper at ICLR 2027",
+        "The authenticated official A VeriTeC development source isMichSchli/AVeriTeC, commit",
+        "7c62d1ec8df3fb560d6efe2b85fa191135636f81, pathdata/dev.json, Git blob",
+        "40974243267f395dc583d805d10f043812419249. Of 500 development examples,"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 1507,
+      "before_end_exclusive": 1507,
+      "after_start": 1473,
+      "after_end_exclusive": 1497,
+      "before": [],
+      "after": [
+        "the fixed compatible cohort comprises 305 Refuted, 122 Supported, and 35 Not Enough Evi-",
+        "dence examples (N= 462). The 38 Conflicting Evidence/Cherrypicking examples are excluded",
+        "by the pre-specified three-label compatibility rule. Gold question–answer blocks retain source",
+        "order. There is no retrieval or question generation in this experiment. The 130M/370M family",
+        "uses the frozen active serializationclaim[:63] + EOS(0) + evidence[:64], response-",
+        "blind claim–evidence-boundary anchor, and target offset 2. Its sharedtokenizer.json,",
+        "tokenizer_config.json, andspecial_tokens_map.jsonSHA256 identities are, re-",
+        "spectively,b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b",
+        "27585fcf,9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84d",
+        "c6b46acb, and57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b0348",
+        "4e6ff4723ae8. The active-encoding gate used tokenizers version 0.22.2 and required all 462",
+        "rows to pass. The 1.4B external-transfer extension uses its own pinned tokenizer snapshot at revi-",
+        "sion6e46eae61c27280517feef46f536d16b91076f08;tokenizer.jsonSHA256 is",
+        "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8,",
+        "andtokenizer_config.jsonSHA256 is3ba257483d22a5a84aab5465aa427e59bd",
+        "aeb55f09fb14349e2d571ff67e8020. It is not byte-identical to the tokenizer used for the",
+        "completed 130M/370M external family. The response-blind anchor is the claim–evidence boundary,",
+        "with intervention target at consumed claim length plus 2.",
+        "Correct-class-margin selected-versus-control means at 130M and 370M were0.00023104869and",
+        "0.000045550022, with Cohen’sd z = 0.11964887and0.10631035, and Holm-adjusted positive-",
+        "familyp= 0.010430705and0.0113815. The separately frozen 1.4B negative test had mean",
+        "−0.000078509516,d z =−0.0668655,t(461) =−1.43722, and one-sidedp= 0.0756671, failing",
+        "theα=.05gate. Its native, neutralized, and control conditions all had accuracy0.12987013, with",
+        "zero intervention-induced argmax flips. The three scales are not pooled into a new inferential family."
+      ],
+      "before_context": [
+        "The authenticated official A VeriTeC development source isMichSchli/AVeriTeC, commit",
+        "7c62d1ec8df3fb560d6efe2b85fa191135636f81, pathdata/dev.json, Git blob",
+        "40974243267f395dc583d805d10f043812419249. Of 500 development examples,",
+        "13",
+        "PAGE 14",
+        "702"
+      ],
+      "after_context": [
+        "The authenticated official A VeriTeC development source isMichSchli/AVeriTeC, commit",
+        "7c62d1ec8df3fb560d6efe2b85fa191135636f81, pathdata/dev.json, Git blob",
+        "40974243267f395dc583d805d10f043812419249. Of 500 development examples,",
+        "13",
+        "PAGE 14",
+        "702"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 1564,
+      "before_end_exclusive": 1598,
+      "after_start": 1554,
+      "after_end_exclusive": 1561,
+      "before": [
+        "the fixed compatible cohort comprises 305 Refuted, 122 Supported, and 35 Not Enough Evi-",
+        "dence examples (N= 462). The 38 Conflicting Evidence/Cherrypicking examples are excluded",
+        "by the pre-specified three-label compatibility rule. Gold question–answer blocks retain source",
+        "order. There is no retrieval or question generation in this experiment. The 130M/370M family",
+        "uses the frozen active serializationclaim[:63] + EOS(0) + evidence[:64], response-",
+        "blind claim–evidence-boundary anchor, and target offset 2. Its sharedtokenizer.json,",
+        "tokenizer_config.json, andspecial_tokens_map.jsonSHA256 identities are, re-",
+        "spectively,b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b",
+        "27585fcf,9d7016c33747c6309346e59bd7bf63bfc33c9d9366ecb7e514b3b84d",
+        "c6b46acb, and57491904f8680d4b52ed440f1f7ba48cad1c31ecf3eb453b0348",
+        "4e6ff4723ae8. The active-encoding gate used tokenizers version 0.22.2 and required all 462",
+        "rows to pass. The 1.4B external-transfer extension uses its own pinned tokenizer snapshot at revi-",
+        "sion6e46eae61c27280517feef46f536d16b91076f08;tokenizer.jsonSHA256 is",
+        "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8,",
+        "andtokenizer_config.jsonSHA256 is3ba257483d22a5a84aab5465aa427e59bd",
+        "aeb55f09fb14349e2d571ff67e8020. It is not byte-identical to the tokenizer used for the",
+        "completed 130M/370M external family. The response-blind anchor is the claim–evidence boundary,",
+        "with intervention target at consumed claim length plus 2.",
+        "Correct-class-margin selected-versus-control means at 130M and 370M were0.00023104869and",
+        "0.000045550022, with Cohen’sd z = 0.11964887and0.10631035, and Holm-adjusted positive-",
+        "familyp= 0.010430705and0.0113815. The separately frozen 1.4B negative test had mean",
+        "−0.000078509516,d z =−0.0668655,t(461) =−1.43722, and one-sidedp= 0.0756671, failing",
+        "theα=.05gate. Its native, neutralized, and control conditions all had accuracy0.12987013, with",
+        "zero intervention-induced argmax flips. The three scales are not pooled into a new inferential family.",
+        "A.8 FIGURE PROVENANCE AND SOURCE MAPPING",
+        "Figure 2 draws the historical 130M causal synthesis, specificity inference, seed-181 behavioral",
+        "bridge, and frozen pair-level readout–behavior merge, while presenting the four causal stages with-",
+        "out requiring their endpoint notation in the figure itself. Figure 3 combines the frozen five-scale",
+        "causal support identities with the separately frozen coordinate-free XG2/XG4 geometry snapshot",
+        "imported from scientific result commit593199d8e849572fc77b1b0bc7475d3d19468d12.",
+        "The historical kernel mean-square and leading-plane measurements remain supporting appendix ev-",
+        "idence rather than Figure 3 panels. Figure 4 draws the five-scale task-objective readout synthesis,",
+        "original four-scale vanilla-LM analysis, and later 130M completeness analysis. Figure 1 summarizes",
+        "these same frozen evidence classes."
+      ],
+      "after": [
+        "A.9 FIGURE PROVENANCE AND SOURCE MAPPING",
+        "Figure 2 uses frozen 130M causal, specificity, seed-181 behavioral, and pair-merge records. Fig-",
+        "ure 3 combines five-scale causal support and the coordinate-free XG2/XG4 snapshot (scientific re-",
+        "sult commit593199d8e849572fc77b1b0bc7475d3d19468d12); historical scalar geom-",
+        "etry stays in Appendix A.2. Figure 4 combines task readouts, four-scale LM control, later 130M",
+        "completeness, and percentile 95% pair intervals fromobjective_bootstrap.csv(commit",
+        "8423ef9d1325c007ecd31849a668131197e2214d). Figure 1 summarizes the design."
+      ],
+      "before_context": [
+        "754",
+        "755",
+        "Under review as a conference paper at ICLR 2027",
+        "14"
+      ],
+      "after_context": [
+        "754",
+        "755",
+        "Under review as a conference paper at ICLR 2027",
+        "14"
+      ]
+    }
+  ]
+}

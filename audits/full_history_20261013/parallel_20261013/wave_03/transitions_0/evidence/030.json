@@ -1,0 +1,752 @@
+{
+  "shard_ordinal": 30,
+  "original_queue_id": "WORK-47c4cbab91abd7d9f4e9",
+  "original_source_ids": [
+    "HV001153"
+  ],
+  "original_source_identity": {
+    "commit": "f7fb7f030c904ea37ccc3d40306c5a7fa506cc7f",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "4f0259e58b18d2cdf1eb4303417723026929c53a",
+    "object_type": "commit",
+    "bytes": 89678,
+    "sha256": "4e925b560f06fee0924803fe444362742d558d71340215b3835b5e6417bc6307"
+  },
+  "before": {
+    "commit": "110fa6a29212f83a322aa73f019e9061be74a69f",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "53a2799064469c684c66852f7745ddfca9716300",
+    "object_type": "commit",
+    "bytes": 84715,
+    "sha256": "999e4d22f1e934ab3d6a4415af63f09e2ff3eb3ef14b7427a97724840ea93ff7"
+  },
+  "after": {
+    "commit": "f7fb7f030c904ea37ccc3d40306c5a7fa506cc7f",
+    "path": "scripts/train_controlled_v6b_minimal.py",
+    "blob": "4f0259e58b18d2cdf1eb4303417723026929c53a",
+    "object_type": "commit",
+    "bytes": 89678,
+    "sha256": "4e925b560f06fee0924803fe444362742d558d71340215b3835b5e6417bc6307"
+  },
+  "prior_evidence": [
+    {
+      "audit_file": "wave_02/transitions_shard_1/transition_review.jsonl",
+      "transition_id": "W02D1-T0140"
+    }
+  ],
+  "prior_interpretation": {
+    "changed_symbols": [
+      "_detect_pc_schema",
+      "_normalize_pair_record",
+      "_pair_record_to_virtual_records",
+      "_pc_filter",
+      "build_parser",
+      "load_pair_contrastive_jsonl",
+      "main",
+      "run_training_v6b"
+    ],
+    "interpretation_status": "UNRESOLVED",
+    "kind": "UNADJUDICATED_SOURCE_REVISION",
+    "remaining_question": "Adjudicate trainer objectives, gradient ownership, data/evaluation selection, ablation defaults and historical authority from the complete preserved diff and full authenticated blobs; establish corrections/withdrawals only with explicit source support.",
+    "source_change_description": "Exact comparison preserves 28 removed/replaced lines and 126 added/replaced lines in 20 changes.",
+    "summary": "Full before/after content has been deterministically compared and evidence preserved. Function names, commit subjects, regex domains and retained source excerpts do not adjudicate research semantics."
+  },
+  "relationship": "ANCESTOR_TO_DESCENDANT_VERIFIED",
+  "after_parents": [
+    {
+      "commit": "7a838de4d0155eefea423d362d76c6af1e37f7c0",
+      "blob": "53a2799064469c684c66852f7745ddfca9716300"
+    }
+  ],
+  "immediate_parent_has_before_blob": true,
+  "comparison_projection": "source_lines",
+  "changes": [
+    {
+      "operation": "replace",
+      "before_start": 422,
+      "before_end_exclusive": 423,
+      "after_start": 422,
+      "after_end_exclusive": 423,
+      "before": [
+        "# Stage22-A4c: pair-group contrastive frame helpers"
+      ],
+      "after": [
+        "# Stage22-A4c/A4e: pair-group contrastive frame helpers"
+      ],
+      "before_context": [
+        "",
+        "",
+        "# ---------------------------------------------------------------------------",
+        "# ---------------------------------------------------------------------------",
+        "",
+        "_PC_USE_CASES = frozenset({"
+      ],
+      "after_context": [
+        "",
+        "",
+        "# ---------------------------------------------------------------------------",
+        "# ---------------------------------------------------------------------------",
+        "",
+        "# A4b2 use-case values (filter via contrastive_use_case field)"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 425,
+      "before_end_exclusive": 426,
+      "after_start": 425,
+      "after_end_exclusive": 427,
+      "before": [
+        "_PC_USE_CASES = frozenset({"
+      ],
+      "after": [
+        "# A4b2 use-case values (filter via contrastive_use_case field)",
+        "_PC_USE_CASES_A4B2 = frozenset({"
+      ],
+      "before_context": [
+        "# Stage22-A4c: pair-group contrastive frame helpers",
+        "# ---------------------------------------------------------------------------",
+        "",
+        "    \"frame_violation_contrastive\",",
+        "    \"support_safe_frame_contrastive\",",
+        "    \"all\","
+      ],
+      "after_context": [
+        "# Stage22-A4c/A4e: pair-group contrastive frame helpers",
+        "# ---------------------------------------------------------------------------",
+        "",
+        "    \"frame_violation_contrastive\",",
+        "    \"support_safe_frame_contrastive\",",
+        "})"
+      ]
+    },
+    {
+      "operation": "delete",
+      "before_start": 428,
+      "before_end_exclusive": 429,
+      "after_start": 429,
+      "after_end_exclusive": 429,
+      "before": [
+        "    \"all\","
+      ],
+      "after": [],
+      "before_context": [
+        "_PC_USE_CASES = frozenset({",
+        "    \"frame_violation_contrastive\",",
+        "    \"support_safe_frame_contrastive\",",
+        "})",
+        "",
+        ""
+      ],
+      "after_context": [
+        "_PC_USE_CASES_A4B2 = frozenset({",
+        "    \"frame_violation_contrastive\",",
+        "    \"support_safe_frame_contrastive\",",
+        "})",
+        "# A4d OOD-matched use-case values (filter via target / source / preservation_construction_type)",
+        "_PC_USE_CASES_A4D = frozenset({"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 430,
+      "before_end_exclusive": 430,
+      "after_start": 430,
+      "after_end_exclusive": 486,
+      "before": [],
+      "after": [
+        "# A4d OOD-matched use-case values (filter via target / source / preservation_construction_type)",
+        "_PC_USE_CASES_A4D = frozenset({",
+        "    \"ood_matched\",",
+        "    \"ood_matched_surface\",",
+        "    \"ood_matched_temporal\",",
+        "})",
+        "_PC_USE_CASES = _PC_USE_CASES_A4B2 | _PC_USE_CASES_A4D | frozenset({\"all\"})",
+        "",
+        "_A4D_TARGET = \"frame_more_violating_than_ood_matched_preservation\"",
+        "_A4D_SOURCE = \"controlled_ood_matched_pair_builder\"",
+        "",
+        "",
+        "def _detect_pc_schema(r: dict[str, Any]) -> str:",
+        "    \"\"\"Return 'a4d' when the record uses A4d OOD-matched schema, else 'a4b2'.\"\"\"",
+        "    if r.get(\"source\") == _A4D_SOURCE or r.get(\"target\") == _A4D_TARGET:",
+        "        return \"a4d\"",
+        "    if \"preservation_construction_type\" in r or \"frame_construction_type\" in r:",
+        "        return \"a4d\"",
+        "    return \"a4b2\"",
+        "",
+        "",
+        "def _normalize_pair_record(r: dict[str, Any]) -> dict[str, Any]:",
+        "    \"\"\"Return a copy of r with canonical intervention_type fields filled in.",
+        "",
+        "    A4b2 records already have preservation_intervention_type / frame_intervention_type.",
+        "    A4d records store these as preservation_source_intervention_type /",
+        "    frame_source_intervention_type; this function aliases them into the canonical names",
+        "    so that _pair_record_to_virtual_records works for both schemas without modification.",
+        "    \"\"\"",
+        "    schema = _detect_pc_schema(r)",
+        "    if schema == \"a4b2\":",
+        "        return r  # already has canonical fields",
+        "    # A4d: alias source_intervention_type → intervention_type",
+        "    out = dict(r)",
+        "    if \"preservation_intervention_type\" not in out and \"preservation_source_intervention_type\" in out:",
+        "        out[\"preservation_intervention_type\"] = out[\"preservation_source_intervention_type\"]",
+        "    if \"frame_intervention_type\" not in out and \"frame_source_intervention_type\" in out:",
+        "        out[\"frame_intervention_type\"] = out[\"frame_source_intervention_type\"]",
+        "    return out",
+        "",
+        "",
+        "def _pc_filter(r: dict[str, Any], use_case_filter: str) -> bool:",
+        "    \"\"\"Return True when record r passes the use_case_filter.\"\"\"",
+        "    if use_case_filter == \"all\":",
+        "        return True",
+        "    schema = _detect_pc_schema(r)",
+        "    if use_case_filter in _PC_USE_CASES_A4B2:",
+        "        # A4b2 path: match contrastive_use_case field",
+        "        return schema == \"a4b2\" and r.get(\"contrastive_use_case\") == use_case_filter",
+        "    if use_case_filter == \"ood_matched\":",
+        "        return schema == \"a4d\"",
+        "    if use_case_filter == \"ood_matched_surface\":",
+        "        return schema == \"a4d\" and r.get(\"preservation_construction_type\") == \"surface_like_preservation\"",
+        "    if use_case_filter == \"ood_matched_temporal\":",
+        "        return schema == \"a4d\" and r.get(\"preservation_construction_type\") == \"temporal_erased_like_preservation\"",
+        "    return False"
+      ],
+      "before_context": [
+        "    \"support_safe_frame_contrastive\",",
+        "    \"all\",",
+        "})",
+        "",
+        "",
+        "def load_pair_contrastive_jsonl("
+      ],
+      "after_context": [
+        "    \"frame_violation_contrastive\",",
+        "    \"support_safe_frame_contrastive\",",
+        "})",
+        "",
+        "",
+        "def load_pair_contrastive_jsonl("
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 437,
+      "before_end_exclusive": 438,
+      "after_start": 493,
+      "after_end_exclusive": 494,
+      "before": [
+        "    \"\"\"Load pair contrastive JSONL and filter by contrastive_use_case."
+      ],
+      "after": [
+        "    \"\"\"Load pair contrastive JSONL, detect schema (A4b2 or A4d), filter, and normalize."
+      ],
+      "before_context": [
+        "    *,",
+        "    use_case_filter: str = \"frame_violation_contrastive\",",
+        ") -> list[dict[str, Any]]:",
+        "",
+        "    use_case_filter=\"all\" keeps all records regardless of contrastive_use_case.",
+        "    Stage15 OOD records are never loaded here; this file must have been constructed"
+      ],
+      "after_context": [
+        "    *,",
+        "    use_case_filter: str = \"frame_violation_contrastive\",",
+        ") -> list[dict[str, Any]]:",
+        "",
+        "    Filtering rules:",
+        "      frame_violation_contrastive / support_safe_frame_contrastive"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 439,
+      "before_end_exclusive": 442,
+      "after_start": 495,
+      "after_end_exclusive": 505,
+      "before": [
+        "    use_case_filter=\"all\" keeps all records regardless of contrastive_use_case.",
+        "    Stage15 OOD records are never loaded here; this file must have been constructed",
+        "    from controlled data only (leakage_note = \"constructed_from_controlled_data_only\")."
+      ],
+      "after": [
+        "    Filtering rules:",
+        "      frame_violation_contrastive / support_safe_frame_contrastive",
+        "          → A4b2 records matched by contrastive_use_case field",
+        "      ood_matched        → all A4d records (target or source tag present)",
+        "      ood_matched_surface  → A4d records where preservation_construction_type == surface_like_preservation",
+        "      ood_matched_temporal → A4d records where preservation_construction_type == temporal_erased_like_preservation",
+        "      all                → all records from either schema",
+        "",
+        "    Returns normalized records (preservation_intervention_type and frame_intervention_type",
+        "    always populated). Stage15 OOD records are never loaded here."
+      ],
+      "before_context": [
+        ") -> list[dict[str, Any]]:",
+        "    \"\"\"Load pair contrastive JSONL and filter by contrastive_use_case.",
+        "",
+        "    \"\"\"",
+        "    records: list[dict[str, Any]] = []",
+        "    with open(path, encoding=\"utf-8\") as f:"
+      ],
+      "after_context": [
+        ") -> list[dict[str, Any]]:",
+        "    \"\"\"Load pair contrastive JSONL, detect schema (A4b2 or A4d), filter, and normalize.",
+        "",
+        "    \"\"\"",
+        "    raw: list[dict[str, Any]] = []",
+        "    with open(path, encoding=\"utf-8\") as f:"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 443,
+      "before_end_exclusive": 444,
+      "after_start": 506,
+      "after_end_exclusive": 507,
+      "before": [
+        "    records: list[dict[str, Any]] = []"
+      ],
+      "after": [
+        "    raw: list[dict[str, Any]] = []"
+      ],
+      "before_context": [
+        "    Stage15 OOD records are never loaded here; this file must have been constructed",
+        "    from controlled data only (leakage_note = \"constructed_from_controlled_data_only\").",
+        "    \"\"\"",
+        "    with open(path, encoding=\"utf-8\") as f:",
+        "        for line in f:",
+        "            line = line.strip()"
+      ],
+      "after_context": [
+        "    Returns normalized records (preservation_intervention_type and frame_intervention_type",
+        "    always populated). Stage15 OOD records are never loaded here.",
+        "    \"\"\"",
+        "    with open(path, encoding=\"utf-8\") as f:",
+        "        for line in f:",
+        "            line = line.strip()"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 448,
+      "before_end_exclusive": 452,
+      "after_start": 511,
+      "after_end_exclusive": 513,
+      "before": [
+        "                records.append(json.loads(line))",
+        "    if use_case_filter == \"all\":",
+        "        return records",
+        "    return [r for r in records if r.get(\"contrastive_use_case\") == use_case_filter]"
+      ],
+      "after": [
+        "                raw.append(json.loads(line))",
+        "    return [_normalize_pair_record(r) for r in raw if _pc_filter(r, use_case_filter)]"
+      ],
+      "before_context": [
+        "        for line in f:",
+        "            line = line.strip()",
+        "            if line:",
+        "",
+        "",
+        "def compute_pair_contrastive_metrics("
+      ],
+      "after_context": [
+        "        for line in f:",
+        "            line = line.strip()",
+        "            if line:",
+        "",
+        "",
+        "def compute_pair_contrastive_metrics("
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 520,
+      "before_end_exclusive": 527,
+      "after_start": 581,
+      "after_end_exclusive": 590,
+      "before": [
+        "    for req in (*_PC_PRES_REQUIRED, *_PC_FRAME_REQUIRED):",
+        "        if not r.get(req):",
+        "            raise ValueError(",
+        "                f\"[pc22a4c] pair record {cid!r} is missing required field {req!r}. \"",
+        "                \"Ensure the pair contrastive JSONL was generated by \"",
+        "                \"build_stage22a4_pair_contrastive_frame_data.py.\"",
+        "            )"
+      ],
+      "after": [
+        "    _schema = _detect_pc_schema(r)",
+        "    missing = [f for f in (*_PC_PRES_REQUIRED, *_PC_FRAME_REQUIRED) if not r.get(f)]",
+        "    if missing:",
+        "        raise ValueError(",
+        "            f\"[pc22a4e] pair record {cid!r} (schema={_schema!r}) is missing required \"",
+        "            f\"field(s): {missing}. \"",
+        "            \"A4b2 records must have preservation_intervention_type / frame_intervention_type. \"",
+        "            \"A4d records must be normalized first via load_pair_contrastive_jsonl.\"",
+        "        )"
+      ],
+      "before_context": [
+        "    the pair-contrastive loss reads frame_violation_logit, not these label tensors.",
+        "    \"\"\"",
+        "    cid = r.get(\"contrastive_id\", \"<unknown>\")",
+        "",
+        "    pres: dict[str, Any] = {",
+        "        \"id\": r.get(\"preservation_source_id\") or f\"{cid}__pres\","
+      ],
+      "after_context": [
+        "    the pair-contrastive loss reads frame_violation_logit, not these label tensors.",
+        "    \"\"\"",
+        "    cid = r.get(\"contrastive_id\", \"<unknown>\")",
+        "",
+        "    pres: dict[str, Any] = {",
+        "        \"id\": r.get(\"preservation_source_id\") or f\"{cid}__pres\","
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 966,
+      "before_end_exclusive": 967,
+      "after_start": 1029,
+      "after_end_exclusive": 1037,
+      "before": [
+        "        choices=(\"frame_violation_contrastive\", \"support_safe_frame_contrastive\", \"all\"),"
+      ],
+      "after": [
+        "        choices=(",
+        "            \"frame_violation_contrastive\",",
+        "            \"support_safe_frame_contrastive\",",
+        "            \"ood_matched\",",
+        "            \"ood_matched_surface\",",
+        "            \"ood_matched_temporal\",",
+        "            \"all\",",
+        "        ),"
+      ],
+      "before_context": [
+        "    )",
+        "    parser.add_argument(",
+        "        \"--pair-contrastive-use-case\",",
+        "        default=\"frame_violation_contrastive\",",
+        "        help=(",
+        "            \"Filter pair contrastive records by contrastive_use_case field. \""
+      ],
+      "after_context": [
+        "    )",
+        "    parser.add_argument(",
+        "        \"--pair-contrastive-use-case\",",
+        "        default=\"frame_violation_contrastive\",",
+        "        help=(",
+        "            \"Filter pair contrastive records by schema and use_case. \""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 969,
+      "before_end_exclusive": 973,
+      "after_start": 1039,
+      "after_end_exclusive": 1048,
+      "before": [
+        "            \"Filter pair contrastive records by contrastive_use_case field. \"",
+        "            \"frame_violation_contrastive: frame valid + pres non-frame (may be REFUTE). \"",
+        "            \"support_safe_frame_contrastive: strict subset where pres is SUPPORT-safe. \"",
+        "            \"all: use all records regardless of use_case. \""
+      ],
+      "after": [
+        "            \"Filter pair contrastive records by schema and use_case. \"",
+        "            \"A4b2 schema filters (contrastive_use_case field): \"",
+        "            \"  frame_violation_contrastive: frame valid + pres non-frame (may be REFUTE); \"",
+        "            \"  support_safe_frame_contrastive: strict subset where pres is SUPPORT-safe. \"",
+        "            \"A4d OOD-matched schema filters (target/source/preservation_construction_type): \"",
+        "            \"  ood_matched: all A4d OOD-matched records; \"",
+        "            \"  ood_matched_surface: A4d records with surface_like_preservation only; \"",
+        "            \"  ood_matched_temporal: A4d records with temporal_erased_like_preservation only. \"",
+        "            \"all: all records from either schema. \""
+      ],
+      "before_context": [
+        "        choices=(\"frame_violation_contrastive\", \"support_safe_frame_contrastive\", \"all\"),",
+        "        default=\"frame_violation_contrastive\",",
+        "        help=(",
+        "            \"Default: frame_violation_contrastive.\"",
+        "        ),",
+        "    )"
+      ],
+      "after_context": [
+        "        ),",
+        "        default=\"frame_violation_contrastive\",",
+        "        help=(",
+        "            \"Default: frame_violation_contrastive.\"",
+        "        ),",
+        "    )"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 1117,
+      "before_end_exclusive": 1118,
+      "after_start": 1192,
+      "after_end_exclusive": 1193,
+      "before": [
+        "    # Stage22-A4c: pair contrastive frame data loading and encoding"
+      ],
+      "after": [
+        "    # Stage22-A4c/A4e: pair contrastive frame data loading and encoding"
+      ],
+      "before_context": [
+        "            f\" train_pos={_train_fv_pos_only}\"",
+        "        )",
+        "",
+        "    _pc_pair_records: list[dict[str, Any]] = []",
+        "    _pc_pres_inputs: \"dict[str, torch.Tensor] | None\" = None",
+        "    _pc_frame_inputs: \"dict[str, torch.Tensor] | None\" = None"
+      ],
+      "after_context": [
+        "            f\" train_pos={_train_fv_pos_only}\"",
+        "        )",
+        "",
+        "    _pc_pair_records: list[dict[str, Any]] = []",
+        "    _pc_pres_inputs: \"dict[str, torch.Tensor] | None\" = None",
+        "    _pc_frame_inputs: \"dict[str, torch.Tensor] | None\" = None"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 1121,
+      "before_end_exclusive": 1121,
+      "after_start": 1196,
+      "after_end_exclusive": 1198,
+      "before": [],
+      "after": [
+        "    _pc_pres_type_counts: dict[str, int] = {}",
+        "    _pc_frame_type_counts: dict[str, int] = {}"
+      ],
+      "before_context": [
+        "    _pc_pair_records: list[dict[str, Any]] = []",
+        "    _pc_pres_inputs: \"dict[str, torch.Tensor] | None\" = None",
+        "    _pc_frame_inputs: \"dict[str, torch.Tensor] | None\" = None",
+        "    if (",
+        "        args.use_pair_contrastive_frame_loss",
+        "        and args.pair_contrastive_frame_data is not None"
+      ],
+      "after_context": [
+        "    _pc_pair_records: list[dict[str, Any]] = []",
+        "    _pc_pres_inputs: \"dict[str, torch.Tensor] | None\" = None",
+        "    _pc_frame_inputs: \"dict[str, torch.Tensor] | None\" = None",
+        "    if (",
+        "        args.use_pair_contrastive_frame_loss",
+        "        and args.pair_contrastive_frame_data is not None"
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 1134,
+      "before_end_exclusive": 1134,
+      "after_start": 1211,
+      "after_end_exclusive": 1219,
+      "before": [],
+      "after": [
+        "        # Count by construction type for A4d records; empty for A4b2",
+        "        from collections import Counter as _Counter",
+        "        _pc_pres_type_counts: dict[str, int] = dict(",
+        "            _Counter(r.get(\"preservation_construction_type\", \"a4b2_record\") for r in _pc_pair_records)",
+        "        )",
+        "        _pc_frame_type_counts: dict[str, int] = dict(",
+        "            _Counter(r.get(\"frame_construction_type\", \"a4b2_record\") for r in _pc_pair_records)",
+        "        )"
+      ],
+      "before_context": [
+        "        _pc_pair_records = load_pair_contrastive_jsonl(",
+        "            _pc_path, use_case_filter=args.pair_contrastive_use_case",
+        "        )",
+        "        print(",
+        "            f\"[pc22a4c] loaded {len(_pc_pair_records)} pair records\"",
+        "            f\" use_case={args.pair_contrastive_use_case}\""
+      ],
+      "after_context": [
+        "        _pc_pair_records = load_pair_contrastive_jsonl(",
+        "            _pc_path, use_case_filter=args.pair_contrastive_use_case",
+        "        )",
+        "        print(",
+        "            f\"[pc22a4e] loaded {len(_pc_pair_records)} pair records\"",
+        "            f\" use_case={args.pair_contrastive_use_case}\""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 1135,
+      "before_end_exclusive": 1136,
+      "after_start": 1220,
+      "after_end_exclusive": 1221,
+      "before": [
+        "            f\"[pc22a4c] loaded {len(_pc_pair_records)} pair records\""
+      ],
+      "after": [
+        "            f\"[pc22a4e] loaded {len(_pc_pair_records)} pair records\""
+      ],
+      "before_context": [
+        "            _pc_path, use_case_filter=args.pair_contrastive_use_case",
+        "        )",
+        "        print(",
+        "            f\" use_case={args.pair_contrastive_use_case}\"",
+        "            f\" weight={args.pair_contrastive_frame_loss_weight}\"",
+        "            f\" margin={args.pair_contrastive_frame_margin}\""
+      ],
+      "after_context": [
+        "            _Counter(r.get(\"frame_construction_type\", \"a4b2_record\") for r in _pc_pair_records)",
+        "        )",
+        "        print(",
+        "            f\" use_case={args.pair_contrastive_use_case}\"",
+        "            f\" weight={args.pair_contrastive_frame_loss_weight}\"",
+        "            f\" margin={args.pair_contrastive_frame_margin}\""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 1140,
+      "before_end_exclusive": 1140,
+      "after_start": 1225,
+      "after_end_exclusive": 1227,
+      "before": [],
+      "after": [
+        "        if _pc_pres_type_counts:",
+        "            print(f\"  [pc22a4e] pres_types={_pc_pres_type_counts} frame_types={_pc_frame_type_counts}\")"
+      ],
+      "before_context": [
+        "            f\" weight={args.pair_contrastive_frame_loss_weight}\"",
+        "            f\" margin={args.pair_contrastive_frame_margin}\"",
+        "        )",
+        "        if _pc_pair_records:",
+        "            _pc_pres_virtual: list[dict[str, Any]] = []",
+        "            _pc_frame_virtual: list[dict[str, Any]] = []"
+      ],
+      "after_context": [
+        "            f\" weight={args.pair_contrastive_frame_loss_weight}\"",
+        "            f\" margin={args.pair_contrastive_frame_margin}\"",
+        "        )",
+        "        if _pc_pair_records:",
+        "            _pc_pres_virtual: list[dict[str, Any]] = []",
+        "            _pc_frame_virtual: list[dict[str, Any]] = []"
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 1422,
+      "before_end_exclusive": 1423,
+      "after_start": 1509,
+      "after_end_exclusive": 1515,
+      "before": [
+        "                best_pc_metrics = _pc_eval_metrics"
+      ],
+      "after": [
+        "                best_pc_metrics = {",
+        "                    **_pc_eval_metrics,",
+        "                    \"pair_contrastive_use_case\": args.pair_contrastive_use_case,",
+        "                    \"count_by_preservation_construction_type\": _pc_pres_type_counts,",
+        "                    \"count_by_frame_construction_type\": _pc_frame_type_counts,",
+        "                }"
+      ],
+      "before_context": [
+        "                    best_dev_pairwise_checks = v5.pairwise_checks(dev_records, dev_output)",
+        "                best_dev_predictions = prediction_records_v6b(dev_records, dev_output)",
+        "                best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}",
+        "                if capture_best_trainable_state:",
+        "                    best_trainable_state = v5.capture_trainable_state(model)",
+        ""
+      ],
+      "after_context": [
+        "                    best_dev_pairwise_checks = v5.pairwise_checks(dev_records, dev_output)",
+        "                best_dev_predictions = prediction_records_v6b(dev_records, dev_output)",
+        "                best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}",
+        "                if capture_best_trainable_state:",
+        "                    best_trainable_state = v5.capture_trainable_state(model)",
+        ""
+      ]
+    },
+    {
+      "operation": "replace",
+      "before_start": 1460,
+      "before_end_exclusive": 1461,
+      "after_start": 1552,
+      "after_end_exclusive": 1553,
+      "before": [
+        "                    f\"  [pc22a4c] loss={_pc_loss_val:.4f}\""
+      ],
+      "after": [
+        "                    f\"  [pc22a4e] loss={_pc_loss_val:.4f}\""
+      ],
+      "before_context": [
+        "            if _pc_eval_metrics:",
+        "                _pc_loss_val = float(_pc_loss.item()) if hasattr(_pc_loss, \"item\") else 0.0",
+        "                print(",
+        "                    f\" acc={_pc_eval_metrics.get('pair_contrastive_frame_accuracy', 0.0):.3f}\"",
+        "                    f\" margin={_pc_eval_metrics.get('pair_contrastive_frame_margin_mean', 0.0):.3f}\"",
+        "                    f\" pres_prob={_pc_eval_metrics.get('pair_contrastive_frame_mean_pres_fv_prob', 0.0):.3f}\""
+      ],
+      "after_context": [
+        "            if _pc_eval_metrics:",
+        "                _pc_loss_val = float(_pc_loss.item()) if hasattr(_pc_loss, \"item\") else 0.0",
+        "                print(",
+        "                    f\" acc={_pc_eval_metrics.get('pair_contrastive_frame_accuracy', 0.0):.3f}\"",
+        "                    f\" margin={_pc_eval_metrics.get('pair_contrastive_frame_margin_mean', 0.0):.3f}\"",
+        "                    f\" pres_prob={_pc_eval_metrics.get('pair_contrastive_frame_mean_pres_fv_prob', 0.0):.3f}\""
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 1466,
+      "before_end_exclusive": 1466,
+      "after_start": 1558,
+      "after_end_exclusive": 1559,
+      "before": [],
+      "after": [
+        "                    f\" use_case={args.pair_contrastive_use_case}\""
+      ],
+      "before_context": [
+        "                    f\" pres_prob={_pc_eval_metrics.get('pair_contrastive_frame_mean_pres_fv_prob', 0.0):.3f}\"",
+        "                    f\" frame_prob={_pc_eval_metrics.get('pair_contrastive_frame_mean_frame_fv_prob', 0.0):.3f}\"",
+        "                    f\" n={_pc_eval_metrics.get('pair_contrastive_frame_valid_count', 0)}\"",
+        "                )",
+        "",
+        "        report = {"
+      ],
+      "after_context": [
+        "                    f\" pres_prob={_pc_eval_metrics.get('pair_contrastive_frame_mean_pres_fv_prob', 0.0):.3f}\"",
+        "                    f\" frame_prob={_pc_eval_metrics.get('pair_contrastive_frame_mean_frame_fv_prob', 0.0):.3f}\"",
+        "                    f\" n={_pc_eval_metrics.get('pair_contrastive_frame_valid_count', 0)}\"",
+        "                )",
+        "                if _pc_pres_type_counts:",
+        "                    print("
+      ]
+    },
+    {
+      "operation": "insert",
+      "before_start": 1467,
+      "before_end_exclusive": 1467,
+      "after_start": 1560,
+      "after_end_exclusive": 1565,
+      "before": [],
+      "after": [
+        "                if _pc_pres_type_counts:",
+        "                    print(",
+        "                        f\"  [pc22a4e] pres={_pc_pres_type_counts}\"",
+        "                        f\" frame={_pc_frame_type_counts}\"",
+        "                    )"
+      ],
+      "before_context": [
+        "                    f\" frame_prob={_pc_eval_metrics.get('pair_contrastive_frame_mean_frame_fv_prob', 0.0):.3f}\"",
+        "                    f\" n={_pc_eval_metrics.get('pair_contrastive_frame_valid_count', 0)}\"",
+        "                )",
+        "",
+        "        report = {",
+        "            \"run_name\": run_name,"
+      ],
+      "after_context": [
+        "                    f\" n={_pc_eval_metrics.get('pair_contrastive_frame_valid_count', 0)}\"",
+        "                    f\" use_case={args.pair_contrastive_use_case}\"",
+        "                )",
+        "",
+        "        report = {",
+        "            \"run_name\": run_name,"
+      ]
+    }
+  ]
+}
