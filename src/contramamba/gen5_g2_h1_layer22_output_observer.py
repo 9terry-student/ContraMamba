@@ -1,8 +1,10 @@
-"""Read-only, CPU-only Gen5 G2-H1 layer-22 *output* observer.
+"""Read-only Gen5 G2-H1 layer-22 *output* observer.
 
 Observe exactly one frozen/eval wrapper forward. No model calls are performed by
-this module. It does NOT expose the internal recurrent raw write, and it does
-NOT establish causal attribution.
+this module. CPU is the default; optional CUDA output capture copies detached
+outputs and masks to CPU for post-forward statistics. CUDA behavior is not
+validated by CPU synthetic tests. It does NOT expose the internal recurrent
+raw write, and it does NOT establish causal attribution.
 
 Install in: src/contramamba/gen5_g2_h1_layer22_output_observer.py
 """
@@ -37,15 +39,26 @@ def _need(ok: bool, reason: str) -> None:
 
 
 def _binary_cpu_mask(value: torch.Tensor, shape: tuple[int, int],
-                     name: str) -> torch.Tensor:
+                     name: str, *, allow_cuda_capture: bool = False
+                     ) -> torch.Tensor:
+    """Clone a binary mask to host without changing caller-owned tensors.
+
+    CPU-only by default; a separately authorized CUDA observer may opt in.
+    CUDA -> CPU copy is synchronous and is not a CUDA numerical validation.
+    """
     _need(isinstance(value, torch.Tensor), f"{name}_NOT_TENSOR")
-    _need(value.device.type == "cpu", f"{name}_CPU_ONLY")
+    _need(value.device.type == "cpu" or
+          (allow_cuda_capture and value.device.type == "cuda"),
+          f"{name}_CPU_ONLY" if not allow_cuda_capture else
+          f"{name}_DEVICE_UNSUPPORTED")
     _need(tuple(value.shape) == shape, f"{name}_SHAPE")
     _need(value.dtype in (torch.bool, torch.uint8, torch.int16, torch.int32,
                           torch.int64), f"{name}_DTYPE")
-    _need(bool(torch.all((value == 0) | (value == 1)).item()),
+    # Validate raw integer values before casting to bool (e.g. 2 must fail).
+    original = value.detach().to(device="cpu", copy=True)
+    _need(bool(torch.all((original == 0) | (original == 1)).item()),
           f"{name}_NON_BINARY")
-    return value.to(dtype=torch.bool).clone()
+    return original.to(dtype=torch.bool, copy=True)
 
 
 def _group_identity_rows(
@@ -76,16 +89,26 @@ def _row_indices(pair_ids: Sequence[str], cell_ids: Sequence[str]
 
 
 def _tensor_output(value: Any, shape: tuple[int, int],
-                   name: str) -> torch.Tensor:
+                   name: str, *, allow_cuda_capture: bool = False
+                   ) -> torch.Tensor:
+    """Detach/copy a mixer output to CPU; never mutate or return hook output.
+
+    Host transfer deliberately synchronizes CUDA and can be expensive. It
+    must be enabled only for a separately authorized, bounded GPU run.
+    """
     _need(isinstance(value, torch.Tensor), f"{name}_NOT_TENSOR")
-    _need(value.device.type == "cpu", f"{name}_CPU_ONLY")
+    _need(value.device.type == "cpu" or
+          (allow_cuda_capture and value.device.type == "cuda"),
+          f"{name}_CPU_ONLY" if not allow_cuda_capture else
+          f"{name}_DEVICE_UNSUPPORTED")
     _need(value.ndim == 3 and tuple(value.shape[:2]) == shape,
           f"{name}_SHAPE")
     _need(value.shape[-1] > 0 and value.is_floating_point(),
           f"{name}_FEATURES")
-    _need(bool(torch.isfinite(value).all().item()), f"{name}_NONFINITE")
     _need(not value.requires_grad, f"{name}_REQUIRES_GRAD")
-    return value.detach().clone()
+    snapshot = value.detach().to(device="cpu", copy=True)
+    _need(bool(torch.isfinite(snapshot).all().item()), f"{name}_NONFINITE")
+    return snapshot
 
 
 def masked_token_statistics(
@@ -200,10 +223,11 @@ class Layer22OutputRecord:
 
 
 class Layer22OutputObserver:
-    """Register native + wrapper hooks for *one* no-grad CPU forward only.
+    """Register native + wrapper hooks for one frozen/eval no-grad forward.
 
     The caller owns all model calls, masks and the active-mask context.
-    Hooks only read/clone output tensors; they never modify outputs or args.
+    Hooks only read/copy output tensors; they never modify outputs or args.
+    CUDA capture requires explicit opt-in and has NOT been GPU-validated.
     """
 
     def __init__(
@@ -217,6 +241,7 @@ class Layer22OutputObserver:
         cell_ids: Sequence[str],
         row_ids: Sequence[str] | None = None,
         allow_partial_pairs: bool = False,
+        allow_cuda_capture: bool = False,
     ) -> None:
         _need(isinstance(wrapper, nn.Module) and
               isinstance(getattr(wrapper, "native_mixer", None), nn.Module),
@@ -224,12 +249,17 @@ class Layer22OutputObserver:
         _need(wrapper.native_mixer is not wrapper, "NESTED_SELF_WRAPPER")
         _need(not wrapper.training and not wrapper.native_mixer.training,
               "EVAL_ONLY")
+        _need(type(allow_cuda_capture) is bool, "CUDA_CAPTURE_FLAG_MUST_BE_BOOL")
+        self.allow_cuda_capture = allow_cuda_capture
         shape = tuple(attention_mask.shape)
         _need(len(shape) == 2 and shape[0] > 0 and shape[1] > 0,
               "MASK_SHAPE")
-        self.valid = _binary_cpu_mask(attention_mask, shape, "ATTENTION_MASK")
-        self.claim = _binary_cpu_mask(claim_mask, shape, "CLAIM_MASK")
-        self.evidence = _binary_cpu_mask(evidence_mask, shape, "EVIDENCE_MASK")
+        self.valid = _binary_cpu_mask(attention_mask, shape, "ATTENTION_MASK",
+                                      allow_cuda_capture=allow_cuda_capture)
+        self.claim = _binary_cpu_mask(claim_mask, shape, "CLAIM_MASK",
+                                      allow_cuda_capture=allow_cuda_capture)
+        self.evidence = _binary_cpu_mask(evidence_mask, shape, "EVIDENCE_MASK",
+                                         allow_cuda_capture=allow_cuda_capture)
         _need(not bool((self.claim & ~self.valid).any().item()),
               "CLAIM_IN_PADDING")
         _need(not bool((self.evidence & ~self.valid).any().item()),
@@ -258,6 +288,7 @@ class Layer22OutputObserver:
         self._native: torch.Tensor | None = None
         self._wrapped: torch.Tensor | None = None
         self._native_mask: Any = None
+        self._native_device: torch.device | None = None
 
     @staticmethod
     def _forward_attention_mask(
@@ -275,8 +306,12 @@ class Layer22OutputObserver:
         _need(self._native_count == 1 and self._wrapped_count == 0,
               "NATIVE_CALLED_MULTIPLE_OR_OUT_OF_ORDER")
         self._native_mask = self._forward_attention_mask(args, kwargs)
+        self._native_device = (
+            output.device if isinstance(output, torch.Tensor) else None
+        )
         self._native = _tensor_output(
-            output, tuple(self.valid.shape), "NATIVE_OUTPUT"
+            output, tuple(self.valid.shape), "NATIVE_OUTPUT",
+            allow_cuda_capture=self.allow_cuda_capture,
         )
 
     def _on_wrapper(self, module: nn.Module, args: tuple[Any, ...],
@@ -287,15 +322,20 @@ class Layer22OutputObserver:
         explicit = self._forward_attention_mask(args, kwargs)
         _need(self._native_mask is explicit,
               "NATIVE_ATTENTION_MASK_FORWARDING_CHANGED")
+        _need(isinstance(output, torch.Tensor) and
+              output.device == self._native_device,
+              "NATIVE_WRAPPED_DEVICE_MISMATCH")
         effective = (explicit if explicit is not None else
                      getattr(module, "_phase2_active_mask", None))
         _need(effective is not None, "EFFECTIVE_MASK_MISSING")
         checked = _binary_cpu_mask(
-            effective, tuple(self.valid.shape), "EFFECTIVE_MASK")
+            effective, tuple(self.valid.shape), "EFFECTIVE_MASK",
+            allow_cuda_capture=self.allow_cuda_capture)
         _need(torch.equal(checked, self.valid),
               "OBSERVER_EFFECTIVE_MASK_MISMATCH")
         self._wrapped = _tensor_output(
-            output, tuple(self.valid.shape), "WRAPPED_OUTPUT"
+            output, tuple(self.valid.shape), "WRAPPED_OUTPUT",
+            allow_cuda_capture=self.allow_cuda_capture,
         )
         _need(self._native is not None and
               tuple(self._native.shape) == tuple(self._wrapped.shape) and
