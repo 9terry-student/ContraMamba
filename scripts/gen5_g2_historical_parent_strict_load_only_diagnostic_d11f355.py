@@ -65,7 +65,9 @@ def sha256_file(path: Path) -> str:
 
 def check_repository(repo: Path, expected_head: str) -> None:
     require(git(repo, "rev-parse", "HEAD") == expected_head, "HEAD_MISMATCH")
-    require(git(repo, "branch", "--show-current") == BRANCH, "BRANCH_MISMATCH")
+    # A pinned Kaggle bootstrap may check out the exact commit as detached HEAD.
+    # Only that form or the frozen development branch is accepted.
+    require(git(repo, "branch", "--show-current") in ("", BRANCH), "BRANCH_MISMATCH")
     require(git(repo, "status", "--porcelain") == "", "WORKTREE_DIRTY")
     ancestor = subprocess.run(
         ["git", "-C", str(repo), "merge-base", "--is-ancestor", BASE_HEAD, expected_head],
@@ -109,13 +111,40 @@ def preflight(repo: Path, expected_head: str) -> None:
     print("FORWARD=NO; TASK_EVAL=NO; TRAINING=NO; GPU=NO; NETWORK=NO")
 
 
+def check_output_destination(repo: Path, out: Path) -> None:
+    """Allow external diagnostics or an explicit registered Kaggle handoff root.
+
+    For a repository-local handoff, accept only one fresh file under a named
+    strict-load-only run, with the registry's artifact root matching exactly.
+    No training/evaluation artifact root is accepted here.
+    """
+    require(not out.exists(), "OUTPUT_COLLISION")
+    root = repo.resolve()
+    destination = out.resolve()
+    if not destination.is_relative_to(root):
+        return  # Explicit external, non-collector diagnostic is still supported.
+    rel = destination.relative_to(root)
+    parts = rel.parts
+    require(
+        len(parts) == 4
+        and parts[0] == "reports"
+        and parts[1] == "reason_router_gen5_g2_strict_load_only_runs"
+        and bool(parts[2])
+        and all(c.isalnum() or c in "-_" for c in parts[2])
+        and parts[3] == "strict_load_identity.json",
+        "OUTPUT_RUN_SCOPE",
+    )
+    run_root = rel.parent.as_posix()
+    configured_root = os.environ.get("CONTRAMAMBA_RUN_ARTIFACT_ROOT", "").replace("\\", "/")
+    require(configured_root == run_root, "OUTPUT_RUN_ROOT_ENV_MISMATCH")
+
+
 def strict_load_only(repo: Path, expected_head: str, snapshot: Path,
                      checkpoint: Path, out: Path, authorized: bool) -> None:
     require(authorized, "EXPLICIT_GPU_STRICT_LOAD_AUTHORIZATION_REQUIRED")
     check_repository(repo, expected_head)
     check_loader_source_ast(repo)
-    require(not out.exists(), "OUTPUT_COLLISION")
-    require(not out.resolve().is_relative_to(repo.resolve()), "OUTPUT_MUST_BE_OFF_REPO")
+    check_output_destination(repo, out)
     require(snapshot.is_dir() and snapshot.name == MODEL_REVISION, "SNAPSHOT_REVISION")
     require(checkpoint.is_file(), "PARENT_CHECKPOINT_MISSING")
     require(sha256_file(checkpoint) == PARENT_SHA, "PARENT_SHA256")
