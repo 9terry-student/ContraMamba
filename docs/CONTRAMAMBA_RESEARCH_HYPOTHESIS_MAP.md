@@ -1,5 +1,8 @@
 # ContraMamba Research Hypothesis Map
 
+> **Program-level successor (2026-10-16):** Read this dated hypothesis map beneath `docs/CONTRAMAMBA_LONG_TERM_RESEARCH_PROGRAM_2026_10_16.md` for long-term research goals. Native precursor first, the separate `G_I/G_G/G_D` graphs, causal null controls, and falsification rules remain important; semantic ownership and no cross-owner communication remain candidate mechanisms/baselines rather than compulsory universal architectural principles.
+> **Boundary:** Historical phrases such as "current" or "future O0" describe this map's original phase; verify today's stage from current authority and artifacts. No new implementation, training, evaluation, or promotion authority is granted.
+
 Status: LONG-TERM RESEARCH HYPOTHESIS MAP / NON-AUTHORITY
 
 Purpose: preserve the current long-term ContraMamba hypothesis map, candidate

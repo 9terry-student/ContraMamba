@@ -1,5 +1,8 @@
 # ContraMamba Long-Term Research Vision
 
+> **Program-level successor (2026-10-16):** See `docs/CONTRAMAMBA_LONG_TERM_RESEARCH_PROGRAM_2026_10_16.md` for the current long-term objective: causal discovery and neuroscience-informed invention of general intelligence architectures. This document preserves an earlier semantic-ownership-centered hypothesis and historical conceptual generation labels; it does not define the present Gen5 stage or prove ownership necessary.
+> **Boundary:** This notice changes long-horizon interpretation only. All stage authorities, frozen experimental findings, provenance, and execution limits remain unchanged.
+
 **Status:** LONG-TERM RESEARCH VISION / NON-AUTHORITY
 **Purpose:** Preserve the durable research philosophy, long-horizon architectural direction, and scientific guardrails of ContraMamba across semesters, papers, model generations, and chat sessions.
 **Authority boundary:** This document does **not** authorize implementation, training, evaluation, promotion, Kaggle execution, or scientific claims. Current user instruction, stage-specific authority/spec/report/manifest, executed evidence, repository policy, and provenance requirements take precedence.

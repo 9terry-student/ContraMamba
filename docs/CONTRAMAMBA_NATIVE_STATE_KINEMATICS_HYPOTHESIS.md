@@ -1,5 +1,8 @@
 # ContraMamba Native State Kinematics and Temporal Epistemic Dynamics
 
+> **Program-level successor (2026-10-16):** This September 11 native-state-kinematics hypothesis is preserved under `docs/CONTRAMAMBA_LONG_TERM_RESEARCH_PROGRAM_2026_10_16.md`. Its native-state/decision-space distinction, trajectory mathematics, precursor controls, and falsification conditions remain hypotheses to interpret with later verified evidence.
+> **Historical-phase caution:** "DO NOT EXECUTE YET" and similar statements describe the date of this historical document; they neither override nor authorize any present stage. Current execution always requires current authority and provenance.
+
 - **Status:** LONG-TERM RESEARCH HYPOTHESIS / NON-AUTHORITY
 - **Origin date:** 2026-09-11 (Asia/Seoul)
 - **Scientific evidence created by this document:** NONE
