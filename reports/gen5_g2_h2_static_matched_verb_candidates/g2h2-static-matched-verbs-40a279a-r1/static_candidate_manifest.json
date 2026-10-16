@@ -1,0 +1,43 @@
+{
+  "all_pairs_equal_evidence_length": true,
+  "all_pairs_identical_nonverb_token_ids_and_positions": true,
+  "all_pairs_single_token_verb_substitution": true,
+  "artifact_role": "CPU_ONLY_STATIC_CANDIDATE_NOT_EXECUTION_AUTHORITY",
+  "candidate_rows": 360,
+  "causal_inference": "NOT_ESTABLISHED",
+  "cohort_jsonl_sha256": "fecdf9e1e3940a3c5e9d893df4f4a810130359c00f1ece5c1c0b1599fc6127c9",
+  "comparison": [
+    "NEG_DENIES_MINUS_POS_CONFIRMS_PRIMARY",
+    "NEG_DENIES_MINUS_POS_ASSERTS_SENSITIVITY",
+    "POS_CONFIRMS_MINUS_POS_ASSERTS_LEXICAL_CONTROL"
+  ],
+  "conditions": [
+    "NEG_DENIES",
+    "POS_CONFIRMS",
+    "POS_ASSERTS"
+  ],
+  "gpu_used": false,
+  "model_forward_count": 0,
+  "model_loaded": false,
+  "original_source_rows_mutated": false,
+  "pair_count": 120,
+  "phase3b": "BLOCKED_UNCHANGED",
+  "schema": "G2_H2_MATCHED_VERB_STATIC_CANDIDATE_V1",
+  "semantics_label_status": "PROPOSED_NOT_FROZEN_ANNOTATIONS",
+  "serialization": "claim[:63]+EOS(0)+evidence[:64];max_length=128",
+  "source_neg_c6_byte_identical": true,
+  "source_repo_head": "40a279a28ac088b8728f828038127343f598fc9e",
+  "source_seven_cell_sha256": "9850f13872739bb8099a554242df8ea177420ae754057662b2ec324cb71b8cc1",
+  "source_split_sha256": "87d769304f2547dc81d8698ffa256476390791e3978c8a38c86e8d01232e0c5f",
+  "split": "EXISTING_FROZEN_DEV_ONLY",
+  "tokenizer_revision": "40e5d2bd7452abb3ca8fadbafe9131ee0e2c2f37",
+  "tokenizer_sha256": "b074ad869d4f45d1265ca5c9814f78604f3d7e187acc063b15dd232b27585fcf",
+  "tokenizers_version": "0.22.2",
+  "verb_evidence_token_position_histogram": {
+    "25": 50,
+    "26": 48,
+    "27": 12,
+    "28": 4,
+    "29": 6
+  }
+}
