@@ -1,0 +1,56 @@
+{
+  "artifacts": [
+    {
+      "bytes": 24509,
+      "path": "external_runner/gen5_g2_h1_full_direct_runner_eaeb4a39.py",
+      "sha256": "eaeb4a39d32cfd17004e4954f5471262a8beba4f548234ec617fab3472194945"
+    },
+    {
+      "bytes": 19890,
+      "path": "reports/gen5_g2_h1_full_readonly_observation_runs/g2h1-full-observation-direct-40a279a-r1/observation_summary.json",
+      "sha256": "92e418f9f63c9bd0c5b8807758b50a935bf830e7ad28641bcbd0e82ab5f29202"
+    },
+    {
+      "bytes": 2224999,
+      "path": "reports/gen5_g2_h1_full_readonly_observation_runs/g2h1-full-observation-direct-40a279a-r1/seed6201_full_observation.json",
+      "sha256": "c8b39af1ebb3de357b242ad619c8bbb6ac0103db186bc58a4cc809ca7c9dc95e"
+    },
+    {
+      "bytes": 2057888,
+      "path": "reports/gen5_g2_h1_full_readonly_observation_runs/g2h1-full-observation-direct-40a279a-r1/seed6201_zero_observation.json",
+      "sha256": "76602f36c4c71f8fa1cd8944c52f9e8f6079841ec997e68041557e34d5150ef1"
+    },
+    {
+      "bytes": 2224689,
+      "path": "reports/gen5_g2_h1_full_readonly_observation_runs/g2h1-full-observation-direct-40a279a-r1/seed6202_full_observation.json",
+      "sha256": "b1654b4f24bb31dcca1ffed1f9c0a834d0c64939a87d497ad5db780890124b03"
+    },
+    {
+      "bytes": 2057888,
+      "path": "reports/gen5_g2_h1_full_readonly_observation_runs/g2h1-full-observation-direct-40a279a-r1/seed6202_zero_observation.json",
+      "sha256": "9778e97042081c556798b88293873a78a9d03b91b362859119c406b11d6b7ede"
+    },
+    {
+      "bytes": 2225650,
+      "path": "reports/gen5_g2_h1_full_readonly_observation_runs/g2h1-full-observation-direct-40a279a-r1/seed6203_full_observation.json",
+      "sha256": "fcf567354f9a1bd7a6b8efb3364d6b47c0c463dbf2f75d6d77eda317dc0c2c54"
+    },
+    {
+      "bytes": 2057888,
+      "path": "reports/gen5_g2_h1_full_readonly_observation_runs/g2h1-full-observation-direct-40a279a-r1/seed6203_zero_observation.json",
+      "sha256": "4d417a0d14544b9044202440f7353d7252d7bf94ede1974c6e78f16c5b3ce54c"
+    }
+  ],
+  "cm_collect_v4": false,
+  "cm_run_registry": false,
+  "collection_method": "KAGGLE_NOTEBOOK_READONLY_REPACK",
+  "created_utc": "2026-10-16T15:26:32.476524+00:00",
+  "formal_import_validation": "NOT_YET_PERFORMED",
+  "launcher_txt_sha256_reference": "a578b1207414ae5426076140976dfbf28a121a3509607007d47fc39f2a00ed5c",
+  "schema": "G2H1_DIRECT_UNREGISTERED_HANDOFF_V1",
+  "scientific_conclusion": "PENDING_INDEPENDENT_VALIDATION",
+  "source_artifact_root": "reports/gen5_g2_h1_full_readonly_observation_runs/g2h1-full-observation-direct-40a279a-r1",
+  "source_commit": "40a279a28ac088b8728f828038127343f598fc9e",
+  "source_runner_sha256": "eaeb4a39d32cfd17004e4954f5471262a8beba4f548234ec617fab3472194945",
+  "summary_sha256": "92e418f9f63c9bd0c5b8807758b50a935bf830e7ad28641bcbd0e82ab5f29202"
+}
