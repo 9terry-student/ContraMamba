@@ -1,0 +1,40 @@
+{
+  "branch": "gen5-causal-role-state-ownership",
+  "candidate_token_ids": {
+    "NOT_ENTITLED": 32471,
+    "REFUTE": 16708,
+    "SUPPORT": 11793
+  },
+  "config_vocab_size": 50280,
+  "device": "cpu",
+  "dtype": "float32",
+  "head": "6148207713a59de49325bc7d56541ff7e31dc6d6",
+  "independent_roots": 0,
+  "model_evaluation": true,
+  "model_sha256": "1a5ed29c492ef4d485df3b7c2c8109771696589855b2162ad1ba618b6067cbea",
+  "phase3b": "BLOCKED_UNCHANGED",
+  "revision": "5708daa364c50b880e7bd92eab456e0d34492ee9",
+  "run_name": "rfr_h2_p6_grid168_mamba130m_cpu_6148207_20261025",
+  "runtime_source_sha256": "0fb3d343b2016aa4abe0c493ae143dc2193e1148bdd8792e9486ad04f5e30d71",
+  "scope": "EXPLORATORY_NONCONFIRMATORY",
+  "source_sha256": {
+    "reports/rfr_h2_p5_prospective_behavioral_contrasts_and_baselines_design_candidate.md": "edeaf052f2326830299c1b651482812e2137c916912bb56ef4906e58b002227d",
+    "reports/rfr_h2_p6_unified_preexperiment_protocol_and_execution_contract_candidate.md": "1a567f6f0cb16270f794ce0edd24fb52ca45132a235174d29931fdef0b4c43b0",
+    "scripts/rfr_h2_p1_temporal_serialization_contract_cpu.py": "be7831c13787ce079daece50620a34bd5704a5679a31d2f8bf5d502d402c49a0",
+    "scripts/rfr_h2_p3_tokenizer_continuation_conformance_cpu.py": "47313a6d765727c8d5a6d18183a1129739eaf07d7444634c0b7ce4b10f27af5d"
+  },
+  "timestamp_utc": "2026-10-24T16:21:38.931214+00:00",
+  "tokenizer_hashes": {
+    "config.json": "784825b6b6cdde47a1602278db0e66d6764169af4a8e662404701bc636a2686a",
+    "special_tokens_map.json": "10b8c8852c1e1f70b54d9aff61728408c28971c0e97a6c5a7b2debbd1d3e9c0c",
+    "tokenizer.json": "3cf430678137c8491ca82fb7092ee49e44ad38857fffe1e4a4a5ed860139a5b8",
+    "tokenizer_config.json": "fcd5669efe1150240c13ee4bd863316de4f2abd14cb1806a8cdbcbea6577bc99"
+  },
+  "use_cache": false,
+  "versions": {
+    "safetensors": "0.8.0",
+    "tokenizers": "0.20.3",
+    "torch": "2.12.1",
+    "transformers": "4.45.0"
+  }
+}

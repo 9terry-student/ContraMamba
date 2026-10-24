@@ -1,0 +1,109 @@
+{
+  "constant_refute_correct": 8,
+  "constant_support_correct": 8,
+  "correct": 8,
+  "gold_counts": {
+    "REFUTE": 8,
+    "SUPPORT": 8
+  },
+  "h2_rfr_revalidated": false,
+  "h3_causal_mediation": "NOT_ESTABLISHED",
+  "has_training": false,
+  "limitations": "Pass means basic value retrieval only; failure does not distinguish lexical priors from missing competence.",
+  "opposite_facts_query_switch_pairs": [
+    {
+      "both_correct": false,
+      "order": "PQ",
+      "p": false,
+      "predictions_differ": false,
+      "q": true
+    },
+    {
+      "both_correct": false,
+      "order": "QP",
+      "p": false,
+      "predictions_differ": false,
+      "q": true
+    },
+    {
+      "both_correct": false,
+      "order": "PQ",
+      "p": true,
+      "predictions_differ": false,
+      "q": false
+    },
+    {
+      "both_correct": false,
+      "order": "QP",
+      "p": true,
+      "predictions_differ": false,
+      "q": false
+    }
+  ],
+  "phase3b": "BLOCKED_UNCHANGED",
+  "prediction_counts": {
+    "SUPPORT": 16
+  },
+  "record_order_pairs": [
+    {
+      "both_correct": false,
+      "p": false,
+      "predictions_agree": true,
+      "q": false,
+      "query": "P"
+    },
+    {
+      "both_correct": false,
+      "p": false,
+      "predictions_agree": true,
+      "q": false,
+      "query": "Q"
+    },
+    {
+      "both_correct": false,
+      "p": false,
+      "predictions_agree": true,
+      "q": true,
+      "query": "P"
+    },
+    {
+      "both_correct": true,
+      "p": false,
+      "predictions_agree": true,
+      "q": true,
+      "query": "Q"
+    },
+    {
+      "both_correct": true,
+      "p": true,
+      "predictions_agree": true,
+      "q": false,
+      "query": "P"
+    },
+    {
+      "both_correct": false,
+      "p": true,
+      "predictions_agree": true,
+      "q": false,
+      "query": "Q"
+    },
+    {
+      "both_correct": true,
+      "p": true,
+      "predictions_agree": true,
+      "q": true,
+      "query": "P"
+    },
+    {
+      "both_correct": true,
+      "p": true,
+      "predictions_agree": true,
+      "q": true,
+      "query": "Q"
+    }
+  ],
+  "scope": "PROSPECTIVE_BASIC_READOUT_ELIGIBILITY_ONLY",
+  "status": "INELIGIBLE_STOP_RFR_PATH",
+  "strict_pass": false,
+  "total": 16
+}
